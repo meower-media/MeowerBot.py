@@ -1,10 +1,15 @@
 [tool.poetry]
 name = "MeowerBot"
-verion = "1.0.1"
+version = "1.0.1"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
 license = "MEOW"
 readme = "README.md"
+packages = [
+    {include = "MeowerBot", from = "src"}
+]
+repository = "https://github.com/showierdata9978/MeowerBot"
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
