@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "meowerbot.py"
+version = "0.1.0"
+description = "A meower bot lib for py"
+authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
+license = "Custom"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+meower = "^0.0.6"
+cloudlink = "^0.1.7"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
