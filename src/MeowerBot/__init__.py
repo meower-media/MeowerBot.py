@@ -199,7 +199,7 @@ class Client:
         if not self.authed:
             raise CantConnectError("Meower Is down")
 
-    def _login_callback(self, status_code: dict):
+    def _login_callback(self):
         if not self.authed:
             self.authed = True
 
