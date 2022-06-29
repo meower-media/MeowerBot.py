@@ -1,4 +1,3 @@
-
 from threading import ThreadError, Thread
 
 from cloudlink import CloudLink
@@ -36,8 +35,8 @@ class Client:
         
     def _bot_packet_handle(self, packet: dict):
         packet = loads(packet)
-        if self.start:
-            self.start = False
+        if self.start_attr:
+            self.start_attr = False
             import time
             
             self._wss.sendPacket({
@@ -85,7 +84,7 @@ class Client:
             self.ping()
         pass
     def start(self):
-        self.start = True
+        self.start_attr = True
         self._wss.client("wss://Server.meower.org")
 
         if not self.authed:
