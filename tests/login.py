@@ -3,7 +3,7 @@
 from MeowerBot import Client,CantConnectError
 
 try:
-    c = Client("ShowierDataTest","password")
+    c = Client("ShowierDataTest","")
 
     c.start()
 except CantConnectError as e:

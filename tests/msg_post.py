@@ -1,16 +1,6 @@
-# MeowerBot.py
+from MeowerBot import Client,CantConnectError
 
-A bot lib for Meower
-
-## How to use
-
-```py
-
-from MeowerBot import Client
-
-c = Client("Username","password",False) 
-
-def on_raw_msg(self,msg:dict):
+def on_raw_msg(msg:dict):
 
         print(f'msg: {msg["u"]}: {msg["p"]}')
         if not msg["u"] == c.username:
@@ -20,7 +10,13 @@ def on_raw_msg(self,msg:dict):
             if msg["p"].startswith(f'@{c.username}'):   
                 c.send_msg(f'Hello, {msg["u"]}!')
 
-c.callback(on_raw_msg)
 
-c.start()
-```
+try:
+    c = Client("ShowierDataTest","password")
+
+    c.callback(on_raw_msg)
+
+    c.start()
+except CantConnectError as e:
+    print("we cant connect to meower rn")
+    print("original error: ", e)

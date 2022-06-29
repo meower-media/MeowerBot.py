@@ -1,5 +1,6 @@
 from json import loads
 from threading import Thread
+import time
 
 from cloudlink import CloudLink
 from meower import meower
@@ -60,7 +61,12 @@ class Client:
         self._wss.sendPacket({"cmd": "ping", "val": ""})
 
     def __init__(
-        self, meower_username: str, meower_password: str, debug: bool = False
+        self, 
+        meower_username: str, 
+        meower_password: str, 
+        debug: bool = False, 
+        auto_reconect:bool = True,
+        reconect_time:float = 1
     ) -> None:
         self.job_thread = Thread(None, self._bot_api_loop, args=())
         self._start_wait = 0
@@ -68,6 +74,8 @@ class Client:
         self.callbacks = {}
         self.start_attr = True
         self.server_status = "I:0: Test"
+        self.auto_reconect = auto_reconect
+        self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
         try:
@@ -79,6 +87,10 @@ class Client:
         self._wss = CloudLink(debug)
 
         self._wss.callback("on_packet", self._bot_packet_handle)
+        self._wss.callback("on_error",self._bot_on_error)
+        self._wss.callback("on_error", self._bot_on_error)
+        self._wss.callback("on_connect",self._bot_on_connect)
+
         self._lastpacket = {}
 
         self.default_callbacks()
@@ -88,9 +100,20 @@ class Client:
         Handles the packets for the bot
         """
         packet = loads(packet)
-        if self.start_attr:
-            self.start_attr = False
-            import time
+        
+
+        if packet["cmd"] == "statuscode":
+            self.server_status = packet["val"]
+
+        elif packet["cmd"] == "":
+            raise NotImplementedError
+
+        else:
+            self.callbacks["on_raw_msg"](packet["val"])
+    
+        self._lastpacket = packet
+
+    def _bot_on_connect(self):
 
             self._wss.sendPacket(
                 {
@@ -127,21 +150,42 @@ class Client:
             )
             time.sleep(0.8)
 
-            self._login_callback(packet)
-        else:
-            if packet["cmd"] == "statuscode":
-                self.server_status = packet["val"]
+            self._login_callback()
 
-            elif packet["cmd"] == "":
-                raise NotImplementedError
+            try:
+                self.callbacks["on_login"]()
+            except KeyError:
+                pass
 
-            else:
-                self.callbacks["on_raw_msg"](packet["val"])
 
-        self._lastpacket = packet
+    
+    def _bot_on_close(self):
+        try:
+            self.callbacks["on_close"](self.auto_reconect) #if the bot is actualy going to exit
+        except KeyError:
+            pass
+
+        if self.auto_reconect:
+            time.sleep(self.auto_reconect_time)
+            self.start()
+
+
+    def _bot_on_error(self,e):
+        if type(e) == KeyboardInterrupt:
+            try:
+                self.callbacks["on_close"](True)
+            except KeyError:
+                pass
+            __import__("sys").exit()
+        try:
+            self.callbacks["on_error"](e)
+        except KeyError:
+            print("ignoring error (no idea where)")
+            if self._wss.debug:
+                print(f'{type(e)}: {e}')
 
     def _bot_api_loop(self):
-        import time
+        
 
         while self.authed:
             time.sleep(60)
@@ -159,15 +203,15 @@ class Client:
             raise CantConnectError("Meower Is down")
 
     def _login_callback(self, status_code: dict):
-
-        self.authed = True
+        if not self.authed:
+            self.authed = True
 
         try:
             self.send_msg(f"{self.username} is online now!")
         except BaseException as e:
             print(e)
 
-        self.job_thread.start()
+        
 
     def send_msg(self, msg: str):
         """
@@ -203,9 +247,10 @@ class Client:
                 msg["p"] = msg["p"].split(":")[1].strip()
             if msg["p"].startswith(f"@{self.username}"):
                 self.send_msg(f'Hello, {msg["u"]}!')
-
+    
     def default_callbacks(self):
         """
         sets the callbacks back to there original callbacks
         """
+        self.callbacks = {}
         self.callback(self.on_raw_msg)
