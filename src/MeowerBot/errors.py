@@ -1,6 +1,6 @@
-
 class Error(Exception):
     pass
+
 
 class MeowerError(Error):
     pass
