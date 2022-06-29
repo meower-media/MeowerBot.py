@@ -1,26 +1,32 @@
 
-from sys import exit
 from threading import ThreadError, Thread
 
 from cloudlink import CloudLink
 from meower import meower
 from requests import get
-from errors import *
+import schedule
+from json import dumps,loads
 
+from .errors import *
 
 class Client:
-
+    def ping(self): 
+        self._wss.send,({"cmd": "ping", "val": ""})
     def __init__(self, meower_username: str, meower_password: str, debug: bool = False) -> None:
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
         self.username = meower_username
         self.password = meower_password
-        if meower.repairMode() or meower.argoTunnel():
-            raise CantConnectError("Meower is down")
-
+        try:
+            if meower.repairMode() or meower.argoTunnel():
+                raise CantConnectError("Meower is down")
+        except IndexError:
+            if meower.repairMode():
+                raise CantConnectError("Meower Is down")
         self._wss = CloudLink(debug)
 
+        
         self._wss.callback("on_packet", self._bot_packet_handle)
         self._lastpacket = {}
 
@@ -28,6 +34,7 @@ class Client:
         
         
     def _bot_packet_handle(self, packet: dict):
+        packet = loads(packet)
         if self.start:
             self.start = False
             import time
@@ -54,16 +61,19 @@ class Client:
                 "cmd": "direct",
                 "val": {"cmd": "authpswd", "val": {"username": self.username, "pswd": self.password}}
             })
-            time.sleep(.1)
-            self._login_callback(self._lastpacket["val"], packet)
-        else:
-            if False:
-                pass
+            time.sleep(.8)
             
-                
+            self._login_callback(packet)
+        else:
+            if packet["cmd"] == "statuscode":
+                self.server_status = packet["val"]
+            
+            elif packet["cmd"] == "":
+                raise NotImplementedError
+               
             else:
                 self.callbacks["on_raw_msg"](packet["val"])
-                
+        
                     
         self._lastpacket = packet
 
@@ -73,44 +83,44 @@ class Client:
         pass
     def start(self):
         self.start = True
-        self._wss.client("wss://server.meower.org")
+        self._wss.client("wss://Server.meower.org")
 
-        return self
+        if not self.authed:
+            raise CantConnectError("Meower Is down")
 
-    def _login_callback(self, send_return: dict, status_code: dict):
-        assert send_return["mode"] == "auth"
-        assert send_return["payload"]["username"] == self.username
+    def _login_callback(self, status_code: dict):
 
-        assert status_code["val"] == "I:100 | OK"
 
         self.authed = True
 
-        self.BotLoopThread = Thread(target=self._bot_api_loop, args=(self))
-
-        self.BotLoopThread.start()
+        
+        
         try:
-            self.send_msg("")
+            print("sending start msg")
+            self.send_msg(f"{self.username} is online now")
         except BaseException as e:
             print(e)
+        
+        schedule.every(1).second.do(self.ping)
     def send_msg(self, msg: str):
             self._wss.sendPacket({
                 "cmd": "direct",
                 "val": {
                     "cmd": "post_home", 
                     "val": msg
-                }, 
-                
-            })
+                }})
     def callback(self,func:callable):
         self.callbacks[func.__name__] = func
     def on_raw_msg(self,msg:dict):
 
-            print(f"msg: {msg}")
+            print(f'msg: {msg["u"]}: {msg["p"]}')
             if not msg["u"] == self.username:
-                self.send_msg("Testing")
+                if msg["u"] == "Discord":
+                    msg["u"] = msg["p"].split(":")[0]
+                    msg["p"] = msg["p"].split(":")[1].strip() 
+                if msg["p"].startswith(f'@{self.username}'):   
+                    self.send_msg(f'Hello, {msg["u"]}!')
         
     def default_callbacks(self):
         self.callback(self.on_raw_msg)
-MeowerBot = Client("ShowierDataTest", "Gisd12102007",True)
 
-MeowerBot.start()
