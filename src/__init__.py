@@ -11,7 +11,7 @@ from .errors import *
 
 class Client:
     def ping(self): 
-        self._wss.send,({"cmd": "ping", "val": ""})
+        self._wss.sendPacket({"cmd": "ping", "val": ""})
     def __init__(self, meower_username: str, meower_password: str, debug: bool = False) -> None:
         self.job_thread = Thread(None,self._bot_api_loop,args=())
         self._start_wait = 0
