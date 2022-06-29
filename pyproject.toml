@@ -3,7 +3,7 @@ name = "MeowerBot"
 version = "0.1.1"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
-license = "GNU lesser general public license v3.0"
+license = "MEOW"
 readme = "README.md"
 
 [tool.poetry.dependencies]
