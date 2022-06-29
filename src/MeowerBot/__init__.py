@@ -1,5 +1,5 @@
-from json import dumps, loads
-from threading import Thread, ThreadError
+from json import loads
+from threading import Thread
 
 from cloudlink import CloudLink
 from meower import meower

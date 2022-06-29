@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from errors import *
-from meower import meower
 
 if TYPE_CHECKING:
     from cloudlink import CloudLink
