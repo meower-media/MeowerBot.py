@@ -9,7 +9,53 @@ from .errors import *
 
 
 class Client:
+    """
+        The Websocket client/bot class
+
+        atrbutes: 
+
+        - authed: bool
+
+            if the client is authed
+
+        - callbacks: dict[callable]
+
+            packet callbacks
+        
+        - username: str
+
+            User defined username
+
+        - password: str
+        
+            user defined password
+
+        methods:
+        
+        - ping
+            Pings the server
+
+        - start
+            Starts the websocke, and runs the bot
+
+        - callback
+            makes a callback
+
+            only takes a function (name the function the callback you want)
+
+        - send message
+            sends a message through the bot
+
+            takes:
+                msg: str
+
+    """
     def ping(self):
+        """
+            Pings the server
+
+            you dont need to call this unless you overide _bot_api_loop
+        """
         self._wss.sendPacket({"cmd": "ping", "val": ""})
 
     def __init__(
@@ -19,6 +65,8 @@ class Client:
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
+        self.start_attr = True
+        self.server_status = "I:0: Test"
         self.username = meower_username
         self.password = meower_password
         try:
@@ -35,6 +83,9 @@ class Client:
         self.default_callbacks()
 
     def _bot_packet_handle(self, packet: dict):
+        """
+        Handles the packets for the bot
+        """
         packet = loads(packet)
         if self.start_attr:
             self.start_attr = False
@@ -97,6 +148,9 @@ class Client:
         pass
 
     def start(self):
+        """
+            Starts the wss, and runs the bot
+        """
         self.start_attr = True
         self._wss.client("wss://Server.meower.org")
 
@@ -108,21 +162,39 @@ class Client:
         self.authed = True
 
         try:
-            print("sending start msg")
-            self.send_msg(f"{self.username} is online now")
+            self.send_msg(f"{self.username} is online now!")
         except BaseException as e:
             print(e)
 
         self.job_thread.start()
 
     def send_msg(self, msg: str):
+        """
+        sends a msg to the server
+
+        takes:
+            msg: Str
+        """
         self._wss.sendPacket({"cmd": "direct", "val": {"cmd": "post_home", "val": msg}})
 
     def callback(self, func: callable):
+
+        """
+            Makes a callback for commands and stuff like that
+
+            takes:
+            
+            - func: callable
+                gets callback name from it, and uses it as the callback
+        """
         self.callbacks[func.__name__] = func
 
     def on_raw_msg(self, msg: dict):
+        """
+            Base Raw Msg handler
 
+            takes a msg, prints itm then says "Hello, {User}!"
+        """
         print(f'msg: {msg["u"]}: {msg["p"]}')
         if not msg["u"] == self.username:
             if msg["u"] == "Discord":
@@ -132,4 +204,7 @@ class Client:
                 self.send_msg(f'Hello, {msg["u"]}!')
 
     def default_callbacks(self):
+        """
+            sets the callbacks back to there original callbacks
+        """
         self.callback(self.on_raw_msg)
