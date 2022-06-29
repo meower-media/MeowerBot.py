@@ -4,7 +4,7 @@ from meower import meower
 
 if TYPE_CHECKING:
     from cloudlink import CloudLink
-    from . import Bot 
+    from .. import Bot 
     
 class User:
     def __init__(self,username:str,cloudlink:CloudLink) -> None:
