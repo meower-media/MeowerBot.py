@@ -8,3 +8,4 @@ class MeowerError(Error):
 
 class CantConnectError(Error):
     pass
+
