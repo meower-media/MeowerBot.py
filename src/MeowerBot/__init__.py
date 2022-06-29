@@ -10,51 +10,52 @@ from .errors import *
 
 class Client:
     """
-        The Websocket client/bot class
+    The Websocket client/bot class
 
-        atrbutes: 
+    atrbutes:
 
-        - authed: bool
+    - authed: bool
 
-            if the client is authed
+        if the client is authed
 
-        - callbacks: dict[callable]
+    - callbacks: dict[callable]
 
-            packet callbacks
-        
-        - username: str
+        packet callbacks
 
-            User defined username
+    - username: str
 
-        - password: str
-        
-            user defined password
+        User defined username
 
-        methods:
-        
-        - ping
-            Pings the server
+    - password: str
 
-        - start
-            Starts the websocke, and runs the bot
+        user defined password
 
-        - callback
-            makes a callback
+    methods:
 
-            only takes a function (name the function the callback you want)
+    - ping
+        Pings the server
 
-        - send message
-            sends a message through the bot
+    - start
+        Starts the websocke, and runs the bot
 
-            takes:
-                msg: str
+    - callback
+        makes a callback
+
+        only takes a function (name the function the callback you want)
+
+    - send message
+        sends a message through the bot
+
+        takes:
+            msg: str
 
     """
+
     def ping(self):
         """
-            Pings the server
+        Pings the server
 
-            you dont need to call this unless you overide _bot_api_loop
+        you dont need to call this unless you overide _bot_api_loop
         """
         self._wss.sendPacket({"cmd": "ping", "val": ""})
 
@@ -149,7 +150,7 @@ class Client:
 
     def start(self):
         """
-            Starts the wss, and runs the bot
+        Starts the wss, and runs the bot
         """
         self.start_attr = True
         self._wss.client("wss://Server.meower.org")
@@ -180,20 +181,20 @@ class Client:
     def callback(self, func: callable):
 
         """
-            Makes a callback for commands and stuff like that
+        Makes a callback for commands and stuff like that
 
-            takes:
-            
-            - func: callable
-                gets callback name from it, and uses it as the callback
+        takes:
+
+        - func: callable
+            gets callback name from it, and uses it as the callback
         """
         self.callbacks[func.__name__] = func
 
     def on_raw_msg(self, msg: dict):
         """
-            Base Raw Msg handler
+        Base Raw Msg handler
 
-            takes a msg, prints itm then says "Hello, {User}!"
+        takes a msg, prints itm then says "Hello, {User}!"
         """
         print(f'msg: {msg["u"]}: {msg["p"]}')
         if not msg["u"] == self.username:
@@ -205,6 +206,6 @@ class Client:
 
     def default_callbacks(self):
         """
-            sets the callbacks back to there original callbacks
+        sets the callbacks back to there original callbacks
         """
         self.callback(self.on_raw_msg)
