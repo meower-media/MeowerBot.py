@@ -1,9 +1,7 @@
-
-
-from MeowerBot import Client,CantConnectError
+from MeowerBot import CantConnectError, Client
 
 try:
-    c = Client("ShowierDataTest","")
+    c = Client("ShowierDataTest", "")
 
     c.start()
 except CantConnectError as e:
