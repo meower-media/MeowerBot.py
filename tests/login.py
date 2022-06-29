@@ -5,6 +5,6 @@ path.append("C:\\Users\\mellf\\Desktop\\MeowerBot.py\\")
 
 from src import Client
 
-c = Client("username","password")
+c = Client("ShowierDataTest","password")
 
 c.start()

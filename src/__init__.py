@@ -4,7 +4,7 @@ from threading import ThreadError, Thread
 from cloudlink import CloudLink
 from meower import meower
 from requests import get
-import schedule
+
 from json import dumps,loads
 
 from .errors import *
@@ -13,6 +13,7 @@ class Client:
     def ping(self): 
         self._wss.send,({"cmd": "ping", "val": ""})
     def __init__(self, meower_username: str, meower_password: str, debug: bool = False) -> None:
+        self.job_thread = Thread(None,self._bot_api_loop,args=())
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
@@ -78,8 +79,10 @@ class Client:
         self._lastpacket = packet
 
     def _bot_api_loop(self):
-        #not done yet
-        #    self._wss.sendPacket({"cmd": "get_home"})
+        import time
+        while self.authed:
+            time.sleep(60)
+            self.ping()
         pass
     def start(self):
         self.start = True
@@ -101,7 +104,8 @@ class Client:
         except BaseException as e:
             print(e)
         
-        schedule.every(1).second.do(self.ping)
+        
+        self.job_thread.start()
     def send_msg(self, msg: str):
             self._wss.sendPacket({
                 "cmd": "direct",
