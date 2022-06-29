@@ -9,6 +9,8 @@ license = "Custom"
 python = "^3.10"
 meower = "^0.0.6"
 cloudlink = "^0.1.7"
+requests = "^2.28.0"
+schedule = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
