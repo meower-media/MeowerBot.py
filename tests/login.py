@@ -1,10 +1,11 @@
 
-from sys import path
 
-path.append("C:\\Users\\mellf\\Desktop\\MeowerBot.py\\")
+from MeowerBot import Client,CantConnectError
 
-from src.MeowerBot import Client
+try:
+    c = Client("ShowierDataTest","password")
 
-c = Client("ShowierDataTest","password")
-
-c.start()
+    c.start()
+except CantConnectError as e:
+    print("we cant connect to meower rn")
+    print("original error:", e)
