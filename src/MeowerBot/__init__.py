@@ -1,6 +1,6 @@
+import time
 from json import loads
 from threading import Thread
-import time
 
 from cloudlink import CloudLink
 from meower import meower
@@ -61,12 +61,12 @@ class Client:
         self._wss.sendPacket({"cmd": "ping", "val": ""})
 
     def __init__(
-        self, 
-        meower_username: str, 
-        meower_password: str, 
-        debug: bool = False, 
-        auto_reconect:bool = True,
-        reconect_time:float = 1
+        self,
+        meower_username: str,
+        meower_password: str,
+        debug: bool = False,
+        auto_reconect: bool = True,
+        reconect_time: float = 1,
     ) -> None:
         self.job_thread = Thread(None, self._bot_api_loop, args=())
         self._start_wait = 0
@@ -87,9 +87,9 @@ class Client:
         self._wss = CloudLink(debug)
 
         self._wss.callback("on_packet", self._bot_packet_handle)
-        self._wss.callback("on_error",self._bot_on_error)
         self._wss.callback("on_error", self._bot_on_error)
-        self._wss.callback("on_connect",self._bot_on_connect)
+        self._wss.callback("on_error", self._bot_on_error)
+        self._wss.callback("on_connect", self._bot_on_connect)
 
         self._lastpacket = {}
 
@@ -100,7 +100,6 @@ class Client:
         Handles the packets for the bot
         """
         packet = loads(packet)
-        
 
         if packet["cmd"] == "statuscode":
             self.server_status = packet["val"]
@@ -110,58 +109,58 @@ class Client:
 
         else:
             self.callbacks["on_raw_msg"](packet["val"])
-    
+
         self._lastpacket = packet
 
     def _bot_on_connect(self):
 
-            self._wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {
-                        "cmd": "ip",
-                        "val": get("https://api.meower.org/ip").text,
-                    },
-                }
-            )
-            time.sleep(1)
-            self._wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {"cmd": "type", "val": "py"},
-                }
-            )
-            time.sleep(1)
-            self._wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": "meower",
-                }
-            )
+        self._wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": {
+                    "cmd": "ip",
+                    "val": get("https://api.meower.org/ip").text,
+                },
+            }
+        )
+        time.sleep(1)
+        self._wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": {"cmd": "type", "val": "py"},
+            }
+        )
+        time.sleep(1)
+        self._wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": "meower",
+            }
+        )
 
-            self._wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {
-                        "cmd": "authpswd",
-                        "val": {"username": self.username, "pswd": self.password},
-                    },
-                }
-            )
-            time.sleep(0.8)
+        self._wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": {
+                    "cmd": "authpswd",
+                    "val": {"username": self.username, "pswd": self.password},
+                },
+            }
+        )
+        time.sleep(0.8)
 
-            self._login_callback()
+        self._login_callback()
 
-            try:
-                self.callbacks["on_login"]()
-            except KeyError:
-                pass
+        try:
+            self.callbacks["on_login"]()
+        except KeyError:
+            pass
 
-
-    
     def _bot_on_close(self):
         try:
-            self.callbacks["on_close"](self.auto_reconect) #if the bot is actualy going to exit
+            self.callbacks["on_close"](
+                self.auto_reconect
+            )  # if the bot is actualy going to exit
         except KeyError:
             pass
 
@@ -175,8 +174,7 @@ class Client:
             self._wss.callback("on_connect",self._bot_on_connect)
             self.start()
 
-
-    def _bot_on_error(self,e):
+    def _bot_on_error(self, e):
         if type(e) == KeyboardInterrupt:
             try:
                 self.callbacks["on_close"](True)
@@ -189,10 +187,9 @@ class Client:
         except KeyError:
             print("ignoring error (no idea where)")
             if self._wss.debug:
-                print(f'{type(e)}: {e}')
+                print(f"{type(e)}: {e}")
 
     def _bot_api_loop(self):
-        
 
         while self.authed:
             time.sleep(60)
@@ -217,8 +214,6 @@ class Client:
             self.send_msg(f"{self.username} is online now!")
         except BaseException as e:
             print(e)
-
-        
 
     def send_msg(self, msg: str):
         """
@@ -254,7 +249,7 @@ class Client:
                 msg["p"] = msg["p"].split(":")[1].strip()
             if msg["p"].startswith(f"@{self.username}"):
                 self.send_msg(f'Hello, {msg["u"]}!')
-    
+
     def default_callbacks(self):
         """
         sets the callbacks back to there original callbacks

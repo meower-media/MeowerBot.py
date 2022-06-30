@@ -1,6 +1,5 @@
+from MeowerBot import CantConnectError, Client
 
-
-from MeowerBot import Client,CantConnectError
 
 try:
     c = Client("ShowierDataTest","",debug = False, reconect_time= 10)
