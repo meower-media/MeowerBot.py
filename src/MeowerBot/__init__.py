@@ -216,9 +216,8 @@ class Client:
     def _login_callback(self):
         if not self.authed:
             self.authed = True
-        
+
         self.job_thread.start()
-    
 
     def send_msg(self, msg: str):
         """
