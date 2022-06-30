@@ -88,7 +88,7 @@ class Client:
 
         self._wss.callback("on_packet", self._bot_packet_handle)
         self._wss.callback("on_error", self._bot_on_error)
-        self._wss.callback("on_error", self._bot_on_error)
+        self._wss.callback("on_close", self._bot_on_close)
         self._wss.callback("on_connect", self._bot_on_connect)
 
         self._lastpacket = {}
