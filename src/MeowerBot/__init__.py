@@ -34,18 +34,18 @@ class Client:
     methods:
 
     - ping
-        
+
     - start
-        
+
 
     - callback
-       
+
     - send_msg
 
     - send_pvar
 
     - send_pmsg
-        
+
 
     """
 
@@ -65,7 +65,7 @@ class Client:
         auto_reconect: bool = True,
         reconect_time: float = 1,
     ) -> None:
-        self.job_thread = Thread(None, self._bot_api_loop, args=(),daemon=True)
+        self.job_thread = Thread(None, self._bot_api_loop, args=(), daemon=True)
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
@@ -105,7 +105,7 @@ class Client:
                 self.callbacks["handle_pvar"](packet["val"])
             except KeyError:
                 pass
-        
+
         elif packet["cmd"] == "pmsg":
             try:
                 self.callbacks["handle_pmsg"](packet["val"])
@@ -216,8 +216,7 @@ class Client:
     def _login_callback(self):
         if not self.authed:
             self.authed = True
-        
-    
+
     def send_msg(self, msg: str):
         """
         sends a msg to the server
@@ -226,15 +225,15 @@ class Client:
             msg: Str
         """
         self._wss.sendPacket({"cmd": "direct", "val": {"cmd": "post_home", "val": msg}})
-   
-    def send_pmsg(self,val,user):
-        """
-            sends private msg to spesified user
-        """
-        self._wss.sendPacket({"cmd":"pmsg","val":val,"id":user})
 
-    def send_pvar(self,user,var_name,val):
-        self._wss.sendPacket({"cmd": "pvar", "name": var_name, "val": val,"id":user})
+    def send_pmsg(self, val, user):
+        """
+        sends private msg to spesified user
+        """
+        self._wss.sendPacket({"cmd": "pmsg", "val": val, "id": user})
+
+    def send_pvar(self, user, var_name, val):
+        self._wss.sendPacket({"cmd": "pvar", "name": var_name, "val": val, "id": user})
 
     def callback(self, func: callable):
 

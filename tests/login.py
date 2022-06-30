@@ -1,5 +1,6 @@
-from MeowerBot import CantConnectError, Client
 from sys import orig_argv as argv
+
+from MeowerBot import CantConnectError, Client
 
 try:
     c = Client(argv[2], argv[3], debug=True, reconect_time=10)
