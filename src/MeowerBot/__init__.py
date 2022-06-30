@@ -79,11 +79,11 @@ class Client:
         self.username = meower_username
         self.password = meower_password
         try:
-            if meower.repairMode() or meower.argoTunnel():
+            if meower.argoTunnel():
                 raise CantConnectError("Meower is down")
         except IndexError:
             if meower.repairMode():
-                raise CantConnectError("Meower Is down")
+                raise CantConnectError("In Repair Mode")
         self._wss = CloudLink(debug)
 
         self._wss.callback("on_packet", self._bot_packet_handle)
@@ -167,6 +167,12 @@ class Client:
 
         if self.auto_reconect:
             time.sleep(self.auto_reconect_time)
+            self._wss = CloudLink(self._wss.debug)
+
+            self._wss.callback("on_packet", self._bot_packet_handle)
+            self._wss.callback("on_error",self._bot_on_error)
+            self._wss.callback("on_error", self._bot_on_error)
+            self._wss.callback("on_connect",self._bot_on_connect)
             self.start()
 
 
@@ -177,6 +183,7 @@ class Client:
             except KeyError:
                 pass
             __import__("sys").exit()
+
         try:
             self.callbacks["on_error"](e)
         except KeyError:
@@ -202,7 +209,7 @@ class Client:
         if not self.authed:
             raise CantConnectError("Meower Is down")
 
-    def _login_callback(self, status_code: dict):
+    def _login_callback(self):
         if not self.authed:
             self.authed = True
 
