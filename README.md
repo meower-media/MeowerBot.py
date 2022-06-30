@@ -20,20 +20,28 @@ def on_raw_msg(msg:dict):
             if msg["p"].startswith(f'@{c.username}'):   
                 c.send_msg(f'Hello, {msg["u"]}!')
 
-def on_close():
+def on_close(exiting:bool):
     ...
 
-def on_error():
+def on_error(error):
     ...
 
 def on_login():
     ...
 
+def handle_pvar(pvar:dict):
+    ...
 
+def handle_pmsg(msg:dict):
+    ...
+
+c.callback(handle_pmsg)
+c.callback(handle_pvar)
 c.callback(on_login)
 c.callback(on_close)
 c.callback(on_error)
 c.callback(on_raw_msg)
+
 
 
 c.start()
