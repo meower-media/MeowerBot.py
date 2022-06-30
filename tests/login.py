@@ -2,7 +2,7 @@ from MeowerBot import CantConnectError, Client
 from sys import orig_argv as argv
 
 try:
-    c = Client(argv[1], argv[2], debug=True, reconect_time=10)
+    c = Client(argv[2], argv[3], debug=True, reconect_time=10)
 
     c.start()
 except CantConnectError as e:
