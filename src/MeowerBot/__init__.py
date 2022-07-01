@@ -1,3 +1,6 @@
+import sys
+import os
+from subprocess import run
 import time
 from json import loads
 from threading import Thread
@@ -5,7 +8,7 @@ from threading import Thread
 from cloudlink import CloudLink
 from meower import meower
 from requests import get
-
+from websocket import WebSocketConnectionClosedException
 from .errors import *
 
 
@@ -173,22 +176,20 @@ class Client:
 
         if self.auto_reconect:
             time.sleep(self.auto_reconect_time)
-            self._wss = CloudLink(self._wss.debug)
-
-            self._wss.callback("on_packet", self._bot_packet_handle)
-            self._wss.callback("on_error", self._bot_on_error)
-            self._wss.callback("on_error", self._bot_on_error)
-            self._wss.callback("on_connect", self._bot_on_connect)
+            self._wss.state = 0
             self.start()
 
     def _bot_on_error(self, e):
-        if type(e) == KeyboardInterrupt:
+        if type(e) is KeyboardInterrupt:
             try:
                 self.callbacks["on_close"](True)
             except KeyError:
                 pass
-            __import__("sys").exit()
+            sys.exit()
 
+        elif type(e) is WebSocketConnectionClosedException:
+            self._bot_on_close() 
+        
         try:
             self.callbacks["on_error"](e)
         except KeyError:
