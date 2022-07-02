@@ -116,7 +116,7 @@ class Client:
             except KeyError:
                 pass
         elif packet["cmd"] == "ulist":
-            self.ulist = packet["val"]
+            self.ulist = packet["val"].split(':')
         elif packet["cmd"] == "":
             raise NotImplementedError
 
@@ -126,7 +126,14 @@ class Client:
         self._lastpacket = packet
         
     def get_ulist(self):
+        """  gets the u!ist from meower"""
+
+
         return self.ulist
+
+
+
+
 
     def _bot_on_connect(self):
 
