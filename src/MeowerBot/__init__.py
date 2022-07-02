@@ -78,6 +78,7 @@ class Client:
         self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
+        self.ulist = "none"
         try:
             if meower.argoTunnel():
                 raise CantConnectError("Meower is down")
@@ -114,6 +115,8 @@ class Client:
                 self.callbacks["handle_pmsg"](packet["val"])
             except KeyError:
                 pass
+        elif packet["cmd"] == "ulist":
+            self.ulist = packet["val"].split(':')
         elif packet["cmd"] == "":
             raise NotImplementedError
 
@@ -121,6 +124,16 @@ class Client:
             self.callbacks["on_raw_msg"](packet["val"])
 
         self._lastpacket = packet
+        
+    def get_ulist(self):
+        """  gets the u!ist from meower"""
+
+
+        return self.ulist
+
+
+
+
 
     def _bot_on_connect(self):
 
