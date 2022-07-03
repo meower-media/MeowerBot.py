@@ -82,10 +82,10 @@ class Client:
         self.password = meower_password
         self.ulist = "none"
         try:
-            if meower.argoTunnel():
+            if meower.argo_tunnel():
                 raise CantConnectError("Meower is down")
         except IndexError:
-            if meower.repairMode():
+            if meower.repair_mode():
                 raise CantConnectError("In Repair Mode")
         self._wss = CloudLink(debug)
 
