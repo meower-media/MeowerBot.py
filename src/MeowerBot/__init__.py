@@ -1,14 +1,15 @@
-import sys
 import os
-from subprocess import run
+import sys
 import time
 from json import loads
+from subprocess import run
 from threading import Thread
 
 from cloudlink import CloudLink
 from meower import meower
 from requests import get
 from websocket import WebSocketConnectionClosedException
+
 from .errors import *
 
 
@@ -116,7 +117,7 @@ class Client:
             except KeyError:
                 pass
         elif packet["cmd"] == "ulist":
-            self.ulist = packet["val"].split(':')
+            self.ulist = packet["val"].split(":")
         elif packet["cmd"] == "":
             raise NotImplementedError
 
@@ -124,16 +125,11 @@ class Client:
             self.callbacks["on_raw_msg"](packet["val"])
 
         self._lastpacket = packet
-        
-    def get_ulist(self):
-        """  gets the u!ist from meower"""
 
+    def get_ulist(self):
+        """gets the u!ist from meower"""
 
         return self.ulist
-
-
-
-
 
     def _bot_on_connect(self):
 
@@ -201,8 +197,8 @@ class Client:
             sys.exit()
 
         elif type(e) is WebSocketConnectionClosedException:
-            self._bot_on_close() 
-        
+            self._bot_on_close()
+
         try:
             self.callbacks["on_error"](e)
         except KeyError:
