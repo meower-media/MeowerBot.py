@@ -70,6 +70,7 @@ class Client:
         reconect_time: float = 1,
     ) -> None:
         self.job_thread = Thread(None, self._bot_api_loop, args=(), daemon=True)
+        self.job_thread.name = "MeowerBot_Loop"
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
