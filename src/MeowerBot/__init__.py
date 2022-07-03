@@ -70,6 +70,7 @@ class Client:
         reconect_time: float = 1,
     ) -> None:
         self.job_thread = Thread(None, self._bot_api_loop, args=(), daemon=True)
+        self.job_thread.name = "MeowerBot_Loop"
         self._start_wait = 0
         self.authed = False
         self.callbacks = {}
@@ -79,11 +80,12 @@ class Client:
         self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
+        self.ulist = "none"
         try:
-            if meower.argoTunnel():
+            if meower.argo_tunnel():
                 raise CantConnectError("Meower is down")
         except IndexError:
-            if meower.repairMode():
+            if meower.repair_mode():
                 raise CantConnectError("In Repair Mode")
         self._wss = CloudLink(debug)
 
@@ -115,6 +117,8 @@ class Client:
                 self.callbacks["handle_pmsg"](packet["val"])
             except KeyError:
                 pass
+        elif packet["cmd"] == "ulist":
+            self.ulist = packet["val"].split(":")
         elif packet["cmd"] == "":
             raise NotImplementedError
 
@@ -122,6 +126,11 @@ class Client:
             self.callbacks["on_raw_msg"](packet["val"])
 
         self._lastpacket = packet
+
+    def get_ulist(self):
+        """gets the u!ist from meower"""
+
+        return self.ulist
 
     def _bot_on_connect(self):
 
