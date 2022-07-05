@@ -219,7 +219,7 @@ class Client:
         Starts the wss, and runs the bot
         """
         self.start_attr = True
-        self._wss.client("wss://Server.meower.org")
+        self._wss.client("wss://server.meower.org/")
 
         if not self.authed:
             raise CantConnectError("Meower Is down")
