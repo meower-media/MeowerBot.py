@@ -79,7 +79,7 @@ python-versions = ">=3.5"
 
 [[package]]
 name = "meower"
-version = "0.0.6"
+version = "0.0.7"
 description = "Python library for interacting with the Meower API"
 category = "main"
 optional = false
@@ -199,7 +199,7 @@ python-versions = ">=3.6"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4b2f06d6dadc947d181fa5c24f6fe80bfffa4185ed2ea0932a8324e6e49d8e83"
+content-hash = "bb763a8191d52135ca57f380b29e621f1911f42bd0e85d9fcd813ad2059f3f0e"
 
 [metadata.files]
 black = [
@@ -251,10 +251,7 @@ idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},
     {file = "idna-3.3.tar.gz", hash = "sha256:9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"},
 ]
-meower = [
-    {file = "meower-0.0.6-py3-none-any.whl", hash = "sha256:4596556ebf457f95bc0592787470b6ba52b544bfa7acd2234dc8273d3464d4b4"},
-    {file = "meower-0.0.6.tar.gz", hash = "sha256:25af895d3db0b81d99de1fa3fe254a5dbecb7eafdfba0e81237a7e2e3912e648"},
-]
+meower = []
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
