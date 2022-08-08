@@ -80,7 +80,7 @@ class Client:
         self.username = meower_username
         self.password = meower_password
         self.ulist = "none"
-        
+
         self._wss = CloudLink(debug)
 
         self._wss.callback("on_packet", self._bot_packet_handle)
