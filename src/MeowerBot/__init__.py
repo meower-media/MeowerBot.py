@@ -17,7 +17,7 @@ class Client:
     """
     The Websocket client/bot class
 
-    atrbutes:
+    attributes:
 
     - authed: bool
 
