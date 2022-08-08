@@ -102,8 +102,10 @@ class Client:
             self.server_status = packet["val"]
         elif packet["cmd"] == "pvar":
             try:
-                #possible err, forgot keys of 
-                self.callbacks["handle_pvar"](packet["val"], packet["origin"], packet["var"])
+                # possible err, forgot keys of
+                self.callbacks["handle_pvar"](
+                    packet["val"], packet["origin"], packet["var"]
+                )
             except KeyError:
                 pass
 
