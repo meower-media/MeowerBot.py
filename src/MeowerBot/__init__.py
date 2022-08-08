@@ -102,13 +102,14 @@ class Client:
             self.server_status = packet["val"]
         elif packet["cmd"] == "pvar":
             try:
-                self.callbacks["handle_pvar"](packet["val"])
+                #possible err, forgot keys of 
+                self.callbacks["handle_pvar"](packet["val"], packet["origin"], packet["var"])
             except KeyError:
                 pass
 
         elif packet["cmd"] == "pmsg":
             try:
-                self.callbacks["handle_pmsg"](packet["val"])
+                self.callbacks["handle_pmsg"](packet["val"], packet["origin"])
             except KeyError:
                 pass
         elif packet["cmd"] == "ulist":
