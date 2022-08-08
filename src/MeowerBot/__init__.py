@@ -6,7 +6,6 @@ from subprocess import run
 from threading import Thread
 
 from cloudlink import CloudLink
-from meower import meower
 from requests import get
 from websocket import WebSocketConnectionClosedException
 
@@ -81,12 +80,7 @@ class Client:
         self.username = meower_username
         self.password = meower_password
         self.ulist = "none"
-        try:
-            if meower.argo_tunnel():
-                raise CantConnectError("Meower is down")
-        except IndexError:
-            if meower.repair_mode():
-                raise CantConnectError("In Repair Mode")
+        
         self._wss = CloudLink(debug)
 
         self._wss.callback("on_packet", self._bot_packet_handle)
