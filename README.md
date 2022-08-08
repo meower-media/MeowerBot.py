@@ -29,10 +29,10 @@ def on_error(error):
 def on_login():
     ...
 
-def handle_pvar(pvar:dict):
+def handle_pvar(pvar:dict, origin:str, var):
     ...
 
-def handle_pmsg(msg:dict):
+def handle_pmsg(msg:dict, origin:str):
     ...
 
 c.callback(handle_pmsg)
