@@ -104,27 +104,28 @@ class Client:
         """
         packet = loads(packet)
 
-        if ("listener" in packet):
+        if "listener" in packet:
 
-            listerner = {"detected": True, "listener": packet["listener"] }
+            listerner = {"detected": True, "listener": packet["listener"]}
         else:
-            listerner = {"detected": False, "listener":"" }
-        
+            listerner = {"detected": False, "listener": ""}
 
         if packet["cmd"] == "statuscode":
             self._call_callbacks("on_status_change", (packet["val"], listerner))
         elif packet["cmd"] == "pvar":
-            
-                # possible err, forgot keys of
-            self._call_callbacks("handle_pvar", (
-                packet["val"], packet["origin"], packet["name"], listerner
-            ))
 
+            # possible err, forgot keys of
+            self._call_callbacks(
+                "handle_pvar",
+                (packet["val"], packet["origin"], packet["name"], listerner),
+            )
 
         elif packet["cmd"] == "pmsg":
-           
-            self._call_callbacks("handle_pmsg",(packet["val"], packet["origin"], listerner))
-        
+
+            self._call_callbacks(
+                "handle_pmsg", (packet["val"], packet["origin"], listerner)
+            )
+
         elif packet["cmd"] == "ulist":
             self.ulist = self._wss._get_ulist
         elif packet["cmd"] == "":
@@ -132,11 +133,10 @@ class Client:
 
         else:
             if "post_origin" in packet["val"]:
-                self._call_callbacks("on_raw_msg",(packet["val"], listerner))
+                self._call_callbacks("on_raw_msg", (packet["val"], listerner))
             else:
                 self._call_callbacks("on_raw_packet", (packet, listerner))
-            
-        
+
     @property
     def get_ulist(self):
         """gets the u!ist from meower"""
@@ -180,7 +180,7 @@ class Client:
         time.sleep(0.8)
 
         self._login_callback()
-        self.currently_connecting= False
+        self.currently_connecting = False
         self._call_callbacks("on_login", ())
 
     def _bot_on_close(self):
@@ -257,11 +257,11 @@ class Client:
         if func.__name__ in self.callbacks:
             self.callbacks[func.__name__].append(func)
         else:
-            self.callbacks[func.__name__]= [func]
-     
+            self.callbacks[func.__name__] = [func]
+
     def on_status_change(self, statuscode, wadtcher):
-        self.statuscode = statuscode   
-    
+        self.statuscode = statuscode
+
     def default_callbacks(self):
         """
         sets the callbacks back to there original callbacks
