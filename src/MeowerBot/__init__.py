@@ -99,9 +99,7 @@ class Client:
                 callback(*args)
 
     def _bot_packet_handle(self, packet: dict):
-        """
-        Handles the packets for the bot
-        """
+        """Handles the packets for the bot"""
         packet = loads(packet)
 
         if ("listener" in packet):
@@ -212,9 +210,7 @@ class Client:
         pass
 
     def start(self):
-        """
-        Starts the wss, and runs the bot
-        """
+        """Starts the wss, and runs the bot"""
         self.start_attr = True
         self._wss.client("wss://server.meower.org/")
 
@@ -237,9 +233,7 @@ class Client:
         self._wss.sendPacket({"cmd": "direct", "val": {"cmd": "post_home", "val": msg}})
 
     def send_pmsg(self, val, user):
-        """
-        sends private msg to spesified user
-        """
+        """sends private msg to spesified user"""
         self._wss.sendPacket({"cmd": "pmsg", "val": val, "id": user})
 
     def send_pvar(self, user, var_name, val):
@@ -264,8 +258,6 @@ class Client:
         self.statuscode = statuscode   
     
     def default_callbacks(self):
-        """
-        sets the callbacks back to there original callbacks
-        """
+        """sets the callbacks back to there original callbacks"""
         self.callbacks = {}
         self.callback(self.on_status_change)
