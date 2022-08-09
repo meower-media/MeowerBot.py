@@ -79,7 +79,7 @@ class Client:
         self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
-        
+        self.currently_connecting = True
 
         self._wss = CloudLink(debug)
         self.ulist = self._wss.userlist
@@ -92,6 +92,11 @@ class Client:
         self._lastpacket = {}
 
         self.default_callbacks()
+
+    def _call_callbacks(self, callback, args):
+        if callback in self.callbacks:
+            for callback in self.callbacks[callback]:
+                callback(*args)
 
     def _bot_packet_handle(self, packet: dict):
         """
@@ -107,25 +112,19 @@ class Client:
         
 
         if packet["cmd"] == "statuscode":
-            try:
-                self.callbacks["on_status_change"](packet["val"], listerner)
-            except KeyError:
-                pass
-        
+            self._call_callbacks("on_status_change", (packet["val"], listerner))
         elif packet["cmd"] == "pvar":
-            try:
+            
                 # possible err, forgot keys of
-                self.callbacks["handle_pvar"](
-                    packet["val"], packet["origin"], packet["var"], listerner
-                )
-            except KeyError:
-                pass
+            self._call_callbacks("handle_pvar", (
+                packet["val"], packet["origin"], packet["name"], listerner
+            ))
+
 
         elif packet["cmd"] == "pmsg":
-            try:
-                self.callbacks["handle_pmsg"](packet["val"], packet["origin"], listerner)
-            except KeyError:
-                pass
+           
+            self._call_callbacks("handle_pmsg",(packet["val"], packet["origin"], listerner))
+        
         elif packet["cmd"] == "ulist":
             self.ulist = self._wss._get_ulist()
         elif packet["cmd"] == "":
@@ -133,9 +132,9 @@ class Client:
 
         else:
             if "post_origin" in packet["val"]:
-                self.callbacks["on_raw_msg"](packet["val"], listerner)
+                self._call_callbacks("on_raw_msg",(packet["val"], listerner))
             else:
-                self.callbacks["on_raw_packet"](packet, listerner)
+                self._call_callbacks("on_raw_packet", (packet, listerner))
             
         
     @property()
@@ -183,18 +182,10 @@ class Client:
 
         self._login_callback()
         self.currently_connecting= False
-        try:
-            self.callbacks["on_login"]()
-        except KeyError:
-            pass
+        self._call_callbacks("on_login", ())
 
     def _bot_on_close(self):
-        try:
-            self.callbacks["on_close"](
-                self.auto_reconect
-            )  # if the bot is actualy going to exit
-        except KeyError:
-            pass
+        self._call_callbacks("on_close", (self.auto_reconect))
 
         if self.auto_reconect:
             if not self.currently_connecting:
@@ -205,21 +196,13 @@ class Client:
 
     def _bot_on_error(self, e):
         if type(e) is KeyboardInterrupt:
-            try:
-                self.callbacks["on_close"](True)
-            except KeyError:
-                pass
+            self._call_callbacks("on_close", (True))
             sys.exit()
 
         elif type(e) is WebSocketConnectionClosedException:
             self._bot_on_close()
 
-        try:
-            self.callbacks["on_error"](e)
-        except KeyError:
-            print("ignoring error (no idea where)")
-            if self._wss.debug:
-                print(f"{type(e)}: {e}")
+        self._call_callbacks("on_error", (e))
 
     def _bot_api_loop(self):
 
@@ -272,21 +255,10 @@ class Client:
         - func: callable
             gets callback name from it, and uses it as the callback
         """
-        self.callbacks[func.__name__] = func
-
-    def on_raw_msg(self, msg: dict):
-        """
-        Base Raw Msg handler
-
-        takes a msg, prints itm then says "Hello, {User}!"
-        """
-        print(f'msg: {msg["u"]}: {msg["p"]}')
-        if not msg["u"] == self.username:
-            if msg["u"] == "Discord":
-                msg["u"] = msg["p"].split(":")[0]
-                msg["p"] = msg["p"].split(":")[1].strip()
-            if msg["p"].startswith(f"@{self.username}"):
-                self.send_msg(f'Hello, {msg["u"]}!')
+        if func.__name__ in self.callbacks:
+            self.callbacks[func.__name__].append(func)
+        else:
+            seelf.callbacks[func.__name__]= [func]
      
     def on_status_change(self, statuscode):
         self.statuscode = statuscode   
@@ -296,5 +268,4 @@ class Client:
         sets the callbacks back to there original callbacks
         """
         self.callbacks = {}
-        self.callback(self.on_raw_msg)
         self.callback(self.on_status_change)
