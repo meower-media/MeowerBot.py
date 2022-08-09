@@ -104,7 +104,7 @@ class Client:
         """
         packet = loads(packet)
 
-        if ("listener" in data):
+        if ("listener" in packet):
 
             listerner = {"detected": True, "listener": packet["listener"] }
         else:
@@ -126,7 +126,7 @@ class Client:
             self._call_callbacks("handle_pmsg",(packet["val"], packet["origin"], listerner))
         
         elif packet["cmd"] == "ulist":
-            self.ulist = self._wss._get_ulist()
+            self.ulist = self._wss._get_ulist
         elif packet["cmd"] == "":
             raise NotImplementedError
 
@@ -137,7 +137,7 @@ class Client:
                 self._call_callbacks("on_raw_packet", (packet, listerner))
             
         
-    @property()
+    @property
     def get_ulist(self):
         """gets the u!ist from meower"""
 
@@ -258,9 +258,9 @@ class Client:
         if func.__name__ in self.callbacks:
             self.callbacks[func.__name__].append(func)
         else:
-            seelf.callbacks[func.__name__]= [func]
+            self.callbacks[func.__name__]= [func]
      
-    def on_status_change(self, statuscode):
+    def on_status_change(self, statuscode, wadtcher):
         self.statuscode = statuscode   
     
     def default_callbacks(self):
