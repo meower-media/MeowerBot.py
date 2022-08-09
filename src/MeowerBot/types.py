@@ -9,25 +9,19 @@ if TYPE_CHECKING:
 
 
 class User:
-    """
-    A user in meower
-    """
+    """A user in meower"""
 
     def __init__(self, username: str, cloudlink: CloudLink) -> None:
         self.name = username
         self._wss = cloudlink
 
     def mention(self, msg: str):
-        """
-        Mentions the user
-        """
+        """Mentions the user"""
         self._wss.sendPacket({"cmd": "post_home", "val": f"@{self.name} {msg}"})
 
 
 class Message:
-    """
-    A meower Msg in Class form
-    """
+    """A meower Msg in Class form"""
 
     def __init__(self, text: str, user: User, cloudlink: CloudLink) -> None:
         self.txt: str = text
