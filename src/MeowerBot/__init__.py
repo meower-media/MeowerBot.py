@@ -209,7 +209,6 @@ class Client:
         while self.authed:
             time.sleep(60)
             self.ping()
-        pass
 
     def start(self):
         """
