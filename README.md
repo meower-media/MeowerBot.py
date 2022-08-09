@@ -10,7 +10,7 @@ from MeowerBot import Client
 
 c = Client("Username","password",False) 
 
-def on_raw_msg(msg:dict):
+def on_raw_msg(msg:dict, lissiner:dict):
 
         print(f'msg: {msg["u"]}: {msg["p"]}')
         if not msg["u"] == c.username:
@@ -29,14 +29,17 @@ def on_error(error):
 def on_login():
     ...
 
-def handle_pvar(pvar:dict, origin:str, var):
+def handle_pvar(pvar:dict, origin:str, var, lisserner):
     ...
 
-def handle_pmsg(msg:dict, origin:str):
+def handle_pmsg(msg:dict, origin:str, lissiner):
     ...
 
-def on_status_change(status):
+def on_status_change(status, isserner):
     c.satuscodee = status
+
+def on_raw_packet(packet:dict, lissener)
+    ...
 
 c.callback(handle_pmsg)
 c.callback(handle_pvar)
@@ -45,7 +48,7 @@ c.callback(on_close)
 c.callback(on_error)
 c.callback(on_raw_msg)
 c.callback(on_status_change)
-
+c.callback(on_raw_packet)
 
 c.start()
 ``` 

@@ -79,9 +79,10 @@ class Client:
         self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
-        self.ulist = "none"
+        
 
         self._wss = CloudLink(debug)
+        self.ulist = self._wss.userlist
 
         self._wss.callback("on_packet", self._bot_packet_handle)
         self._wss.callback("on_error", self._bot_on_error)
@@ -98,9 +99,16 @@ class Client:
         """
         packet = loads(packet)
 
+        if ("listener" in data):
+
+            listerner = {"detected": True, "listener": packet["listener"] }
+        else:
+            listerner = {"detected": False, "listener":"" }
+        
+
         if packet["cmd"] == "statuscode":
             try:
-                self.callbacks["on_status_change"](packet["val"])
+                self.callbacks["on_status_change"](packet["val"], listerner)
             except KeyError:
                 pass
         
@@ -108,26 +116,29 @@ class Client:
             try:
                 # possible err, forgot keys of
                 self.callbacks["handle_pvar"](
-                    packet["val"], packet["origin"], packet["var"]
+                    packet["val"], packet["origin"], packet["var"], listerner
                 )
             except KeyError:
                 pass
 
         elif packet["cmd"] == "pmsg":
             try:
-                self.callbacks["handle_pmsg"](packet["val"], packet["origin"])
+                self.callbacks["handle_pmsg"](packet["val"], packet["origin"], listerner)
             except KeyError:
                 pass
         elif packet["cmd"] == "ulist":
-            self.ulist = packet["val"].split(":")
+            self.ulist = self._wss._get_ulist()
         elif packet["cmd"] == "":
             raise NotImplementedError
 
         else:
-            self.callbacks["on_raw_msg"](packet["val"])
-
-        self._lastpacket = packet
-
+            if "post_origin" in packet["val"]:
+                self.callbacks["on_raw_msg"](packet["val"], listerner)
+            else:
+                self.callbacks["on_raw_packet"](packet, listerner)
+            
+        
+    @property()
     def get_ulist(self):
         """gets the u!ist from meower"""
 
@@ -171,7 +182,7 @@ class Client:
         time.sleep(0.8)
 
         self._login_callback()
-
+        self.currently_connecting= False
         try:
             self.callbacks["on_login"]()
         except KeyError:
@@ -186,9 +197,11 @@ class Client:
             pass
 
         if self.auto_reconect:
-            time.sleep(self.auto_reconect_time)
-            self._wss.state = 0
-            self.start()
+            if not self.currently_connecting:
+                self.currently_connecting = True
+                time.sleep(self.auto_reconect_time)
+                self._wss.state = 0
+                self.start()
 
     def _bot_on_error(self, e):
         if type(e) is KeyboardInterrupt:
