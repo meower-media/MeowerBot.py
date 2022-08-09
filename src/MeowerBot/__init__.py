@@ -136,7 +136,6 @@ class Client:
     @property
     def get_ulist(self):
         """gets the u!ist from meower"""
-
         return self.ulist
 
     def _bot_on_connect(self):
