@@ -1,8 +1,6 @@
-import os
 import sys
 import time
 from json import loads
-from subprocess import run
 from threading import Thread
 
 from cloudlink import CloudLink
