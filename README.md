@@ -35,13 +35,16 @@ def handle_pvar(pvar:dict, origin:str, var):
 def handle_pmsg(msg:dict, origin:str):
     ...
 
+def on_status_change(status):
+    c.satuscodee = status
+
 c.callback(handle_pmsg)
 c.callback(handle_pvar)
 c.callback(on_login)
 c.callback(on_close)
 c.callback(on_error)
 c.callback(on_raw_msg)
-
+c.callback(on_status_change)
 
 
 c.start()

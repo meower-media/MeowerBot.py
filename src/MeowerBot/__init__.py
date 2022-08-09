@@ -99,7 +99,11 @@ class Client:
         packet = loads(packet)
 
         if packet["cmd"] == "statuscode":
-            self.server_status = packet["val"]
+            try:
+                self.callbacks["on_status_change"](packet["val"])
+            except KeyError:
+                pass
+        
         elif packet["cmd"] == "pvar":
             try:
                 # possible err, forgot keys of
@@ -270,10 +274,14 @@ class Client:
                 msg["p"] = msg["p"].split(":")[1].strip()
             if msg["p"].startswith(f"@{self.username}"):
                 self.send_msg(f'Hello, {msg["u"]}!')
-
+     
+    def on_status_change(self, statuscode):
+        self.statuscode = statuscode   
+    
     def default_callbacks(self):
         """
         sets the callbacks back to there original callbacks
         """
         self.callbacks = {}
         self.callback(self.on_raw_msg)
+        self.callback(self.on_status_change)
