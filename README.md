@@ -10,7 +10,7 @@ from MeowerBot import Client
 
 c = Client("Username","password",False) 
 
-def on_raw_msg(msg:dict, lissiner:dict):
+def on_raw_msg(msg:dict, listener:dict):
 
         print(f'msg: {msg["u"]}: {msg["p"]}')
         if not msg["u"] == c.username:
