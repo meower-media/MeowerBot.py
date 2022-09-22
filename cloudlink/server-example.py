@@ -1,18 +1,21 @@
 from cloudlink import Cloudlink
 
+
 class customCommands:
     """
     customCommands
 
-    This is an example of Cloudlink's custom commands system. 
+    This is an example of Cloudlink's custom commands system.
     """
 
-    def __init__(self, cloudlink, extra_data:any = None):
+    def __init__(self, cloudlink, extra_data: any = None):
         # To use custom commands, you will need to initialize your custom commands class with Cloudlink. This is required.
         self.cloudlink = cloudlink
 
         # You can specify which functions to ignore when using cloudlink.server.loadCustomCommands. This is optional.
-        self.importer_ignore_functions = [] # ["test"] if you don't want to load the custom command "test".
+        self.importer_ignore_functions = (
+            []
+        )  # ["test"] if you don't want to load the custom command "test".
 
         # You can specify extra data to this class, see __main__ below.
         self.extra_data = extra_data
@@ -34,7 +37,14 @@ class customCommands:
 
         You will pass listener_detected, listener_id, and room_id to various cloudlink functions. See cloudlink.server for more info.
         """
-        await self.cloudlink.sendPacket(client, {"cmd": "direct", "val": "test"}, listener_detected, listener_id, room_id)
+        await self.cloudlink.sendPacket(
+            client,
+            {"cmd": "direct", "val": "test"},
+            listener_detected,
+            listener_id,
+            room_id,
+        )
+
 
 class demoCallbacksServer:
     """
@@ -49,46 +59,63 @@ class demoCallbacksServer:
 
     async def on_packet(self, client, message):
         print("on_packet fired!")
-    
+
     async def on_connect(self, client):
         print("on_connect fired!")
 
     async def on_close(self, client):
         print("on_close fired!")
-        
+
     # Below are templates for binding command-specific callbacks. These commands are already handled in the server, but you can extend functionality using this feature.
 
-    async def on_direct(self, message:any, origin:any, listener_detected:bool, listener_id:str): # Called when a packet is handled with the direct command.
+    async def on_direct(
+        self, message: any, origin: any, listener_detected: bool, listener_id: str
+    ):  # Called when a packet is handled with the direct command.
         print("on_direct fired!")
 
-    async def on_setid(self, motd:str): # Called when a packet is handled with the setid command.
+    async def on_setid(
+        self, motd: str
+    ):  # Called when a packet is handled with the setid command.
         print("on_setid fired!")
 
-    async def on_ulist(self, ulist:list): # Called when a packet is handled with the ulist command.
+    async def on_ulist(
+        self, ulist: list
+    ):  # Called when a packet is handled with the ulist command.
         print("on_ulist fired!")
 
-    async def on_statuscode(self, code:str, message:any): # Called when a packet is handled with the statuscode command.
+    async def on_statuscode(
+        self, code: str, message: any
+    ):  # Called when a packet is handled with the statuscode command.
         print("on_statuscode fired!")
-    
-    async def on_gmsg(self, message:any): # Called when a packet is handled with the gmsg command.
+
+    async def on_gmsg(
+        self, message: any
+    ):  # Called when a packet is handled with the gmsg command.
         print("on_gmsg fired!")
 
-    async def on_gvar(self, var_name:str, var_value:any): # Called when a packet is handled with the gvar command.
+    async def on_gvar(
+        self, var_name: str, var_value: any
+    ):  # Called when a packet is handled with the gvar command.
         print("on_gvar fired!")
 
-    async def on_pvar(self, var_name:str, var_value:any, origin:any): # Called when a packet is handled with the pvar command.
+    async def on_pvar(
+        self, var_name: str, var_value: any, origin: any
+    ):  # Called when a packet is handled with the pvar command.
         print("on_pvar fired!")
 
-    async def on_pmsg(self, value:str, origin:any): # Called when a packet is handled with the pmsg command.
+    async def on_pmsg(
+        self, value: str, origin: any
+    ):  # Called when a packet is handled with the pmsg command.
         print("on_pmsg fired!")
 
-    async def on_ping(self, value:str, origin:any): # Called when a ping is handled.
+    async def on_ping(self, value: str, origin: any):  # Called when a ping is handled.
         print("on_ping fired!")
+
 
 if __name__ == "__main__":
     # Initialize Cloudlink. You will only need to initialize one instance of the main cloudlink module.
     cl = Cloudlink()
-    
+
     # Create a new server object. This supports initializing many server at once.
     server = cl.server(logs=True)
 
@@ -104,7 +131,7 @@ if __name__ == "__main__":
     server.callback(server.on_close, dummy.on_close)
 
     # Bind template callbacks
-    #server.callback(server.on_direct, dummy.on_direct)
+    # server.callback(server.on_direct, dummy.on_direct)
     server.callback(server.on_ulist, dummy.on_ulist)
     server.callback(server.on_statuscode, dummy.on_statuscode)
     server.callback(server.on_setid, dummy.on_setid)
@@ -116,16 +143,16 @@ if __name__ == "__main__":
 
     # To pass custom commands, simply pass a list containing uninitialized classes.
     # To specify custom parameters, pass a dictionary object with an uninitialized class as a key and your custom parameters as it's value.
-    #client.loadCustomCommands(customCommands, {customCommands: dummy})
+    # client.loadCustomCommands(customCommands, {customCommands: dummy})
     server.loadCustomCommands(customCommands)
 
     # Command disabler. Simply pass a list of strings containing either CLPv4 commands to ignore, or custom commands to unload.
-    #server.disableCommands(["gmsg"])
-    
+    # server.disableCommands(["gmsg"])
+
     # Reject mode. You can simply set this boolean to true and Cloudlink will terminate future client connections.
     # This can be toggled on-demand. Simply set to false to allow connections. Defaults to false.
-    #server.rejectClientMode = True
-    
+    # server.rejectClientMode = True
+
     # Start the server.
-    server.run(host="0.0.0.0", port = 3000)
+    server.run(host="0.0.0.0", port=3000)
     input("Press enter to exit.")

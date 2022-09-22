@@ -1,11 +1,12 @@
-from .supporter import supporter
-
-# Hippity hoppity, better peformance is now on your property
-import websockets as async_websockets
 import asyncio
 
 # If you need it, you can use the non-Async client.
 import websocket as old_websockets
+
+# Hippity hoppity, better peformance is now on your property
+import websockets as async_websockets
+
+from .supporter import supporter
 
 """
 CloudLink 4.0 Server and Client

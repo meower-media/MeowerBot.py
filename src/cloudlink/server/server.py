@@ -1,6 +1,7 @@
-from .serverRootHandlers import serverRootHandlers
-from .serverInternalHandlers import serverInternalHandlers
 import copy
+
+from .serverInternalHandlers import serverInternalHandlers
+from .serverRootHandlers import serverRootHandlers
 
 
 class server:
