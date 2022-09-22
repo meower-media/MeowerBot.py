@@ -45,7 +45,9 @@ class _bot_callbacks:
             listener="loginDone",
         )
 
-    async def _call_callbacks(self, callback_id, args=(), kwargs={}):
+    async def _call_callbacks(self, callback_id, args=(), kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         if not callback_id in self.callbacks.keys():
             return
 
