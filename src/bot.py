@@ -6,6 +6,7 @@ class Bot:
     """
     MeowerBot Bot Client!
     """
+
     def __init__(self, username, password, logs=False):
         self.cl = Cloudlink()
         self.wss = self.cl.client(logs=logs, async_client=True)
