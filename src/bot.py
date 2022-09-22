@@ -28,9 +28,9 @@ class Bot:
         self.wss.callback(client.on_pmsg, self.internal_cbs._bot_on_pmsg)
 
     async def send_msg(self, msg, where="home"):
-      """
-      Sends a msg to where the argument 'where' specified in meower
-      """
+        """
+        Sends a msg to where the argument 'where' specified in meower
+        """
         if where == "home":
             await self.wss.sendCustom("post_home", msg, listener="MsgListener")
         else:
