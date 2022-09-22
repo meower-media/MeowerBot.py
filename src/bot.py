@@ -16,6 +16,17 @@ class Bot:
 
         self.internal_cbs = _bot_callbacks(self)
 
+        client.callback(client.on_connect, self.internal_cbs._bot_on_connect)
+        client.callback(client.on_close, self.internal_cbs._bot_on_close)
+        client.callback(client.on_error, self.internal_cbs._bot_on_error)
+
+        # Bind template callbacks
+        client.callback(client.on_direct, self.internal_cbs._bot_on_direct)
+        client.callback(client.on_ulist, self.internal_cbs._bot_on_ulist)
+        client.callback(client.on_statuscode, self.internal_cbs._bot_on_statuscode)
+        client.callback(client.on_pvar, self.internal_cbs._bot_on_pvar)
+        client.callback(client.on_pmsg, self.internal_cbs._bot_on_pmsg)
+
     async def send_msg(self, msg, where="home"):
         if where == "home":
             await self.wss.sendCustom("post_home", msg, listener="MsgListener")
@@ -56,7 +67,7 @@ class _bot_callbacks:
         self, close_status_code, close_msg
     ):  # Called when the client is disconnected from the server.
 
-        print("on_close fired!")
+        self._call_callbacks("on_close", args=(close_status_code))
 
     async def _bot_on_error(
         self, error
