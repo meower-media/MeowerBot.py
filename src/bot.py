@@ -3,6 +3,9 @@ from .Errors import LoginError, PostError
 
 
 class Bot:
+    """
+    MeowerBot Bot Client!
+    """
     def __init__(self, username, password, logs=False):
         self.cl = Cloudlink()
         self.wss = self.cl.client(logs=logs, async_client=True)
@@ -16,16 +19,16 @@ class Bot:
 
         self.internal_cbs = _bot_callbacks(self)
 
-        self.wss.callback(client.on_connect, self.internal_cbs._bot_on_connect)
-        self.wss.callback(client.on_close, self.internal_cbs._bot_on_close)
-        self.wss.callback(client.on_error, self.internal_cbs._bot_on_error)
+        self.wss.callback(self.wss.on_connect, self.internal_cbs._bot_on_connect)
+        self.wss.callback(self.wss.on_close, self.internal_cbs._bot_on_close)
+        self.wss.callback(self.wss.on_error, self.internal_cbs._bot_on_error)
 
         # Bind template callbacks
-        self.wss.callback(client.on_direct, self.internal_cbs._bot_on_direct)
-        self.wss.callback(client.on_ulist, self.internal_cbs._bot_on_ulist)
-        self.wss.callback(client.on_statuscode, self.internal_cbs._bot_on_statuscode)
-        self.wss.callback(client.on_pvar, self.internal_cbs._bot_on_pvar)
-        self.wss.callback(client.on_pmsg, self.internal_cbs._bot_on_pmsg)
+        self.wss.callback(self.wss.on_direct, self.internal_cbs._bot_on_direct)
+        self.wss.callback(self.wss.on_ulist, self.internal_cbs._bot_on_ulist)
+        self.wss.callback(self.wss.on_statuscode, self.internal_cbs._bot_on_statuscode)
+        self.wss.callback(self.wss.on_pvar, self.internal_cbs._bot_on_pvar)
+        self.wss.callback(self.wss.on_pmsg, self.internal_cbs._bot_on_pmsg)
 
     async def send_msg(self, msg, where="home"):
         """
