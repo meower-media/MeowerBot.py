@@ -52,6 +52,7 @@ class Bot:
 
 class _bot_callbacks:
     """Internal class for clarity"""
+
     def __init__(self, bot):
         self.bot = bot
         self.wss = self.bot.wss
@@ -142,7 +143,4 @@ class _bot_callbacks:
     async def _bot_on_pmsg(
         self, value: str, origin: any
     ):  # Called when a packet is received with the pmsg command.
-        await self._call_callbacks(
-            "on_pmsg",
-            args=(value, origin)
-        )
+        await self._call_callbacks("on_pmsg", args=(value, origin))
