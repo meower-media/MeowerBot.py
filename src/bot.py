@@ -60,14 +60,14 @@ class _bot_callbacks:
     def __init__(self, bot):
         self.bot = bot
         self.wss = self.bot.wss
-
+    #skipcq
     async def on_connect(self):  # Called when the client is connected to the server.
         await self.wss.sendCustom(
             "authpswd",
             {"username": self.bot.username, "pswd": self.bot._psw},  # OK
             listener="loginDone",
         )
-
+    #skipcq
     async def _call_callbacks(self, callback_id, args=(), kwargs=None):
         if kwargs is None:
             kwargs = {}
@@ -76,13 +76,15 @@ class _bot_callbacks:
 
         for cb in self.bot.callbacks:
             await cb(*args, **kwargs, bot=self.bot)
-
+    
+    #skipcq
     async def _bot_on_close(
         self, close_status_code, close_msg
     ):  # Called when the client is disconnected from the server.
 
         self._call_callbacks("on_close", args=(close_status_code))
 
+    #skipcq
     async def _bot_on_error(
         self, error
     ):  # Called when the client encounters an exception.
@@ -90,7 +92,7 @@ class _bot_callbacks:
         self._call_callbacks("on_error", args=(error))
 
     # Below are templates for binding command-specific callbacks.
-
+    #skipcq
     async def _bot_on_direct(
         self, message: any, origin: any, listener_detected: bool, listener_id: str
     ):
@@ -104,12 +106,13 @@ class _bot_callbacks:
                     "listener": {"detected": listener_detected, "id": "listener_id"}
                 },
             )
-
+    #skipcq
     async def _bot_on_ulist(
         self, ulist: list
     ):  # Called when a packet is received with the ulist command.
         self._call_callbacks("on_ulist_change", args=(ulist))
-
+    
+    #skipcq
     async def _bot_handle_statuscode(
         self, code: str, message: any
     ):  # Called when a packet is received with the statuscode command.
@@ -137,7 +140,7 @@ class _bot_callbacks:
                 }
             },
         )
-
+    #skipcq
     async def _bot_on_pvar(
         self, var_name: str, var_value: any, origin: any
     ):  # Called when a packet is received with the pvar command.
@@ -145,7 +148,7 @@ class _bot_callbacks:
             "on_pvar",
             args=(var_name, var_value, origin),
         )
-
+    #skipcq
     async def _bot_on_pmsg(
         self, value: str, origin: any
     ):  # Called when a packet is received with the pmsg command.
