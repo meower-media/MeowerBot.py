@@ -13,8 +13,9 @@ repository = "https://github.com/showierdata9978/MeowerBot"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-cloudlink = "^0.1.7"
-requests = "^2.28.0"
+aiohttp = "^3.8.3"
+websockets = "^10.3"
+
 
 [tool.poetry.dev-dependencies]
 black = "^22.6.0"
