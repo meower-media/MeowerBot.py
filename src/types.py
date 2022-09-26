@@ -2,7 +2,7 @@ import typing
 import weakref
 
 if typing.TYPE_CHECKING:
-      from .raw.bot import bot
+    from .raw.bot import bot
 
 
 class user:
@@ -33,16 +33,16 @@ class user:
 class message:
     @classmethod
     async def from_raw(cls, raw_data, bot: "bot"):
-        if raw_data['u'] == 'Discord':
-          raw_data['u'] = raw_data['p'].split(":")[0]
-          raw_data['p'] = raw_data['p'].split(":")[1].strip()
-          
+        if raw_data["u"] == "Discord":
+            raw_data["u"] = raw_data["p"].split(":")[0]
+            raw_data["p"] = raw_data["p"].split(":")[1].strip()
+
         return cls(
             raw_data["p"],
             await user.from_api(raw_data["u"], bot),
             msg["message_origin"],
             bot,
-            raw_data
+            raw_data,
         )
 
     def __init__(self, msg, user, origin, bot, raw):
@@ -51,9 +51,9 @@ class message:
         self._bot = bot
         self.origin = origin
         self.user = usr
-        self.IsDiscord = raw['u'] == "Discord" and ":" in raw['p']
+        self.IsDiscord = raw["u"] == "Discord" and ":" in raw["p"]
         self.raw_data = raw
-      
+
 
 class ctx:
     def __init__(self, bot: "bot", raw_msg):
@@ -61,11 +61,10 @@ class ctx:
         self.msg = message.from_raw(raw_msg, bot)
         self.user = msg.user
         self.IsDiscord = msg.IsDiscord
-      
+
     async def send_msg(self, msg):
         await self._bot.send_msg(msg, self.msg.origin)
 
 
-
 def make_ctx(bot, raw_msg):
-  return ctx(bot, raw_msg)
+    return ctx(bot, raw_msg)
