@@ -2,7 +2,7 @@ version = 1
 
 test_patterns = ["tests/*.py"]
 
-exclude_patterns = ["dist/**", "./cloudlink/*", "src/cloudlink/**/**"]
+exclude_patterns = ["dist/**", "./cloudlink/*", "src/raw/cloudlink/**/**"]
 
 [[analyzers]]
 name = "python"
