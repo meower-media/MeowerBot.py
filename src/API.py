@@ -21,7 +21,7 @@ class MeowerAPI:
 
     async def init(self):
         headers = {"username": self.username, "token": self._token}
-        self.session = await aiohttp.ClientSession()
+        self.session = await aiohttp.ClientSession(headers=headers)
 
     def add_token(self, token):
         self._token = token
