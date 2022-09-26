@@ -1,6 +1,7 @@
+import asyncio
+
 from .raw.bot import bot
 from .types import make_ctx
-import asyncio
 
 
 class Client(bot):
