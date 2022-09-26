@@ -30,9 +30,9 @@ class _bot_callbacks:
         for cb in self.bot.callbacks[callback_id]:
             not_awaited.append(cb(*args, **kwargs, bot=self.bot))
 
-        #skipcq
-        _tmp_ = await asyncio.gather(*not_awaited) #ignore all returns
-      
+        # skipcq
+        _tmp_ = await asyncio.gather(*not_awaited)  # ignore all returns
+
     # skipcq
     async def _bot_on_close(
         self, close_status_code, close_msg
