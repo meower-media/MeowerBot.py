@@ -26,13 +26,13 @@ class MeowerAPI:
     def add_token(self, token):
         self._token = token
 
-    async def status(self) -> Dict:
+    async def status(self) -> dict:
         async with self.session.get(urljoin(self.MeowerURI, "/status")) as resp:
             if resp.status != 200:  # assume Error
                 return {"isRepairMode": True, "scratchDeprecated": False}
             return await resp.json()
 
-    async def get_user(self, username) -> Dict:
+    async def get_user(self, username) -> dict:
         async with self.session.get(
             urljoin(self.MeowerURI, f"/users/{username}")
         ) as resp:
@@ -40,7 +40,7 @@ class MeowerAPI:
                 return None
             return await resp.json()
 
-    async def get_posts_chat(self, chat, auto_get=False, page=None) -> List:
+    async def get_posts_chat(self, chat, auto_get=False, page=None) -> list:
         args = "?"
         if auto_get:
             args += "autoget&"

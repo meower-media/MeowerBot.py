@@ -27,7 +27,7 @@ class _bot_callbacks:
 
         not_awaited = []
 
-        for cb in self.bot.callbacks:
+        for cb in self.bot.callbacks[callback_id]:
             not_awaited.append(cb(*args, **kwargs, bot=self.bot))
 
         #skipcq
