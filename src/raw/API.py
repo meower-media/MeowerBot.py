@@ -15,7 +15,7 @@ class MeowerAPI:
     async def __aenter__(self):
         await self.init()
 
-    async def __aexit__(self):
+    async def __aexit__(self, exc_type, exc, tb):
         await self.session.close()
         await asyncio.wait(0)
 
