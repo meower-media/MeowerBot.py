@@ -62,9 +62,7 @@ class Client:
         self,
         meower_username: str,
         meower_password: str,
-        debug: bool = False,
-        auto_reconect: bool = True,
-        reconect_time: float = 1,
+        debug: bool = False
     ) -> None:
         self.job_thread = Thread(None, self._bot_api_loop, args=(), daemon=True)
         self.job_thread.name = "MeowerBot_Loop"
@@ -73,8 +71,6 @@ class Client:
         self.callbacks = {}
         self.start_attr = True
         self.server_status = "I:0: Test"
-        self.auto_reconect = auto_reconect
-        self.auto_reconect_time = reconect_time
         self.username = meower_username
         self.password = meower_password
         self.currently_connecting = True
@@ -182,12 +178,6 @@ class Client:
     def _bot_on_close(self):
         self._call_callbacks("on_close", (self.auto_reconect))
 
-        if self.auto_reconect:
-            if not self.currently_connecting:
-                self.currently_connecting = True
-                time.sleep(self.auto_reconect_time)
-                self._wss.state = 0
-                self.start()
 
     def _bot_on_error(self, e):
         if type(e) is KeyboardInterrupt:
