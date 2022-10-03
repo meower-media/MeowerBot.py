@@ -22,7 +22,7 @@ class _bot_callbacks:
     async def _call_callbacks(self, callback_id, args=(), kwargs=None):
         if kwargs is None:
             kwargs = {}
-        if not callback_id in self.callbacks.keys():
+        if callback_id not in self.callbacks.keys():
             return
 
         not_awaited = []
