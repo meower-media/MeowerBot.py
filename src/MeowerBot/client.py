@@ -1,21 +1,22 @@
 import asyncio
 
-from .raw.bot import bot
+from .raw.bot import Bot as bot
 from .types import make_ctx
 
 
 class Client(bot):
-    def __init__(self, username, password, prefix, logs=False):
-        super.__init__(username, password, logs=logs)
-        self.callback(self._on_raw_message, callbackid="on_raw_msg")
+    def __init__(self, username, password, prefix=None, logs=False):
+        super().__init__(username, password, logs=logs)
+        self.callback(self._on_raw_msg, callbackid="on_raw_msg")
         self._waiting_for = []
+        self.prefix = prefix
 
     async def _on_raw_msg(self, msg):
         ctx = make_ctx(message)
         args = ctx.msg.msg.split(" ")
         self._last_msg = ctx.msg
 
-        if not len(self._waiting_for) is 0:
+        if not len(self._waiting_for) == 0:
             for wf in self._waiting_for:
                 if wf["req"](ctx.msg):
                     wf["fut"].set_result(True)

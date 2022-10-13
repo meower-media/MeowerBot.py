@@ -1,8 +1,5 @@
 import asyncio
 
-# If you need it, you can use the non-Async client.
-import websocket as old_websockets
-
 # Hippity hoppity, better peformance is now on your property
 import websockets as async_websockets
 
@@ -51,8 +48,7 @@ class Cloudlink:
             self.asyncio = asyncio
             from .async_client import client
         else:
-            self.ws = old_websockets
-            from .old_client import client
+            raise EnvironmentError("Not suported in this env")
         return client(self, logs)
 
     def relay(self, logs: bool = False):

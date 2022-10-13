@@ -11,7 +11,9 @@ class _bot_callbacks:
         self.wss = self.bot.wss
 
     # skipcq
-    async def on_connect(self):  # Called when the client is connected to the server.
+    async def _bot_on_connect(
+        self,
+    ):  # Called when the client is connected to the server.
         await self.wss.sendCustom(
             "authpswd",
             {"username": self.bot.username, "pswd": self.bot._psw},  # skipcq
