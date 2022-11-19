@@ -1,17 +1,25 @@
-from sys import orig_argv as argv
-
-from MeowerBot import CantConnectError, Client
-
-c = Client(argv[2], argv[3], debug=True, reconect_time=10)
 
 
-def on_login():
-    c.send_msg("logginedin (test")
+from MeowerBot import Bot, __version__
+from os import environ as env
 
 
-try:
+bot = Bot(debug=True)
 
-    c.start()
-except CantConnectError as e:
-    print("we cant connect to meower rn")
-    print("original error:", e.__class__.__name__, ":", e)
+def login(*_, **__):
+	print("login CB")
+	bot.send_msg("TESTING!!!!!!!! O_O", to='home')
+	bot.send_msg("MeowerBot.py " + __version__, to='home')
+
+
+def msg(msg, **_):
+	print("msg CB")
+	if msg['u'] == "Discord": 
+		bot.send_msg("TEEEEEST", to="livechat")
+
+bot.callback(login, cbid="login")
+bot.callback(msg, cbid="message")
+
+bot.run(env['username'], env['password'])
+
+
