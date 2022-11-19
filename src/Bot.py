@@ -8,6 +8,11 @@ import requests
 
 
 class Bot:
+    """
+    A class that holds all of the networking for a meower bot to function and run
+
+    """
+
     BOT_TAKEN_LISTENERS = [
         "__meowerbot__send_ip",
         "__meowerbot__send_message",
@@ -32,7 +37,11 @@ class Bot:
             "on_connect", self.__handle_on_connect__
         )  # signing in and stuff like that
 
-    def run_cb(self, cbid, args=(), kwargs=None):
+        # to be used in start
+        self.username = None
+        self.password = None
+
+    def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
             return  # ignore
         if not kwargs:
@@ -53,14 +62,14 @@ class Bot:
 
         try:
             self.__handle_packet__(packet)
-        except Exception as e:
+        except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
                 self.debug_out.write(traceback.format_exc())
             self.run_cb("error", args=(e))
 
         try:
             self.run_cb("__raw__", args=(packet))  # raw packets
-        except Exception as e:
+        except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
                 self.debug_out.write(traceback.format_exc())
             self.run_cb("error", args=(e))
@@ -124,6 +133,7 @@ class Bot:
             raise RuntimeError("Post Failed to send")
 
     def callback(self, callback, cbid=None):
+        """Connects a callback ID to a callback"""
         cbid = cbid if not cbid is None else callback.__name__
 
         if cbid not in self.callbacks:
@@ -177,6 +187,9 @@ class Bot:
             )
 
     def run(self, username, password, server="server.meower.org"):
+        """
+        Runs The bot (Blocking)
+        """
         self.username = username
         self._password = password
         with self.debug_out as sys.stdout:

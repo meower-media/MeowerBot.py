@@ -3,10 +3,10 @@ name = "MeowerBot"
 version = "2.0.0-DEV"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
-license = "MEOW"
+license = "MIT"
 readme = "README.md"
 packages = [
-    {include = "MeowerBot", from = "src"}
+    {include = "src"}
 ]
 repository = "https://github.com/showierdata9978/MeowerBot"
 
