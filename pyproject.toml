@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [
     {include = "MeowerBot"}
 ]
-repository = "https://github.com/showierdata9978/MeowerBot"
+repository = "https://github.com/MeowerBots/MeowerBot.py"
 
 
 [tool.poetry.dependencies]
