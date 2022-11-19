@@ -52,11 +52,16 @@ class Bot:
             kwargs = {}
 
         kwargs["bot"] = self
-
+        print(kwargs, "\n", args)
         for callback in self.callbacks[cbid]:
-            callback(
-                *args, **kwargs
-            )  # multi callback per id is supported (unlike cloudlink 0.1.7.3 LOL)
+            try:
+                callback(
+                	*args, **kwargs
+                )  # multi callback per id is supported (unlike cloudlink 0.1.7.3 LOL)
+            except Exception as e: #cq ignore
+               if self.debug:
+                  print(traceback.format_exc(), file=self.debug_out)
+               self.run_cb("error", args=(e))
 
     def __handle_error__(self, e):
         self.run_cb("error", args=(e))
@@ -68,14 +73,14 @@ class Bot:
             self.__handle_packet__(packet)
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
-                print(traceback.format_exc() ,f=self.debug_out)
+                print(traceback.format_exc() ,file=self.debug_out)
             self.run_cb("error", args=(e))
 
         try:
             self.run_cb("__raw__", args=(packet))  # raw packets
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
-                print(traceback.format_exc(), f=self.debug_out)
+                print(traceback.format_exc(), file=self.debug_out)
             self.run_cb("error", args=(e))
 
     def __handle_on_connect__(self):
@@ -128,7 +133,7 @@ class Bot:
 
 
             time.sleep(0.5)
-            self.run_cb("login")
+            self.run_cb("login", args=(), kwargs={})
 
         elif listener == "__meowerbot__send_message":
             if status == "I:100 | OK":
@@ -138,11 +143,10 @@ class Bot:
 
     def callback(self, callback, cbid=None):
         """Connects a callback ID to a callback"""
-        cbid = cbid if not cbid is None else callback.__name__
+        if cbid is None: cbid = callback.__name__
 
         if cbid not in self.callbacks:
-            self.callbacks[cbid] = [callback]
-            return
+            self.callbacks[cbid] = []
         self.callbacks[cbid].append(callback)
 
     def __handle_close__(self, *args, **kwargs):
@@ -169,7 +173,7 @@ class Bot:
             # TODO: MAKE A CTX/MESSAGE OBJ SYSTEM.
             # POSSIBLY MAKE A BUILTIN CMD SYSTEM
 
-            self.run_cb("message", args=(packet["val"]))
+            self.run_cb("message", args=(json.loads(packet["val"]),))
         elif packet["cmd"] == "direct":
             listener = packet.get("listener")
             self.run_cb("direct", args=(packet["val"], listener))
