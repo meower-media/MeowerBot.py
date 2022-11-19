@@ -1,3 +1,4 @@
+
 import cloudlink
 import sys
 
@@ -6,6 +7,8 @@ import traceback
 
 import requests
 
+
+import time
 
 class Bot:
     """
@@ -21,7 +24,7 @@ class Bot:
     ]
 
     def __init__(self, debug=False, debug_out=sys.__stdout__):
-        self.wss = cloudlink.Cloudlink(debug=debug)
+        self.wss = cloudlink.CloudLink(debug=debug)
         self._stdout = sys.__stdout__
         self.debug = debug
         self.debug_out = debug_out
@@ -44,6 +47,7 @@ class Bot:
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
             return  # ignore
+
         if not kwargs:
             kwargs = {}
 
@@ -64,14 +68,14 @@ class Bot:
             self.__handle_packet__(packet)
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
-                self.debug_out.write(traceback.format_exc())
+                print(traceback.format_exc() ,f=self.debug_out)
             self.run_cb("error", args=(e))
 
         try:
             self.run_cb("__raw__", args=(packet))  # raw packets
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             if self.debug:
-                self.debug_out.write(traceback.format_exc())
+                print(traceback.format_exc(), f=self.debug_out)
             self.run_cb("error", args=(e))
 
     def __handle_on_connect__(self):
@@ -86,18 +90,14 @@ class Bot:
             }
         )
 
-    def _handle_status(self, status, listener):
-        if listener == "__meowerbot__send_ip":
-            if not status == "I:100 | OK":
-                raise RuntimeError("Sending IP FAILED")
-            self.wss.sendPacket(
+        self.wss.sendPacket(
                 {
                     "cmd": "direct",
                     "val": {"cmd": "type", "val": "py"},
                 }
             )
 
-            self.wss.sendPacket(
+        self.wss.sendPacket(
                 {
                     "cmd": "direct",
                     "val": "meower",
@@ -105,7 +105,9 @@ class Bot:
                 }
             )
 
-        elif listener == "__meowerbot__cloudlink_trust":
+
+    def _handle_status(self, status, listener):
+        if listener == "__meowerbot__cloudlink_trust":
             if not status == "I:100 | OK":
                 raise RuntimeError("CloudLink Trust Failed")
 
@@ -114,7 +116,7 @@ class Bot:
                     "cmd": "direct",
                     "val": {
                         "cmd": "authpswd",
-                        "val": {"username": self.username, "pswd": self.password},
+                        "val":{"username":self.username, "pswd":self._password}
                     },
                     "listener": "__meowerbot__login",
                 }
@@ -124,6 +126,8 @@ class Bot:
             if not status == "I:100 | OK":
                 raise RuntimeError("Password Or Username Is Incorrect")
 
+
+            time.sleep(0.5)
             self.run_cb("login")
 
         elif listener == "__meowerbot__send_message":
@@ -150,6 +154,7 @@ class Bot:
                 packet.get("listener", None) in self.BOT_TAKEN_LISTENERS
             ):  # Requried listeners for the bot
                 self._handle_status(packet["val"], packet["listener"])
+                print(packet)
                 return
             else:
                 listener = packet.get("listener", None)
@@ -176,21 +181,22 @@ class Bot:
     def send_msg(self, msg, to="home"):
         if to == "home":
             self.wss.sendPacket(
-                {"cmd": "direct", "val": {"cmd": "post_home", "val": msg}}
+                {"cmd": "direct", "val": {"cmd": "post_home", "val": msg}, "listener":"__meowerbot__send_message"}
             )
         else:
             self.wss.sendPacket(
                 {
                     "cmd": "direct",
                     "val": {"cmd": "post_chat", "val": {"chatid": to, "p": msg}},
+                    "listener":"__meowerbot__send_message"
                 }
             )
 
-    def run(self, username, password, server="server.meower.org"):
+    def run(self, username, password, server="wss://server.meower.org"):
         """
         Runs The bot (Blocking)
         """
         self.username = username
         self._password = password
         with self.debug_out as sys.stdout:
-            self.wss.connect(server)
+            self.wss.client(server)

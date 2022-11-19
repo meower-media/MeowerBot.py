@@ -6,7 +6,7 @@ authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"
 license = "MIT"
 readme = "README.md"
 packages = [
-    {include = "src"}
+    {include = "MeowerBot"}
 ]
 repository = "https://github.com/showierdata9978/MeowerBot"
 
