@@ -36,7 +36,7 @@ class Bot:
 
          self.wss.sendPacket({"cmd":"ping", "val":""})
 
-    def __init__(self, debug=False, debug_out=sys.__stdout__):
+    def __init__(self, prefix=None, debug=False, debug_out=sys.__stdout__):
         self.wss = cloudlink.CloudLink(debug=debug)
         self._stdout = sys.__stdout__
         self.debug = debug
@@ -58,7 +58,7 @@ class Bot:
         self.password = None
 
         self.commands = {}
-
+        self.prefix = prefix 
         self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True) # (:
 
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
@@ -126,7 +126,7 @@ class Bot:
                 }
             )
 
-    def command(*args, **kwargs):
+    def command(self, *args, **kwargs):
        cmd = _Command(*args, **kwargs)
        cmd._bot = self # conn
 
@@ -215,7 +215,7 @@ class Bot:
             listener = packet.get("listener")
             self.run_cb(packet["cmd"], args=(packet["val"], listener))
 
-    def run_command(message):
+    def run_command(self, message):
       args = shlex.split(str(message))
 
       try:
@@ -245,6 +245,7 @@ class Bot:
         self._password = password
 
         self._t_ping_thread.start()
+        if self.prefix is None: self.prefix = "@" + self.username
         with self.debug_out as sys.stdout:
             self.wss.client(server)
 

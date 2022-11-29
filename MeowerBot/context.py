@@ -33,7 +33,7 @@ class User:
         self.pfp = self._raw['pfp_data']
         self.quote = self._raw['quote']
 
-    def ping(msg ,to="home"):
+    def ping(self, msg ,to="home"):
         self.bot.send_msg(f"@{self.username} {msg}", to=to)
 
 
@@ -48,7 +48,7 @@ class Post:
 
 
         self.chat = self._raw['post_origin']
-        self._data = self._raw['p']
+        self.data = self._raw['p']
         self._id = self._raw['post_id']
         self.type = self._raw['type']
         self.date = datetime.fromtimestamp(self._raw['t']['e'])
@@ -62,13 +62,13 @@ class CTX:
    def __init__(self, post, bot):
         self.message = Post(bot, post)
         self.user = self.message.user
-
+        self.bot = bot
         self.message.ctx = self
 
-   def send_msg(msg):
+   def send_msg(self, msg):
         self.bot.send_msg(msg ,to=self.message.chat)
 
-   def reply(msg):
+   def reply(self, msg):
        self.user.ping(msg, to=self.message.chat)
 
 
