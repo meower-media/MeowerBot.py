@@ -219,7 +219,7 @@ class Bot:
       args = shlex.split(str(message))
 
       try:
-        self.commands[args[0]](message.ctx, *args[0:])
+        self.commands[args[0]].run_cmd(args[1:], message.ctx)
       except KeyError as e:
         self.run_cb("error", args=(e,))
 
