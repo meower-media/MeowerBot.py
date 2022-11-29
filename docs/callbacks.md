@@ -6,7 +6,7 @@
 
 #### message
 
-a (mb.context.Post)[./post.md] object
+a [mb.context.Post](./post.md) object
 
 ## error
 
