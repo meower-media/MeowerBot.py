@@ -48,7 +48,7 @@ class Post:
 
 
         self.chat = self._raw['post_origin']
-        self.data = self._raw['p']
+        self._data = self._raw['p']
         self._id = self._raw['post_id']
         self.type = self._raw['type']
         self.date = datetime.fromtimestamp(self._raw['t']['e'])
@@ -56,7 +56,7 @@ class Post:
 
 
    def __str__(self):
-        return str(self.data)
+        return str( self.data )
 
 class CTX:
    def __init__(self, post, bot):
