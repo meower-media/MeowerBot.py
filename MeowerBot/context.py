@@ -34,7 +34,7 @@ class User:
         self.quote = self._raw['quote']
 
     def ping(msg ,to="home"):
-        self.bot.send_msg(f"@{self.username} {msg}", to=home)
+        self.bot.send_msg(f"@{self.username} {msg}", to=to)
 
 
     def __str__(self):
