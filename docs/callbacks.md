@@ -1,37 +1,12 @@
 # Most Important callbacks
 
-## post
+## message
 
 ### args
 
-#### Post
-```json
-{
-	"_id":"ff8aadd1-1667-41a6-9a2a-6376bff03466",
-	"isDeleted":false,
-	"p":"This is an example",
-	"post_id":"ff8aadd1-1667-41a6-9a2a-6376bff03466",
-	"post_origin":"home",
-	"t":{
-		"d":"18",
-		"e":1668819587,
-		"h":"19",
-		"mi":"59",
-		"mo":"11",
-		"s":"47",
-		"y":"2022"
-	},
-	"type":1,
-	"u":"ShowierData9978"
-}
-```
+#### message
 
-### Key arguments
-
-### Bot
-
-The Bot object
-
+a (mb.context.Post)[./post.md] object
 
 ## error
 
