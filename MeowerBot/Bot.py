@@ -1,3 +1,5 @@
+import threading
+import shlex
 
 import cloudlink
 import sys
@@ -7,6 +9,11 @@ import traceback
 
 import requests
 
+
+import time
+
+from ._Commands import _Command
+from .context import CTX
 
 import time
 
@@ -22,6 +29,12 @@ class Bot:
         "__meowerbot__login",
         "__meowerbot__cloudlink_trust",
     ]
+
+    def _t_ping(self):
+       while True:
+         time.sleep(2300)
+
+         self.wss.sendPacket({"cmd":"ping", "val":""})
 
     def __init__(self, debug=False, debug_out=sys.__stdout__):
         self.wss = cloudlink.CloudLink(debug=debug)
@@ -43,6 +56,10 @@ class Bot:
         # to be used in start
         self.username = None
         self.password = None
+
+        self.commands = {}
+
+        self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True) # (:
 
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
@@ -101,7 +118,6 @@ class Bot:
                     "val": {"cmd": "type", "val": "py"},
                 }
             )
-
         self.wss.sendPacket(
                 {
                     "cmd": "direct",
@@ -110,6 +126,14 @@ class Bot:
                 }
             )
 
+    def command(*args, **kwargs):
+       cmd = _Command(*args, **kwargs)
+       cmd._bot = self # conn
+
+
+       if cmd.name is not None:
+         self.commands[cmd.name] = cmd
+       return cmd
 
     def _handle_status(self, status, listener):
         if listener == "__meowerbot__cloudlink_trust":
@@ -169,11 +193,20 @@ class Bot:
 
         elif (
             packet["cmd"] == "direct" and "post_origin" in packet["val"]
-        ):  # Message Handler
-            # TODO: MAKE A CTX/MESSAGE OBJ SYSTEM.
-            # POSSIBLY MAKE A BUILTIN CMD SYSTEM
+        ):
 
-            self.run_cb("message", args=(json.loads(packet["val"]),))
+            ctx = CTX(packet['val'], self)
+            if "message" in self.callbacks:
+               self.run_cb('message', args = (ctx.message,) )
+            else:
+               if ctx.user.username == self.username: return
+               if not ctx.message.data.startswith(self.prefix): return
+               ctx.message.data = ctx.message.data.split(self.prefix, 1)[1]
+
+               self.run_command(ctx.message)
+
+            self.run_cb("raw_message", args=(packet["val"],))
+
         elif packet["cmd"] == "direct":
             listener = packet.get("listener")
             self.run_cb("direct", args=(packet["val"], listener))
@@ -181,6 +214,14 @@ class Bot:
         else:
             listener = packet.get("listener")
             self.run_cb(packet["cmd"], args=(packet["val"], listener))
+
+    def run_command(message):
+      args = shlex.split(str(message))
+
+      try:
+        self.commands[args[0]](message.ctx, *args[0:])
+      except KeyError as e:
+        self.run_cb("error", args=(e,))
 
     def send_msg(self, msg, to="home"):
         if to == "home":
@@ -202,5 +243,8 @@ class Bot:
         """
         self.username = username
         self._password = password
+
+        self._t_ping_thread.start()
         with self.debug_out as sys.stdout:
             self.wss.client(server)
+
