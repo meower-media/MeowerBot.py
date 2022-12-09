@@ -12,16 +12,18 @@ import requests
 
 import time
 
-from ._Commands import _Command
 from .context import CTX
 
 import time
+
+import functools
 
 class Bot:
     """
     A class that holds all of the networking for a meower bot to function and run
 
     """
+    _Bot_commands = {}
 
     BOT_TAKEN_LISTENERS = [
         "__meowerbot__send_ip",
@@ -57,9 +59,13 @@ class Bot:
         self.username = None
         self.password = None
 
-        self.commands = {}
+        
         self.prefix = prefix 
         self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True) # (:
+
+        self.commands = self.__class__._Bot_commands
+        self.__class__._Bot_commands = {}
+
 
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
@@ -126,14 +132,12 @@ class Bot:
                 }
             )
 
-    def command(self, *args, **kwargs):
-       cmd = _Command(*args, **kwargs)
-       cmd._bot = self # conn
+    @classmethod
+    def register_command(cls, command):
+      cls._Bot_commands[command.name] = command
+     
+        
 
-
-       if cmd.name is not None:
-         self.commands[cmd.name] = cmd
-       return cmd
 
     def _handle_status(self, status, listener):
         if listener == "__meowerbot__cloudlink_trust":
@@ -236,6 +240,10 @@ class Bot:
                     "listener":"__meowerbot__send_message"
                 }
             )
+
+    def register_cog(self, cog):
+        self.commands.update(cog.get_commands())
+
 
     def run(self, username, password, server="wss://server.meower.org"):
         """
