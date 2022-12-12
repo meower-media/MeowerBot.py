@@ -56,6 +56,7 @@ class Bot:
         # to be used in start
         self.username = None
         self.password = None
+        self.logging_in = False
 
         self.commands = {}
         self.prefix = prefix 
@@ -147,7 +148,9 @@ class Bot:
 
 
     def _handle_status(self, status, listener):
-        if listener == "__meowerbot__cloudlink_trust":
+        if listener == "I:112 | Trusted Access enabled": return 
+        if self.logging_in:
+            self.logging_in = False
             if not status == "I:100 | OK":
                 raise RuntimeError("CloudLink Trust Failed")
 
@@ -205,7 +208,7 @@ class Bot:
                 split = packet['val']['p'].split(": ")
                 packet['val']['p'] = split[1]
                 packet['val']['u'] = split[0]
-                
+
 
             ctx = CTX(packet['val'], self)
             if "message" in self.callbacks:
@@ -258,6 +261,8 @@ class Bot:
         """
         self.username = username
         self._password = password
+        self.logging_in = True
+ 
 
         self._t_ping_thread.start()
         if self.prefix is None: self.prefix = "@" + self.username
