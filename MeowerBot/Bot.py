@@ -189,13 +189,9 @@ class Bot:
 
     def __handle_packet__(self, packet):
         if packet["cmd"] == "statuscode":
-            if (
-                packet.get("listener", None) in self.BOT_TAKEN_LISTENERS
-            ):  # Requried listeners for the bot
-                self._handle_status(packet["val"], packet["listener"])
-                print(packet)
-                return
-            else:
+  
+                self._handle_status(packet["val"], packet.get("listener", None))
+
                 listener = packet.get("listener", None)
                 return self.run_cb("statuscode", args=(packet["val"], listener))
 
@@ -205,13 +201,21 @@ class Bot:
         elif (
             packet["cmd"] == "direct" and "post_origin" in packet["val"]
         ):
+            if packet['val']['u'] == "Discord" and ": " in packet['val']['p']:
+                split = packet['val']['p'].split(": ")
+                packet['val']['p'] = split[1]
+                packet['val']['u'] = split[0]
+                
 
             ctx = CTX(packet['val'], self)
             if "message" in self.callbacks:
                self.run_cb('message', args = (ctx.message,) )
+
             else:
+
                if ctx.user.username == self.username: return
                if not ctx.message.data.startswith(self.prefix): return
+
                ctx.message.data = ctx.message.data.split(self.prefix, 1)[1]
 
                self.run_command(ctx.message)
