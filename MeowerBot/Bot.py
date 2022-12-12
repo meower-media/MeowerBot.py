@@ -12,7 +12,7 @@ import requests
 
 import time
 
-from ._Commands import _Command
+from .command import AppCommand
 from .context import CTX
 
 import time
@@ -32,7 +32,7 @@ class Bot:
 
     def _t_ping(self):
        while True:
-         time.sleep(2300)
+         time.sleep(300)
 
          self.wss.sendPacket({"cmd":"ping", "val":""})
 
@@ -126,14 +126,25 @@ class Bot:
                 }
             )
 
-    def command(self, *args, **kwargs):
-       cmd = _Command(*args, **kwargs)
-       cmd._bot = self # conn
+    def command(self, name=None, args = 0):
+        def inner(func):
+            if name is None:
+                name = func.__name__
 
 
-       if cmd.name is not None:
-         self.commands[cmd.name] = cmd
-       return cmd
+            cmd = AppCommand(func, name=name, args = args)
+
+            info = cmd.info()
+            info[cmd.name]['command'] = cmd
+
+
+            self.commands.update(info)
+
+            return func
+
+    def register_cog(self, cog):
+        self.commands.update(cog.get_info())
+
 
     def _handle_status(self, status, listener):
         if listener == "__meowerbot__cloudlink_trust":
