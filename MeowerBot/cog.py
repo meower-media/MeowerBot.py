@@ -1,4 +1,5 @@
 from .command import AppCommand
+import weakref
 
 class Cog:
     __commands__ = None
@@ -13,7 +14,7 @@ class Cog:
 
             for command in self.__dict__.items():
                 if isinstance(command, AppCommand):
-                  command.register_class(self)
+                  command.register_class(weakref.ref(self))
                   self.__commands__.update(command.info())
 
             return self

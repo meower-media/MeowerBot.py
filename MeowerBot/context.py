@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .Bot import Bot
 
+import weakref
+
 class User:
     def __init__(self, bot, username):
         self.username = username
@@ -63,7 +65,7 @@ class CTX:
         self.message = Post(bot, post)
         self.user = self.message.user
         self.bot = bot
-        self.message.ctx = self
+        self.message.ctx = weakref.ref(self)
 
    def send_msg(self, msg):
         self.bot.send_msg(msg ,to=self.message.chat)
