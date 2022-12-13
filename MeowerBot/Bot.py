@@ -127,10 +127,12 @@ class Bot:
                 }
             )
 
-    def command(self, name=None, args = 0):
+    def command(self, aname = None, args = 0):
         def inner(func):
-            if name is None:
+            if aname is None:
                 name = func.__name__
+            else:
+                name = aname
 
 
             cmd = AppCommand(func, name=name, args = args)
@@ -142,13 +144,15 @@ class Bot:
             self.commands.update(info)
 
             return func
+        return inner
 
     def register_cog(self, cog):
-        self.commands.update(cog.get_info())
+        info = cog.get_info()
+        self.commands.update(info)
 
 
     def _handle_status(self, status, listener):
-        if listener == "I:112 | Trusted Access enabled": return 
+        if status == "I:112 | Trusted Access enabled": return 
         if self.logging_in:
             self.logging_in = False
             if not status == "I:100 | OK":
@@ -237,7 +241,7 @@ class Bot:
       args = shlex.split(str(message))
 
       try:
-        self.commands[args[0]].run_cmd(args[1:], message.ctx)
+        self.commands[args[0]]['command'].run_cmd(message.ctx, *args[1:])
       except KeyError as e:
         self.run_cb("error", args=(e,))
 

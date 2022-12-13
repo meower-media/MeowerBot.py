@@ -7,17 +7,23 @@ from os import environ as env
 
 class MyBotCog(Cog):
     def __init__(self, bot):
+        super().__init__()
         self.bot = bot
     
     @command()
-    def test(self, ctx, *args):
+    def test2(self, ctx, *args):
+        if not hasattr(self, "bot"):
+            ctx.reply("No bot in cog")
+            
         ctx.send_msg(" ".join(args))
 
-bot = Bot(debug=True, prefix="/" + "\n mb.py " + __version__)
+bot = Bot(debug=True, prefix="/")
+cog = MyBotCog(bot)
+bot.register_cog(cog)
 
 @bot.command()
 def test(ctx, *args):
 	ctx.send_msg(" ".join(args) + "\n mb.py " + __version__)
 
-bot.run(env['username'], env['password'])
+bot.run(env['uname'], env['password'])
 

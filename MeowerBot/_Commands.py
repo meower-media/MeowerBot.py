@@ -1,5 +1,5 @@
-import warning
+import warnings
 
-warning.warn("MeowerBot._Command has been moved to MeowerBot.command")
+warnings.warn("MeowerBot._Command has been moved to MeowerBot.command")
 
 from .command import *

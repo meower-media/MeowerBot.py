@@ -5,22 +5,26 @@ class Cog:
     __commands__ = None
     __instence__ = None
 
-    def __new__(cls):
+    def __init__(self) -> None:
+            self.__class__.__instence__ = self
+            commands = {}
+
+            for command in self.__dir__():
+                attr = getattr(self, command)
+                if isinstance(attr, AppCommand):
+                  attr.register_class(self)
+                  commands.update(attr.info())
+            self.__commands__ = commands       
+
+    def __new__(cls, *args, **kwargs):
         if cls.__instence__ is None:
             self = super().__new__(cls)
 
-            cls.__instence__ = self
-            self.__commands__ = {}
-
-            for command in self.__dict__.items():
-                if isinstance(command, AppCommand):
-                  command.register_class(weakref.ref(self))
-                  self.__commands__.update(command.info())
 
             return self
 
         else:
             return cls.__instence__
 
-    def info(self):
+    def get_info(self):
         return self.__commands__

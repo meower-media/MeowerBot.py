@@ -2,9 +2,11 @@ import requests
 from urllib.parse import urljoin
 
 class MeowerAPI:
-    base_uri = "server.meower.org/"
+    base_uri = "https://api.meower.org/"
     def __init__(self, token, username):
-        self.sesion = requests.session(headers={"token": token, "usename": username})
+        
+        self.session = requests.session()
+        self.session.headers.update({"token": token, "usename": username})
 
     def get_page(self, page=1, chatid="home"):
         if chatid == "home":
@@ -25,7 +27,7 @@ class MeowerAPI:
 
     def statistics(self):
         return self.session.get(
-            urljoin(self.base_uri, "/statistics")
+            urljoin(self.base_uri, "statistics")
         ).json()
 
     def status(self):
