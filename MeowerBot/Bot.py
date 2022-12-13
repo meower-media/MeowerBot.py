@@ -12,7 +12,7 @@ import requests
 
 import time
 
-from ._Commands import _Command
+from .command import AppCommand
 from .context import CTX
 
 import time
@@ -32,7 +32,7 @@ class Bot:
 
     def _t_ping(self):
        while True:
-         time.sleep(2300)
+         time.sleep(300)
 
          self.wss.sendPacket({"cmd":"ping", "val":""})
 
@@ -56,6 +56,7 @@ class Bot:
         # to be used in start
         self.username = None
         self.password = None
+        self.logging_in = False
 
         self.commands = {}
         self.prefix = prefix 
@@ -126,17 +127,34 @@ class Bot:
                 }
             )
 
-    def command(self, *args, **kwargs):
-       cmd = _Command(*args, **kwargs)
-       cmd._bot = self # conn
+    def command(self, aname = None, args = 0):
+        def inner(func):
+            if aname is None:
+                name = func.__name__
+            else:
+                name = aname
 
 
-       if cmd.name is not None:
-         self.commands[cmd.name] = cmd
-       return cmd
+            cmd = AppCommand(func, name=name, args = args)
+
+            info = cmd.info()
+            info[cmd.name]['command'] = cmd
+
+
+            self.commands.update(info)
+
+            return func
+        return inner
+
+    def register_cog(self, cog):
+        info = cog.get_info()
+        self.commands.update(info)
+
 
     def _handle_status(self, status, listener):
-        if listener == "__meowerbot__cloudlink_trust":
+        if status == "I:112 | Trusted Access enabled": return 
+        if self.logging_in:
+            self.logging_in = False
             if not status == "I:100 | OK":
                 raise RuntimeError("CloudLink Trust Failed")
 
@@ -178,13 +196,9 @@ class Bot:
 
     def __handle_packet__(self, packet):
         if packet["cmd"] == "statuscode":
-            if (
-                packet.get("listener", None) in self.BOT_TAKEN_LISTENERS
-            ):  # Requried listeners for the bot
-                self._handle_status(packet["val"], packet["listener"])
-                print(packet)
-                return
-            else:
+  
+                self._handle_status(packet["val"], packet.get("listener", None))
+
                 listener = packet.get("listener", None)
                 return self.run_cb("statuscode", args=(packet["val"], listener))
 
@@ -194,13 +208,21 @@ class Bot:
         elif (
             packet["cmd"] == "direct" and "post_origin" in packet["val"]
         ):
+            if packet['val']['u'] == "Discord" and ": " in packet['val']['p']:
+                split = packet['val']['p'].split(": ")
+                packet['val']['p'] = split[1]
+                packet['val']['u'] = split[0]
+
 
             ctx = CTX(packet['val'], self)
             if "message" in self.callbacks:
                self.run_cb('message', args = (ctx.message,) )
+
             else:
+
                if ctx.user.username == self.username: return
                if not ctx.message.data.startswith(self.prefix): return
+
                ctx.message.data = ctx.message.data.split(self.prefix, 1)[1]
 
                self.run_command(ctx.message)
@@ -219,7 +241,7 @@ class Bot:
       args = shlex.split(str(message))
 
       try:
-        self.commands[args[0]].run_cmd(args[1:], message.ctx)
+        self.commands[args[0]]['command'].run_cmd(message.ctx, *args[1:])
       except KeyError as e:
         self.run_cb("error", args=(e,))
 
@@ -243,6 +265,8 @@ class Bot:
         """
         self.username = username
         self._password = password
+        self.logging_in = True
+ 
 
         self._t_ping_thread.start()
         if self.prefix is None: self.prefix = "@" + self.username

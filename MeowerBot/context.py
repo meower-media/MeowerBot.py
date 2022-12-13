@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .Bot import Bot
 
+import weakref
+
 class User:
     def __init__(self, bot, username):
         self.username = username
@@ -52,7 +54,7 @@ class Post:
         self._id = self._raw['post_id']
         self.type = self._raw['type']
         self.date = datetime.fromtimestamp(self._raw['t']['e'])
-        self.ctx = None
+        self.ctx: CTX = None #type: ignore
 
 
    def __str__(self):
@@ -63,7 +65,7 @@ class CTX:
         self.message = Post(bot, post)
         self.user = self.message.user
         self.bot = bot
-        self.message.ctx = self
+        self.message.ctx = self #type: ignore
 
    def send_msg(self, msg):
         self.bot.send_msg(msg ,to=self.message.chat)

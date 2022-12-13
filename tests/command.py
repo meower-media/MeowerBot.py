@@ -3,7 +3,7 @@ from MeowerBot import Bot, __version__
 from os import environ as env
 
 
-bot = Bot(debug=True, prefix="/")
+bot: Bot = Bot(debug=True, prefix="/")
 
 @bot.command()
 def test(ctx, *args):
