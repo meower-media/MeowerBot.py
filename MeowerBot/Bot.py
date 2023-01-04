@@ -16,6 +16,7 @@ from .command import AppCommand
 from .context import CTX
 
 import time
+import logging
 
 class Bot:
     """
@@ -36,11 +37,9 @@ class Bot:
 
          self.wss.sendPacket({"cmd":"ping", "val":""})
 
-    def __init__(self, prefix=None, debug=False, debug_out=sys.__stdout__):
-        self.wss = cloudlink.CloudLink(debug=debug)
-        self._stdout = sys.__stdout__
-        self.debug = debug
-        self.debug_out = debug_out
+    def __init__(self, prefix=None):
+        self.wss = cloudlink.CloudLink()
+   
 
         self.callbacks = {}
 
@@ -61,6 +60,7 @@ class Bot:
         self.commands = {}
         self.prefix = prefix 
         self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True) # (:
+        self.logger = logging.getLogger("MeowerBot")
 
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
@@ -70,15 +70,14 @@ class Bot:
             kwargs = {}
 
         kwargs["bot"] = self
-        print(kwargs, "\n", args)
         for callback in self.callbacks[cbid]:
             try:
                 callback(
                 	*args, **kwargs
                 )  # multi callback per id is supported (unlike cloudlink 0.1.7.3 LOL)
             except Exception as e: #cq ignore
-               if self.debug:
-                  print(traceback.format_exc(), file=self.debug_out)
+               
+               self.logging.error(traceback.format_exc())
                self.run_cb("error", args=(e))
 
     def __handle_error__(self, e):
@@ -90,15 +89,14 @@ class Bot:
         try:
             self.__handle_packet__(packet)
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
-            if self.debug:
-                print(traceback.format_exc() ,file=self.debug_out)
+            
+            self.logging.error(traceback.format_exc())
             self.run_cb("error", args=(e))
 
         try:
             self.run_cb("__raw__", args=(packet))  # raw packets
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
-            if self.debug:
-                print(traceback.format_exc(), file=self.debug_out)
+            self.logging.error(traceback.format_exc())
             self.run_cb("error", args=(e))
 
     def __handle_on_connect__(self):
@@ -170,6 +168,10 @@ class Bot:
             )
 
         elif listener == "__meowerbot__login":
+            if status == "E:104 | Internal": 
+                requests.post("https://webhooks.meower.org/post/home", json={"post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.", 'username': self.username})
+                print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
+                sys.exit(1) # waiting for https://discuss.python.org/t/a-way-to-exit-cleanly-without-the-possibility-of-caller-catching-it/22442/2
             if not status == "I:100 | OK":
                 raise RuntimeError("Password Or Username Is Incorrect")
 
@@ -270,6 +272,6 @@ class Bot:
 
         self._t_ping_thread.start()
         if self.prefix is None: self.prefix = "@" + self.username
-        with self.debug_out as sys.stdout:
-            self.wss.client(server)
+        self.logger = logging.getLogger(f"MeowerBot {self.username}")
+        self.wss.client(server)
 
