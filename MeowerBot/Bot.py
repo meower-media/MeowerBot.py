@@ -39,7 +39,7 @@ class Bot:
 
     def __init__(self, prefix=None):
         self.wss = cloudlink.CloudLink()
-   
+
 
         self.callbacks = {}
 
@@ -79,7 +79,7 @@ class Bot:
                 	*args, **kwargs
                 )  # multi callback per id is supported (unlike cloudlink 0.1.7.3 LOL)
             except Exception as e: #cq ignore
-               
+
                self.logging.error(traceback.format_exc())
                self.run_cb("error", args=(e))
 
@@ -92,7 +92,7 @@ class Bot:
         try:
             self.__handle_packet__(packet)
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
-            
+
             self.logging.error(traceback.format_exc())
             self.run_cb("error", args=(e))
 
@@ -183,7 +183,7 @@ class Bot:
                 self.bad_exit = True
                 self.wss.close()
                 return
-                
+
             if not status == "I:100 | OK":
                 raise RuntimeError("Password Or Username Is Incorrect")
 
