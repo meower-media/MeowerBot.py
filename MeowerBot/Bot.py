@@ -39,8 +39,6 @@ class Bot:
 
     def __init__(self, prefix=None):
         self.wss = cloudlink.CloudLink()
-
-
         self.callbacks = {}
 
         self.wss.callback(
