@@ -10,7 +10,7 @@ see [LICENSE](./LICENSE)
 
 ## docs
 
-The Docs are located [here](./docs/callbacks.md)
+The Docs are located [here](https://meowerbot-py.showierdata.tech/)
 
 
 ## Quick Example
