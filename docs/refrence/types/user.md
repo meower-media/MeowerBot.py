@@ -1,4 +1,6 @@
+<p align="center">
 # User Object
+</p>
 
 ## attributes
 

@@ -1,5 +1,6 @@
+<p align="center">
 # Error Callback
-
+</p>
 This callback gets called when an exception gets raised.
 
 ## args

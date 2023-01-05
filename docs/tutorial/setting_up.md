@@ -1,4 +1,5 @@
-# Setting up MeowerBot.py
+
+<p align="center"><h1>Setting up MeowerBot.py </h1></p>
 
 ## Installing
 
@@ -60,5 +61,6 @@ Callbacks are the meat and butter of your bot, allowing ultimate control over wh
 
 unforchently its to large to fit into this one markdown file. please go to [refrence](./refrence/callbacks/) to learn more
 
-
-<center>[Next page](./cogs.md)</center>
+<p align="center">
+[Next page](./cogs.md)
+</p>

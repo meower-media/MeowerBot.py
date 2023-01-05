@@ -1,5 +1,6 @@
+<p align="center">
 # MeowerBot Cogs
-
+</p>
 MeowerBot cogs are basicly just commands that are in a class.
 
 The name of the class is the name of the cog. 

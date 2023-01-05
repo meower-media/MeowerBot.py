@@ -1,4 +1,6 @@
+<p align="center">
 # close callback
+</p>
 
 This callback gets called when the bot`s wss closes
 

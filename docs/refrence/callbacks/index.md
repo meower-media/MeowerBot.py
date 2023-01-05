@@ -1,5 +1,6 @@
+<p align="center">
 # callbacks
-
+</p>
 the meat and butter of the control over your bot.
 
 this is an index page, the main pages are

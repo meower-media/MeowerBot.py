@@ -1,4 +1,6 @@
+<p align="center">
 # Types
+</p>
 
 all of the MeowerBot.py public types
 

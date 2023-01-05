@@ -1,3 +1,4 @@
+<p align="center">
 # \_\_raw\_\_
 
 the callback that gets triggered without editing the post at all. 
@@ -29,3 +30,4 @@ def raw_post(post, bot=bot):
    print(f"{post['u']}: {post['p']}")
 
 bot.listener(raw_post, cbid="__raw__")
+```

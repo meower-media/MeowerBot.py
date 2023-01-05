@@ -1,4 +1,6 @@
+<p align="center">
 # callback message
+</p>
 
 The callback `message` is the gateway into making your own prefix style/ ban system
 
