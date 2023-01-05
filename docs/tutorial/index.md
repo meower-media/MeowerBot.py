@@ -1,5 +1,5 @@
 <p align="center">
-# Tutorial Pages
+<h1>Tutorial Pages</h1>
 </p>
 
 

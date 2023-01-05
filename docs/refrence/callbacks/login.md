@@ -1,5 +1,5 @@
 <p align="center">
-# Login Callback
+<h1> # Login Callback </h1>
 </p>
 
 This callback gets called when the bot has fully logged in

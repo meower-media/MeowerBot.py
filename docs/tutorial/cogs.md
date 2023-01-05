@@ -1,5 +1,5 @@
 <p align="center">
-# MeowerBot Cogs
+<h1>MeowerBot Cogs</h1>
 </p>
 MeowerBot cogs are basicly just commands that are in a class.
 

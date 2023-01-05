@@ -1,5 +1,5 @@
 <p align="center">
-# Post object
+<h1> Post object </h1>
 </p>
 
 ## attributes

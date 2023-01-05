@@ -1,5 +1,6 @@
 <p align="center">
-# Types
+<h1>Types</h1>
+
 </p>
 
 all of the MeowerBot.py public types

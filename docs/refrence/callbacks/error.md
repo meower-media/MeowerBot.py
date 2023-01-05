@@ -1,5 +1,5 @@
 <p align="center">
-# Error Callback
+<h1> # Error Callback </h1>
 </p>
 This callback gets called when an exception gets raised.
 

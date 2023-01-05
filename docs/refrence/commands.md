@@ -1,6 +1,4 @@
-<p align="center">
-# Commands Refrence
-</p>
+<p align="center"><h1>Commands Refrence<h1></p>
 
 this applys both to :meth: `MeowerBot.Bot.command`, and :func: `MeowerBot.command.command`
 

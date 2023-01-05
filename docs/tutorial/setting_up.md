@@ -61,6 +61,6 @@ Callbacks are the meat and butter of your bot, allowing ultimate control over wh
 
 unforchently its to large to fit into this one markdown file. please go to [refrence](./refrence/callbacks/) to learn more
 
-<p align="center">
-[Next page](./cogs.md)
+<p align="center" href="./cogs.md">
+Next page
 </p>
