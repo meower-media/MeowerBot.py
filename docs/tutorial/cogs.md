@@ -53,6 +53,6 @@ from cogs import YourCog
 
 bot = Bot()
 
-bot.load_cog(YourCog(bot))
+bot.register_cog(YourCog(bot))
 ```
 
