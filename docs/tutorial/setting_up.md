@@ -59,3 +59,6 @@ it is always activated everytime someone sends a post, that your bot receves
 Callbacks are the meat and butter of your bot, allowing ultimate control over what data you have.
 
 unforchently its to large to fit into this one markdown file. please go to [refrence](./refrence/callbacks/) to learn more
+
+
+<center>[Next page](./cogs.md)</center>

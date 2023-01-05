@@ -1,2 +1,4 @@
+# Tutorial Pages
 
-go to https://meowerbots.github.io/MeowerBot.py/tutorial/setting_up.md 
+- 001: [setting up](./setting_up.md)
+- 002: [cogs](./cogs.md)

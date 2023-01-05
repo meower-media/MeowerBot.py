@@ -61,6 +61,9 @@ class Bot:
         self.prefix = prefix 
         self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True) # (:
         self.logger = logging.getLogger("MeowerBot")
+        self.bad_exit = False
+
+        self.cogs = {}
 
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
@@ -146,7 +149,13 @@ class Bot:
 
     def register_cog(self, cog):
         info = cog.get_info()
+        self.cogs[cog.__name__] = cog
         self.commands.update(info)
+
+    def deregister_cog(self, cogname):
+        for cmd in self.cogs[cogname].get_info().values():
+            del self.commands[cmd.name]
+        del self.cogs[cogname]
 
 
     def _handle_status(self, status, listener):
@@ -171,7 +180,10 @@ class Bot:
             if status == "E:104 | Internal": 
                 requests.post("https://webhooks.meower.org/post/home", json={"post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.", 'username': self.username})
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
-                sys.exit(1) # waiting for https://discuss.python.org/t/a-way-to-exit-cleanly-without-the-possibility-of-caller-catching-it/22442/2
+                self.bad_exit = True
+                self.wss.close()
+                return
+                
             if not status == "I:100 | OK":
                 raise RuntimeError("Password Or Username Is Incorrect")
 
@@ -274,4 +286,7 @@ class Bot:
         if self.prefix is None: self.prefix = "@" + self.username
         self.logger = logging.getLogger(f"MeowerBot {self.username}")
         self.wss.client(server)
+
+        if self.bad_exit:
+            raise BaseException("Bot Account Softlocked")
 
