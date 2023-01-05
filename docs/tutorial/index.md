@@ -1,4 +1,4 @@
 ---
 layout: forward
-target: ./setting_up.md 
+target: https://meowerbots.github.io/MeowerBot.py/tutorial/
 ---
