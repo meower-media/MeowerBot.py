@@ -145,11 +145,11 @@ class CloudLink(API):
             tmp = json.loads(message)
             if (("cmd" in tmp) and (tmp["cmd"] == "ulist")) and ("val" in tmp):
                 self.statedata["ulist"]["usernames"] = str(tmp["val"]).split(";")
-                del self.statedata[-1][-1][-1]
+                del self.statedata["ulist"]["usernames"][len(self.statedata["ulist"]["usernames"])-1]
 
-                self.logging.info("Username list:", str(self.statedata["ulist"]["usernames"]))
-
-            if not self.callback_function["on_packet"] is None:
+                self.logging.info(f"Username list: {str(self.statedata['ulist']['usernames'])}")
+                
+            if not self.callback_function["on_packet"] == None:
                 def run(*args):
                     try:
                         self.callback_function["on_packet"](message)
