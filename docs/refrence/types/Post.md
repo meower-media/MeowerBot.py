@@ -1,4 +1,6 @@
-# Post object
+<p align="center">
+<h1> Post object </h1>
+</p>
 
 ## attributes
 

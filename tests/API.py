@@ -5,8 +5,11 @@ from MeowerBot.API import MeowerAPI
 
 from os import environ as env
 
+from logging import basicConfig, DEBUG
 
-bot = Bot(debug=True)
+basicConfig(level=DEBUG)
+
+bot = Bot()
 bot.api = None 
 def direct(val, listener, bot=bot):
     if listener == "__meowerbot__login":
