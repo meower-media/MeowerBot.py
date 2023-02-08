@@ -1,7 +1,7 @@
 import threading
 import shlex
 
-from . import cloudlink
+from .Cloudlink import CloudLink
 import sys
 
 import json
@@ -17,6 +17,8 @@ from .context import CTX
 
 import time
 import logging
+
+from websocket._exceptions import WebSocketConnectionClosedException
 
 
 class Bot:
@@ -38,8 +40,8 @@ class Bot:
 
             self.wss.sendPacket({"cmd": "ping", "val": ""})
 
-    def __init__(self, prefix=None):
-        self.wss = cloudlink.CloudLink()
+    def __init__(self, prefix=None, autoreload: int or None = None):
+        self.wss = CloudLink()
         self.callbacks = {}
 
         self.wss.callback(
@@ -56,11 +58,21 @@ class Bot:
         self.password = None
         self.logger_in = False
 
+        if autoreload:
+            self.autoreload = True
+            self.autoreload_time = autoreload + 1
+            self.autoreload_original = autoreload + 1
+        else:
+            self.autoreload = False
+            self.autoreload_time = 0
+            self.autoreload_original = 0
+
         self.commands = {}
         self.prefix = prefix
         self._t_ping_thread = threading.Thread(target=self._t_ping, daemon=True)  # (:
         self.logger = logging.getLogger("MeowerBot")
         self.bad_exit = False
+        self.server = None
 
         self.cogs = {}
 
@@ -84,6 +96,13 @@ class Bot:
 
     def __handle_error__(self, e):
         self.run_cb("error", args=(e))
+        if type(e) == WebSocketConnectionClosedException and self.autoreload:
+            self.__handle_close__()
+            return
+
+
+        
+
 
     def _debug_fix(self, packet):
         packet = json.loads(packet)  # Server bug workaround
@@ -197,7 +216,8 @@ class Bot:
         elif listener == "__meowerbot__send_message":
             if status == "I:100 | OK":
                 return  # This is just checking if a post went OK
-
+            
+            self.autoreload_time = self.autoreload_original #autoreload time should reset if 
             raise RuntimeError("Post Failed to send")
 
     def callback(self, callback, cbid=None):
@@ -210,6 +230,22 @@ class Bot:
         self.callbacks[cbid].append(callback)
 
     def __handle_close__(self, *args, **kwargs):
+        if self.autoreload:
+            self.autoreload = False #to stop race condisons 
+            self.logger_in = True
+            if not self.autoreload_time >= 100: self.autoreload_time *= 1.2 
+            
+            else:
+                 self.autoreload_time = 100
+            
+            
+            time.sleep(self.autoreload_time)
+            self.autoreload = True #reset this, as i set it to false above.
+
+            self.wss.state = 0
+            self.wss.client(self.server)
+            return #dont want the close callback to be called here
+
         self.run_cb("close", args=args, kwargs=kwargs)
 
     def __handle_packet__(self, packet):
@@ -335,6 +371,7 @@ class Bot:
         if self.prefix is None:
             self.prefix = "@" + self.username
         self.logger = logging.getLogger(f"MeowerBot {self.username}")
+        self.server = server
         self.wss.client(server)
 
         if self.bad_exit:
