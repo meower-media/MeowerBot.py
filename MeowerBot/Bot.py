@@ -1,7 +1,7 @@
 import threading
 import shlex
 
-from .Cloudlink import CloudLink
+from .cloudlink import CloudLink
 import sys
 
 import json
@@ -45,7 +45,7 @@ class Bot:
 
             self.wss.sendPacket({"cmd": "ping", "val": ""})
 
-    def __init__(self, prefix=None, autoreload: int or None = None):
+    def __init__(self, prefix=None, autoreload: int or None = None): #type: ignore
         self.wss = CloudLink()
         self.callbacks = {}
 
@@ -97,10 +97,10 @@ class Bot:
             except Exception as e:  # cq ignore
 
                 self.logger.error(traceback.format_exc())
-                self.run_cb("error", args=(e))
+                self.run_cb("error", args=(e,))
 
     def __handle_error__(self, e):
-        self.run_cb("error", args=(e))
+        self.run_cb("error", args=(e,))
         if type(e) == WebSocketConnectionClosedException and self.autoreload:
             self.__handle_close__()
             return
@@ -117,13 +117,13 @@ class Bot:
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
 
             self.logger.error(traceback.format_exc())
-            self.run_cb("error", args=(e))
+            self.run_cb("error", args=(e, ))
 
         try:
-            self.run_cb("__raw__", args=(packet))  # raw packets
+            self.run_cb("__raw__", args=(packet, ))  # raw packets
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             self.logger.error(traceback.format_exc())
-            self.run_cb("error", args=(e))
+            self.run_cb("error", args=(e, ))
 
     def __handle_on_connect__(self):
         self.wss.sendPacket(
@@ -247,8 +247,8 @@ class Bot:
             time.sleep(self.autoreload_time)
             self.autoreload = True #reset this, as i set it to false above.
 
-            self.wss.state = 0
-            self.wss.client(self.server)
+            self.wss.state = 0 #type: ignore
+            self.wss.client(self.server) #type: ignore
             return #dont want the close callback to be called here
 
         self.run_cb("close", args=args, kwargs=kwargs)
