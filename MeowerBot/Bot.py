@@ -26,6 +26,11 @@ class Bot:
     A class that holds all of the networking for a meower bot to function and run
 
     """
+	  __bridges__ = [
+			"Discord",
+			"Revower",
+			"revolt"
+		]
 
     BOT_TAKEN_LISTENERS = [
         "__meowerbot__send_ip",
@@ -260,8 +265,8 @@ class Bot:
             self.run_cb("ulist", self.wss.statedata["ulist"]["usernames"])
 
         elif packet["cmd"] == "direct" and "post_origin" in packet["val"]:
-            if packet["val"]["u"] == "Discord" and ": " in packet["val"]["p"]:
-                split = packet["val"]["p"].split(": ")
+            if packet["val"]["u"] in self.__bridges__ and ": " in packet["val"]["p"]:
+                split = packet["val"]["p"].split(": ", 1)
                 packet["val"]["p"] = split[1]
                 packet["val"]["u"] = split[0]
 

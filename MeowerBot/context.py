@@ -70,7 +70,7 @@ class CTX:
         self.message = Post(bot, post)
         self.user = self.message.user
         self.bot = bot
-        self.message.ctx = self  # type: ignore
+        self.message.ctx = weakref.proxy(self)  # type: ignore
 
     def send_msg(self, msg):
         self.bot.send_msg(msg, to=self.message.chat)
