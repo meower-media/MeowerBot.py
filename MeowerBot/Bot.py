@@ -26,7 +26,7 @@ class Bot:
     A class that holds all of the networking for a meower bot to function and run
 
     """
-	  __bridges__ = [
+    __bridges__ = [
 			"Discord",
 			"Revower",
 			"revolt"
