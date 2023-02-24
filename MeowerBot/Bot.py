@@ -295,6 +295,14 @@ class Bot:
             listener = packet.get("listener")
             self.run_cb(packet["cmd"], args=(packet["val"], listener))
 
+        
+        if packet["cmd"] == "pmsg":
+            self.wss.sendPacket({
+                "cmd": "pmsg",
+                "val": "I:500 | Bot",
+                "id": packet["origin"]
+            })
+
     def run_command(self, message):
         args = shlex.split(str(message))
 
