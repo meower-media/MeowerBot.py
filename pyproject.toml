@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MeowerBot"
-version = "2.4.5"
+version = "2.4.6"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
 license = "MIT"

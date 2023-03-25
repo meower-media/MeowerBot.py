@@ -39,6 +39,11 @@ class Bot:
         "__meowerbot__cloudlink_trust",
     ]
 
+    BOT_NO_PMSG_RESPONSE = [
+        "I:500 | Bot",
+        "I: 500 | Bot"
+    ]
+
     def _t_ping(self):
         while True:
             time.sleep(60)
@@ -296,7 +301,7 @@ class Bot:
             self.run_cb(packet["cmd"], args=(packet["val"], listener))
 
         
-        if packet["cmd"] == "pmsg":
+        if (packet["cmd"] == "pmsg") and  (packet["val"] not in self.BOT_NO_PMSG_RESPONSE):
             self.wss.sendPacket({
                 "cmd": "pmsg",
                 "val": "I:500 | Bot",
