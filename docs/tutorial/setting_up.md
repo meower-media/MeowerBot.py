@@ -29,9 +29,19 @@ Example
 
 ```py
 
-@bot.command(args=1, name="hello")
-def command(ctx, name):
-    ctx.send_msg(f"hello, {name}!")
+@bot.command(args=0, name="hello")
+def command(ctx):
+    ctx.send_msg(f"hello")
+
+```
+
+There are also subcommands.
+
+```py
+
+@command.subcommand(name="world")
+def subcommand(ctx, name):
+    ctx.send_msg(f"hello, world!")
 
 ```
 
@@ -55,12 +65,6 @@ it consists of 3 main parts.
 
 it is always activated everytime someone sends a post, that your bot receves
 
-- 3. Callbacks
-
-Callbacks are the meat and butter of your bot, allowing ultimate control over what data you have.
-
-unforchently its to large to fit into this one markdown file. please go to [refrence](./refrence/callbacks/) to learn more
-
-<p align="center" href="./cogs.md">
+<p align="center" href="./callbacks.md">
 Next page
 </p>

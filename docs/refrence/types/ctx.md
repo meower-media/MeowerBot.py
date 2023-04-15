@@ -4,7 +4,9 @@
 
 ## attributes
 
-- user: a [mb.context.User](./user.md) object 
+- user: [User](./user.md) 
+	The post author.
+
 - message: a [mb.context.Post](./Post.md) object 
 
 ## methods
@@ -15,3 +17,9 @@
 
 - message: the thing you want to send
 
+### reply
+
+#### args
+
+- message: str
+	The thing you want to send.

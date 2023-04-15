@@ -18,7 +18,9 @@ from .context import CTX
 import time
 import logging
 
-from websocket._exceptions import WebSocketConnectionClosedException
+from .API import MeowerAPI
+
+from websocket._exceptions import WebSocketConnectionClosedException, WebSocketException
 
 
 class Bot:
@@ -53,6 +55,7 @@ class Bot:
     def __init__(self, prefix=None, autoreload: int or None = None): #type: ignore
         self.wss = CloudLink()
         self.callbacks = {}
+        self._last_to = "Home"
 
         self.wss.callback(
             "on_packet", self._debug_fix
@@ -70,8 +73,8 @@ class Bot:
 
         if autoreload:
             self.autoreload = True
-            self.autoreload_time = autoreload + 1
-            self.autoreload_original = autoreload + 1
+            self.autoreload_time = min(autoreload, 1)
+            self.autoreload_original = min(autoreload, 1)
         else:
             self.autoreload = False
             self.autoreload_time = 0
@@ -209,7 +212,7 @@ class Bot:
                     "https://webhooks.meower.org/post/home",
                     json={
                         "post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.",
-                        "username": self.username,
+                         "username": self.username,
                     },
                 )
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
@@ -225,10 +228,13 @@ class Bot:
 
         elif listener == "__meowerbot__send_message":
             if status == "I:100 | OK":
+                self.autoreload_time = self.autoreload_original
                 return  # This is just checking if a post went OK
-            
-            self.autoreload_time = self.autoreload_original #autoreload time should reset if 
+            #autoreload time should reset if 
+
+
             raise RuntimeError("Post Failed to send")
+        
 
     def callback(self, callback, cbid=None):
         """Connects a callback ID to a callback"""
@@ -243,10 +249,7 @@ class Bot:
         if self.autoreload:
             self.autoreload = False #to stop race condisons 
             self.logger_in = True
-            if not self.autoreload_time >= 100: self.autoreload_time *= 1.2 
-            
-            else:
-                 self.autoreload_time = 100
+            self.autoreload_time *= 1.2 
             
             
             time.sleep(self.autoreload_time)
@@ -294,7 +297,14 @@ class Bot:
 
         elif packet["cmd"] == "direct":
             listener = packet.get("listener")
+
+            if listener == "mb_get_chat_list":
+                self.run_cb("chat_list", args=(packet["val"]["payload"], listener))
+            elif listener == "__meowerbot__login":
+                self.api.login(packet['val']['payload']['token'])
             self.run_cb("direct", args=(packet["val"], listener))
+
+        
 
         else:
             listener = packet.get("listener")
@@ -317,22 +327,29 @@ class Bot:
             self.run_cb("error", args=(e,))
 
     def send_msg(self, msg, to="home"):
-        if to == "home":
-            self.wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {"cmd": "post_home", "val": msg},
-                    "listener": "__meowerbot__send_message",
-                }
-            )
-        else:
-            self.wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {"cmd": "post_chat", "val": {"chatid": to, "p": msg}},
-                    "listener": "__meowerbot__send_message",
-                }
-            )
+        self._last_to = to
+        self._last_sent = msg
+        try:
+            if to == "home":
+                self.wss.sendPacket(
+                    {
+                        "cmd": "direct",
+                        "val": {"cmd": "post_home", "val": msg},
+                        "listener": "__meowerbot__send_message",
+                    }
+                )
+            else:
+                self.wss.sendPacket(
+                    {
+                        "cmd": "direct",
+                        "val": {"cmd": "post_chat", "val": {"chatid": to, "p": msg}},
+                        "listener": "__meowerbot__send_message",
+                    }
+                )
+        #socket is closed, use webhooks
+        except WebSocketException as e:
+            self.run_cb(cbid="error", args=(e,))
+            
 
     def send_typing(self, to="home"):
         if  to == "home":
@@ -361,7 +378,7 @@ class Bot:
                 },
             }
           )
-       
+        
     def enter_chat(self, chatid="livechat"):
         self.wss.sendPacket(
             {
@@ -375,6 +392,34 @@ class Bot:
                 },
             }
         )
+
+    def create_chat(self, name):
+        """
+        Unstable, use at your own risk
+
+        comes with callbacks: chat_list 
+        """
+        self.wss.sendPacket({
+            "cmd": "direct",
+            "val": {
+                "cmd": "create_chat",
+                "val": name
+            },
+            "listener": "mb_create_chat"
+        })
+
+        time.sleep(secs=0.5)
+
+        self.wss.sendPacket({
+            "cmd": "direct",
+            "val": {
+                "cmd": "get_chat_list",
+                "val": {
+                    "page": 1
+                }
+            },
+            "listener": "mb_get_chat_list"
+        })
 
 
     def run(self, username, password, server="wss://server.meower.org"):
@@ -391,6 +436,7 @@ class Bot:
         self.logger = logging.getLogger(f"MeowerBot {self.username}")
         self.server = server
         self.wss.client(server)
+        self.api = API(self)
 
         if self.bad_exit:
             raise BaseException("Bot Account Softlocked")

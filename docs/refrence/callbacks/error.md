@@ -5,13 +5,11 @@ This callback gets called when an exception gets raised.
 
 ## args
 
-### error
+ - error: Exception 
+   The error that caused this callback to get called
 
-The error that caused this callback to get called
 
-### bot
-
-A required keyword argument
+  - bot: MeowerBot.Bot
 
 ## example
 

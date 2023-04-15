@@ -7,39 +7,21 @@ if TYPE_CHECKING:
     from .Bot import Bot
 
 import weakref
+import requests
 
 
 class User:
     def __init__(self, bot, username):
         self.username = username
-        self._raw = None
-
+        
         self.bot = bot
-        self.bot.wss.sendPacket(
-            {
-                "cmd": "direct",
-                "val": {"cmd": "get_profile", "val": self.username},
-                "listener": f"get_user_{self.username}",
-            }
-        )
+        self._raw = self.bot.api.get_user(self.username)
 
-        self.level = 0
-        self.pfp = 0
-        self.quote = ""
-
-    def _handle_usr_data(self, val, listener):
-        if listener is None:
-            return
-        if listener is not f"get_user_{self.username}":
-            return
-        if "mode" not in val or not val["mode"] == "profile":
-            return
-
-        # checks are finaly over lmao
-        self._raw = val["payload"]
         self.level = self._raw["lvl"]
         self.pfp = self._raw["pfp_data"]
         self.quote = self._raw["quote"]
+
+    
 
     def ping(self, msg, to="home"):
         self.bot.send_msg(f"@{self.username} {msg}", to=to)

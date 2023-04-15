@@ -4,4 +4,5 @@
 
 
 - 001: [setting up](./setting_up.md)
-- 002: [cogs](./cogs.md)
+- 002: [callbacks](./callbacks.md)
+- 003: [cogs](./cogs.md)

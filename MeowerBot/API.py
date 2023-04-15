@@ -5,10 +5,13 @@ from urllib.parse import urljoin
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
 
-    def __init__(self, token, username):
+    def __init__(self, username):
 
         self.session = requests.session()
-        self.session.headers.update({"token": token, "usename": username})
+        self.session.headers.update({"usename": username})
+
+    def login(self, token):
+        self.session.headers.update({"token": token})
 
     def get_page(self, page=1, chatid="home"):
         if chatid == "home":

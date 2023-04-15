@@ -27,6 +27,6 @@ bot = Bot()
 def login(bot=bot):
    print(f"logged in as {bot.username} with prefix {bot.prefix}")
 
-bot.callback(login)
+bot.callback(login, cbid="login") # when cbid is not specified it defaults to the function name (in this case "login")
 ```
 

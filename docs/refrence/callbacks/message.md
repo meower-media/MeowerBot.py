@@ -4,15 +4,11 @@
 
 The callback `message` is the gateway into making your own prefix style/ ban system
 
-## given arguments
+##  arguments
 
-### msg
+- msg: [Post](../types/Post.md)
+    This object is a Post object containing everything the post has to offer
 
-This object is a Post object containing everything the post has to offer
-
-### bot
-
-a required kwarg incase you dont have the bot object
 
 ## example
 

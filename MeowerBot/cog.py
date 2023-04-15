@@ -1,4 +1,4 @@
-from .command import AppCommand
+from .command import AppCommand, command
 import weakref
 
 

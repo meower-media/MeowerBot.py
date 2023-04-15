@@ -13,9 +13,7 @@ bot = Bot()
 bot.api = None 
 def direct(val, listener, bot=bot):
     if listener == "__meowerbot__login":
-        bot.api = MeowerAPI(val['payload']['token'], val['payload']['username']) 
         bot.send_msg("Meower Stats: " + str(bot.api.statistics()))
-   
 
 bot.callback(direct, cbid="direct")
 

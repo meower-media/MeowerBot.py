@@ -15,6 +15,7 @@ class AppCommand:
 
         self.arg_names = inspect.getfullargspec(func)[0]
         self.arg_types = func.__annotations__
+        self.subcommands = {}
 
     def __call__(self, *args):
         raise RuntimeError("AppCommand is not callable")
@@ -22,7 +23,25 @@ class AppCommand:
     def register_class(self, con):
         self.connected = con
 
+    def subcommand(self, name=None, args=0):
+        def inner(func):
+
+            cmd = AppCommand(func, name=name, args=args)
+            cmd.register_class(self.connected)
+
+            self.subcommands[name] = cmd.info()
+
+
+            return func #dont want mb to register this as a root command
+
+        return inner
+
     def run_cmd(self, ctx, *args):
+        
+        if self.subcommands and (args[0] if len(args) >= 1 else None) in self.subcommands:
+            self.subcommands[args[0]]["command"].run_cmd(ctx, *args[1:])
+            return
+        
         if not self.args == 0:
             args = args[: self.args]
 
@@ -39,6 +58,7 @@ class AppCommand:
                 "arg_types": self.arg_types,
                 "command": self,
                 "func": self.func,
+
             }
         }
 
