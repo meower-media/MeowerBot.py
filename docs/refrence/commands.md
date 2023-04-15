@@ -6,7 +6,7 @@ Creating a command returns a :obj: `MeowerBot.command.AppCommand`, replacing you
 
 # Arguments
 
-	- name: str (or a name in bot.command, because there is a breaking change I do not want to make.)
+	- name: str (or aname in bot.command, because there is a breaking change I do not want to make.)
 		the name of the command
 	
 	- args: int
