@@ -1,9 +1,7 @@
 <p align="center">
-<h1> callbacks </h1>
+<h1>Callbacks</h1>
 </p>
-the meat and butter of the control over your bot.
-
-this is an index page, the main pages are
+This is an index page. Here is a list of the subpages:
 
 - 1. [close](./close.md)
 - 2. [error](./error.md)

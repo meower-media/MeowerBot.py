@@ -1,10 +1,10 @@
 <p align="center">
-<h1> # Login Callback </h1>
+<h1>Login Callback </h1>
 </p>
 
-This callback gets called when the bot has fully logged in
+This callback gets called when the bot has fully logged in.
 
-## args
+## Arguments
 
 ### bot
 
@@ -12,7 +12,7 @@ A required keyword argument.
 
 The bot object
 
-## example
+## Example code
 
 ```py
 

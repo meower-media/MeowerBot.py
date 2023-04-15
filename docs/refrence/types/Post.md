@@ -2,7 +2,7 @@
 <h1> Post object </h1>
 </p>
 
-## attributes
+## Attributes
 
 - ctx: a [mb.context.CTX](./ctx.md) object 
 
@@ -11,9 +11,9 @@
 	The post author.
 
 - chat: str
-	the id of the chat the post was sent in 
+	The ID of the chat where the post was made
 
 - type: int
 
 - date: datetime.datetime object
-	the time and date the post was created 
+	The exact date and time at which the post was created.

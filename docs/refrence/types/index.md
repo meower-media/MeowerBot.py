@@ -3,9 +3,9 @@
 
 </p>
 
-all of the MeowerBot.py public types
+All of the MeowerBot.py public types
 
-this is an index page, the main files are below
+This is an index page, the main files are below
 
 - 1. [ctx](./ctx.md)
 - 2. [Post](./Post.md)

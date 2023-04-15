@@ -4,9 +4,9 @@
 
 the callback that gets triggered without editing the post at all. 
 
-equivelent to MeowerBot 1.x.x on_msg
+This acts the same as `on_msg in MeowerBot 1.x.x
 
-## args
+## Arguments
 
 ### Bot
 
@@ -17,7 +17,7 @@ Required Keyword argument
 The raw post object that is given by the Meower Server
 
 
-## example
+## Example Code
 
 ```py
 from MeowerBot import Bot

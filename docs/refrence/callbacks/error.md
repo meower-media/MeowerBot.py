@@ -1,17 +1,17 @@
 <p align="center">
-<h1> # Error Callback </h1>
+<h1>Error Callback</h1>
 </p>
-This callback gets called when an exception gets raised.
+This callback is called when an exception is raised.
 
-## args
+## Arguments
 
  - error: Exception 
-   The error that caused this callback to get called
+   The error that caused the error callback to be called.
 
 
   - bot: MeowerBot.Bot
 
-## example
+## Example Code
 
 ```py
 import traceback

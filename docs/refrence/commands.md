@@ -1,12 +1,12 @@
-<p align="center"><h1>Commands Refrence<h1></p>
+<p align="center"><h1>Commands Reference<h1></p>
 
-this applys both to :meth: `MeowerBot.Bot.command`, and :func: `MeowerBot.command.command`
+This applies to both :meth: `MeowerBot.Bot.command` and :func: `MeowerBot.command.command`
 
-creating a command returns a :obj: `MeowerBot.command.AppCommand`. replacing your function
+Creating a command returns a :obj: `MeowerBot.command.AppCommand`, replacing your function
 
-## args
+# Arguments
 
-	- name: str (or aname in bot.command, because breaking change i dont wanna make.)
+	- name: str (or aname in bot.command, because there is a breaking change I do not want to make.)
 		the name of the command
 	
 	- args: int
@@ -17,11 +17,11 @@ creating a command returns a :obj: `MeowerBot.command.AppCommand`. replacing you
 
 # Subcommands
 
-A subcommand is a command that basicly takes the first argument as the command name, and the rest as the arguments. 
+A subcommand is a command that takes the first argument as the command name and the rest as arguments. 
 
 This makes it easy to make a command that has multiple subcommands. And have subcommands that have subcommands as they are the same as normal commands, but are handled by the parent command.
 
-## args
+## Arguments
 	- name: str
 		the name of the command
 	
@@ -31,7 +31,7 @@ This makes it easy to make a command that has multiple subcommands. And have sub
 		if the command takes infinite arguments use 0.
 
 
-## example
+## Example Code
 
 ```py
 

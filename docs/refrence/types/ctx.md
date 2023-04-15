@@ -2,24 +2,24 @@
 <h1>CTX object</h1>
 </p>
 
-## attributes
+## Attributes
 
 - user: [User](./user.md) 
 	The post author.
 
-- message: a [mb.context.Post](./Post.md) object 
+- message: A [mb.context.Post](./Post.md) object.
 
-## methods
+## Methods
 
 ### send_message
 
-#### args
+#### Arguments
 
 - message: the thing you want to send
 
 ### reply
 
-#### args
+#### Arguments
 
 - message: str
-	The thing you want to send.
+	The content of the post to send.

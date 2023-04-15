@@ -1,8 +1,8 @@
 <p align="center">
-<h1>Refrences</h1>
+<h1>References</h1>
 </p>
 
-This is the index of refrences. To learn more go to the two sub folders
+This is the index of the references page. To learn more, go to one of the two sub-folders.
 
 - 1. [callbacks](./callbacks/)
 - 2. [types](./types/)

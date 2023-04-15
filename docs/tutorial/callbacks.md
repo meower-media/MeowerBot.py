@@ -2,16 +2,15 @@
 
 A callback is a function that gets called when a certain event happens.
 
-That makes it so you can recieve events from meower, and do stuff with them.
+That makes it so you can recieve events from Meower, and do stuff with them.
 
 
-## the login callback
-
-This callback is for when the bot logs in. You can use it to do stuff like send a message on startup. However if the bot fails to login, this callback will not get called.
+## Login callback
+This callback is for when the bot logs in. You can use it, for example, to send a message on startup or run a local command. If the bot fails to login, this callback will not be called.
 
 There is more info on the login callback [here](../refrence/callbacks/login.md)
 
-### an example
+### Example code
 
 ```py
 from MeowerBot import Bot
@@ -25,18 +24,18 @@ bot.callback(login, cbid="login") # If the cbid is not specifed, it will use the
 
 ```
 
-## the error callback
+## Error Callback
 
 This callback is for when an error happens. It is used for sending a message when an error happens, or for logging errors (However MeowerBot.py already logs errors, so you don't need to do that) 
 
 There is more info on the error callback [here](../refrence/callbacks/error.md)
 
-### arguments
+### Arguments
 
 - e: Exception
-	- The error that caused this callback to get called
+	- The error that caused this callback to be called
 
-### an example
+### Example code
 
 ```py
 from MeowerBot import Bot
@@ -50,13 +49,13 @@ bot.callback(error, cbid="error") # If the cbid is not specifed, it will use the
 
 ```
 
-## the close callback
+## Close callback
 
-This callback gets called when the websocket is fully closed, and the bot is no longer connected to meower. The only way to send a message after this callback is called is to reconnect the bot, or use `https://webhooks.meower.org/post/home` to send a message.
+This callback gets called when the websocket for the bot is fully closed and the bot is no longer connected to Meower. The only way to send a message after this callback is called is to reconnect the bot or use `https://webhooks.meower.org/post/home` to send a message.
 
 There is more info on the close callback [here](../refrence/callbacks/close.md)
 
-### an example
+### Example code
 
 ```py
 from MeowerBot import Bot
@@ -70,23 +69,23 @@ bot.callback(close, cbid="close") # If the cbid is not specifed, it will use the
 
 ```
 
-## the message callback
+## Message callback
 
-This callback gets called when a message is sent in a place the bot can see. This includes home, and livechat.
+This callback is called when a message is sent in a place the bot can see. This includes home, livechat and group chats that the bot has been added to.
 
 There is more info on the message callback [here](../refrence/callbacks/message.md)
 
-Although be warned, the default implementation is desabled when this callback is added, so you will need to do that yourself.
+Although be warned, the default implementation is disabled when this callback is added, so you will need to do that yourself.
 
 
 
-### arguments
+### Arguments
 
 - message: MeowerBot.Message
 	- The message that was sent
 
 
-### an example
+### Example code
 
 ```py
 from MeowerBot import Bot
@@ -109,13 +108,13 @@ bot.callback(message, cbid="message") # If the cbid is not specifed, it will use
 
 ```
 
-## The cloudlink packet callback. 
+## Cloudlink Packet callback
 
-This callback gets called when a message is sent. However this time it is a raw packet, and not a message object. Good for mb.py 1.0.0 enjoyers.
+This callback gets called when a message is sent. However this time it is a raw packet, and not a message object. Good for MeowerBot.py 1.x.x enjoyers.
 
 There is more info on the cloudlink packet callback [here](../refrence/callbacks/raw.md)
 
-### arguments
+### Argumentx
 
 - message: dict[str, any]
 	- The packet that was recieved
@@ -131,7 +130,7 @@ There is more info on the cloudlink packet callback [here](../refrence/callbacks
 		}
 	```
 
-### an example
+### Example code
 
 ```py
 from MeowerBot import Bot

@@ -1,16 +1,16 @@
 <p align="center">
-<h1> callback message </h1>
+<h1>Callback message</h1>
 </p>
 
-The callback `message` is the gateway into making your own prefix style/ ban system
+The callback `message` is the gateway into making your own prefix style/ban system
 
-##  arguments
+## Arguments
 
 - msg: [Post](../types/Post.md)
-    This object is a Post object containing everything the post has to offer
+    This object is a post object containing everything the post has to offer
 
 
-## example
+## Example code
 
 ```py
 from MeowerBot import Bot

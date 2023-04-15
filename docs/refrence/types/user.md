@@ -1,10 +1,10 @@
 <p align="center">
-<h1> User Object </h1>
+<h1>User Object </h1>
 </p>
 
-## attributes
+## Attributes
 
-- username: the username of this user
-- level: the moderation level of a user
-- pfp: the profile picture that a user is using 
-- quote: the quote a user set for themselves 
+- username: The username of a specified user
+- level: The moderation level of a specified user
+- pfp: The profile picture of a specified user
+- quote: The quote of a specified user

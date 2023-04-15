@@ -1,17 +1,17 @@
-# MeowerBot.py Docs
+# MeowerBot.py Documentation
 
 <!-- warning -->
-<table><td>:warning: These docs assume you actualy are fairly competent in python. Or have atleast learned OOP. </td></table>
+<table><td>:warning: This documentation assumes you are competent in python, or have at least learned Object-oriented programming.</td></table>
 
 This guide is for MeowerBot.py v2.5.0
 
-- [refrence](./refrence/)
-	- [methods](./refrence/methods/) (only including cuz important)
-- [tutorial](./tutorial/)
+- [Reference](./refrence/)
+	- [methods](./refrence/methods/)
+- [Tutorial](./tutorial/)
 
 ## What is MeowerBot.py?
 
-MeowerBot.py is a Bot library for https://meower.org (open source at https://github.com/meower-media-co/)
+MeowerBot.py is a bot library for https://meower.org (open source at https://github.com/meower-media-co/)
 
-MeowerBot.py itself is located at https://github.com/meower-community/MeowerBot.py
+MeowerBot.py it self is located at https://github.com/meower-community/MeowerBot.py
 
