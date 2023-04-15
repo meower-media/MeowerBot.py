@@ -1,8 +1,8 @@
-# command
+# Command
 
 This method is used to create a command in a cog.
 
-## args
+## Arguments
 
 - name: str
   The name of the command
@@ -14,7 +14,7 @@ This method is used to create a command in a cog.
     If the command takes infinite arguments use 0.
 
 
-## example
+## Example Code
 
 ```py
 
@@ -36,7 +36,7 @@ class MyCog(Cog):
 
 This method is used to create a subcommand in a cog.
 
-## args
+## Arguments
 
 - name: str
   The name of the command
@@ -48,7 +48,7 @@ This method is used to create a subcommand in a cog.
 	If the command takes infinite arguments use 0.
 
 
-## example
+## Example code
 
 ```py
 
