@@ -1,11 +1,11 @@
 <p align="center">
 <h1>MeowerBot Cogs</h1>
 </p>
-MeowerBot cogs are basicly just commands that are in a class.
+MeowerBot cogs are commands that are in a class.
 
 The name of the class is the name of the cog. 
 
-you need diffrent imports for deeling with cogs
+You need diffrent imports for dealing with cogs.
 
 ```py
 # cog.py
@@ -24,9 +24,7 @@ class YourCog(Cog):
     
 ```
 
-The commands are basicly the same for `bot.command`
-
-you just use the imported `command` decorateor insted
+The commands are basicly the same for `bot.command`, you just use the imported `command` decorateor insted
 
 ```py
 #cogs.py
