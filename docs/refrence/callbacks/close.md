@@ -1,13 +1,13 @@
 <p align="center">
-<h1> close callback </h1>
+<h1>Close callback</h1>
 </p>
 
-This callback gets called when the bot`s wss closes
+This callback gets called when websocket for the bot is closed.
 
-## args
+## Arguments
    - bot: MeowerBot.Bot
 
-## example
+## Example Code
 
 ```py
 
