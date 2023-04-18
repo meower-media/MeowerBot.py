@@ -435,8 +435,8 @@ class Bot:
             self.prefix = "@" + self.username
         self.logger = logging.getLogger(f"MeowerBot {self.username}")
         self.server = server
+        self.api = MeowerAPI(username=username)
         self.wss.client(server)
-        self.api = API(self)
-
+        
         if self.bad_exit:
             raise BaseException("Bot Account Softlocked")
