@@ -34,7 +34,7 @@ class MeowerAPI:
         return self.session.get(
             urljoin(
                 self.base_uri,
-                "/users/{0}/posts?autoget&page={page}".format(username, page),
+                "/users/{0}/posts?autoget&page={1}".format(username, page),
             )
         ).json()
 
