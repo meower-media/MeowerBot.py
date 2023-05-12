@@ -23,24 +23,36 @@ class AppCommand:
     def register_class(self, con):
         self.connected = con
 
+        for subcommand in self.subcommands.values():
+            subcommand.register_class(con)
+
     def subcommand(self, name=None, args=0):
         def inner(func):
 
             cmd = AppCommand(func, name=name, args=args)
             cmd.register_class(self.connected)
 
-            self.subcommands[name] = cmd.info()
+            self.subcommands.update(cmd.info())
 
 
             return func #dont want mb to register this as a root command
-
         return inner
+    
 
     def run_cmd(self, ctx, *args):
+        print(
+            f"Running command {self.name} with args {args} and ctx {ctx} and connected {self.connected}"
+
+        )
         
-        if self.subcommands and (args[0] if len(args) >= 1 else None) in self.subcommands:
+        try:
             self.subcommands[args[0]]["command"].run_cmd(ctx, *args[1:])
             return
+        except KeyError:
+            print(f"KeyError: {args}")
+            print(f"Subcommands: {self.subcommands}")
+        except IndexError:
+            print(f"IndexError: {args}")
         
         if not self.args == 0:
             args = args[: self.args]

@@ -95,6 +95,12 @@ class Bot:
 
         if not kwargs:
             kwargs = {}
+        
+        if cbid == "error" and isinstance(args[0], KeyboardInterrupt()): 
+            self.logger.error("KeyboardInterrupt")
+            self.bad_exit = True
+            self.stop()
+            return 
 
         kwargs["bot"] = self
         for callback in self.callbacks[cbid]:
@@ -137,17 +143,6 @@ class Bot:
         self.wss.sendPacket(
             {
                 "cmd": "direct",
-                "val": {
-                    "cmd": "ip",
-                    "val": requests.get("https://api.meower.org/ip").text,
-                },
-                "listener": "__meowerbot__send_ip",
-            }
-        )
-
-        self.wss.sendPacket(
-            {
-                "cmd": "direct",
                 "val": {"cmd": "type", "val": "py"},
             }
         )
@@ -173,7 +168,7 @@ class Bot:
 
             self.commands.update(info)
 
-            return func
+            return cmd #allow subcommands without a cog
 
         return inner
 
@@ -261,6 +256,17 @@ class Bot:
 
         self.run_cb("close", args=args, kwargs=kwargs)
 
+    def handle_bridges(self, packet):
+        if packet["val"]["u"] in self.__bridges__ and ": " in packet["val"]["p"]:
+                split = packet["val"]["p"].split(": ", 1)
+                packet["val"]["p"] = split[1]
+                packet["val"]["u"] = split[0]
+        
+        if packet["val"]["p"].startswith(self.prefix+"#0000"):
+            packet["val"]["p"] = packet["val"]["p"].replace("#0000", self.prefix)
+        
+        return packet
+
     def __handle_packet__(self, packet):
         if packet["cmd"] == "statuscode":
 
@@ -273,10 +279,7 @@ class Bot:
             self.run_cb("ulist", self.wss.statedata["ulist"]["usernames"])
 
         elif packet["cmd"] == "direct" and "post_origin" in packet["val"]:
-            if packet["val"]["u"] in self.__bridges__ and ": " in packet["val"]["p"]:
-                split = packet["val"]["p"].split(": ", 1)
-                packet["val"]["p"] = split[1]
-                packet["val"]["u"] = split[0]
+            packet = self.handle_bridges(packet)
 
             ctx = CTX(packet["val"], self)
             if "message" in self.callbacks:
@@ -324,6 +327,7 @@ class Bot:
         try:
             self.commands[args[0]]["command"].run_cmd(message.ctx, *args[1:])
         except KeyError as e:
+            self.logger.error(traceback.format_exc())
             self.run_cb("error", args=(e,))
 
     def send_msg(self, msg, to="home"):

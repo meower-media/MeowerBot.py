@@ -23,5 +23,5 @@ def sub(ctx, *args):
 def reloadtime(ctx):
 	ctx.send_msg(f"My reload time is {round(bot.autoreload_time)}" )
 	
-bot.run(env['username'], env['password'])
+bot.run(env['uname'], env['password'])
 
