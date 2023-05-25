@@ -39,4 +39,4 @@ jobs:
           C:\Users\runneradmin\.local\bin\poetry.exe run python -m unittest discover -s tests
       - name: Run Linter
         run: |
-          bandit -r .
+           C:\Users\runneradmin\.local\bin\poetry.exe run bandit -r .
