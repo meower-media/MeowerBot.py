@@ -30,9 +30,10 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Dependencies
         run: |
-          $act
+          
           poetry install --no-interaction 
-
+          $act
+          
       - name: Run Tests
         run: |
           poetry run python -m unittest discover -s tests
