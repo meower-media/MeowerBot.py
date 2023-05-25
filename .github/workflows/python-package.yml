@@ -31,7 +31,7 @@ jobs:
       - name: Install Dependencies
         run: |
           $act
-          poetry install --no-interaction --dev
+          poetry install --no-interaction 
 
       - name: Run Tests
         run: |
