@@ -1,6 +1,10 @@
 import warnings
 import inspect
 
+from logging import getLogger
+
+logger = getLogger("MeowerBot")
+
 
 class AppCommand:
     connected = None
@@ -26,6 +30,7 @@ class AppCommand:
         for subcommand in self.subcommands.values():
             subcommand.register_class(con)
 
+
     def subcommand(self, name=None, args=0):
         def inner(func):
 
@@ -40,19 +45,17 @@ class AppCommand:
     
 
     def run_cmd(self, ctx, *args):
-        print(
-            f"Running command {self.name} with args {args} and ctx {ctx} and connected {self.connected}"
-
-        )
         
         try:
             self.subcommands[args[0]]["command"].run_cmd(ctx, *args[1:])
             return
         except KeyError:
-            print(f"KeyError: {args}")
-            print(f"Subcommands: {self.subcommands}")
+            #print(f"KeyError: {args}")
+            #print(f"Subcommands: {self.subcommands}")
+            logger.debug(f"Cant find subcommand {args[0]}")
+
         except IndexError:
-            print(f"IndexError: {args}")
+            logger.debug(f"IndexError: {args}")
         
         if not self.args == 0:
             args = args[: self.args]

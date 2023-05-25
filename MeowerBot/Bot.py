@@ -22,6 +22,27 @@ from .API import MeowerAPI
 
 from websocket._exceptions import WebSocketConnectionClosedException, WebSocketException
 
+import sys
+
+if sys.version_info >= (3, 11):
+    from enum import StrEnum
+else:
+    from backports.strenum import StrEnum
+
+
+class cbids(StrEnum):
+        error = "error"
+        __raw__ = "__raw__"
+        login = "login"
+        close = "close"
+        statuscode = "statuscode"
+        ulist = "ulist"
+        message = "message"
+        raw_message = "raw_message"
+        chat_list = "chat_list"
+        direct = "direct"
+
+
 
 class Bot:
     """
@@ -89,6 +110,8 @@ class Bot:
 
         self.cogs = {}
 
+
+
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
             return  # ignore
@@ -112,6 +135,8 @@ class Bot:
 
                 self.logger.error(traceback.format_exc())
                 self.run_cb("error", args=(e,))
+
+
 
     def __handle_error__(self, e):
         self.run_cb("error", args=(e,))
@@ -185,21 +210,22 @@ class Bot:
     def _handle_status(self, status, listener):
         if status == "I:112 | Trusted Access enabled":
             return
+
         if self.logger_in:
             self.logger_in = False
-            if not status == "I:100 | OK":
+
+            if status != "I:100 | OK":
                 raise RuntimeError("CloudLink Trust Failed")
 
-            self.wss.sendPacket(
-                {
-                    "cmd": "direct",
-                    "val": {
-                        "cmd": "authpswd",
-                        "val": {"username": self.username, "pswd": self._password},
-                    },
-                    "listener": "__meowerbot__login",
-                }
-            )
+            auth_packet = {
+                "cmd": "direct",
+                "val": {
+                    "cmd": "authpswd",
+                    "val": {"username": self.username, "pswd": self._password},
+                },
+                "listener": "__meowerbot__login",
+            }
+            self.wss.sendPacket(auth_packet)
 
         elif listener == "__meowerbot__login":
             if status == "E:104 | Internal":
@@ -207,7 +233,7 @@ class Bot:
                     "https://webhooks.meower.org/post/home",
                     json={
                         "post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.",
-                         "username": self.username,
+                        "username": self.username,
                     },
                 )
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
@@ -215,7 +241,7 @@ class Bot:
                 self.wss.stop()
                 return
 
-            if not status == "I:100 | OK":
+            if status != "I:100 | OK":
                 raise RuntimeError("Password Or Username Is Incorrect")
 
             time.sleep(0.5)
@@ -224,21 +250,21 @@ class Bot:
         elif listener == "__meowerbot__send_message":
             if status == "I:100 | OK":
                 self.autoreload_time = self.autoreload_original
-                return  # This is just checking if a post went OK
-            #autoreload time should reset if 
-
+                return
 
             raise RuntimeError("Post Failed to send")
-        
 
-    def callback(self, callback, cbid=None):
-        """Connects a callback ID to a callback"""
+    def callback(self, callback, cbid: cbids |  None |  str =None):
+        """Connects a callback ID to a callback
+        """
         if cbid is None:
             cbid = callback.__name__
 
         if cbid not in self.callbacks:
             self.callbacks[cbid] = []
         self.callbacks[cbid].append(callback)
+
+    
 
     def __handle_close__(self, *args, **kwargs):
         if self.autoreload:
@@ -263,7 +289,7 @@ class Bot:
                 packet["val"]["u"] = split[0]
         
         if packet["val"]["p"].startswith(self.prefix+"#0000"):
-            packet["val"]["p"] = packet["val"]["p"].replace("#0000", self.prefix)
+            packet["val"]["p"] = packet["val"]["p"].replace("#0000", "")
         
         return packet
 
