@@ -35,4 +35,4 @@ jobs:
         
     - name: Test with pytest
       run: |
-        python -m poetry run "python -m unittest discover tests/"
+        python -m poetry run "unittest discover tests/"
