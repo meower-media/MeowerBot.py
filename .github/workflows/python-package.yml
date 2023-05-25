@@ -30,13 +30,13 @@ jobs:
           virtualenvs-in-project: true
       - name: Install Dependencies
         run: |
-          
+          #assume im in the Venv
           python -m poetry install --no-interaction 
           $act
 
       - name: Run Tests
         run: |
-          python -m poetry run python -m unittest discover -s tests
+          python3 -m poetry run python -m unittest discover -s tests
       - name: Run Linter
         run: |
           bandit -r .
