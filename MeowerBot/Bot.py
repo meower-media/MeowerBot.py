@@ -29,6 +29,7 @@ if sys.version_info >= (3, 11):
 else:
     from backports.strenum import StrEnum
 
+from typing import Union
 
 class cbids(StrEnum):
         error = "error"
@@ -255,7 +256,7 @@ class Bot:
 
             raise RuntimeError("Post Failed to send")
 
-    def callback(self, callback, cbid: cbids |  None |  str =None):
+    def callback(self, callback, cbid: Union[Union[cbids,  None], str] =None):
         """Connects a callback ID to a callback
         """
         if cbid is None:
