@@ -25,12 +25,15 @@ jobs:
           - name: Install Poetry
             uses: snok/install-poetry@v1
             with:
-              version: 1.1.12
+              version: latest
               virtualenvs-create: true
               virtualenvs-in-project: true
           - name: Install Dependencies
             run: |
-              python -m poetry install --no-interaction
+              $act
+              pip install bandit
+              poetry install --no-interaction
+
           - name: Run Tests
             run: |
               python -m unittest discover -s tests
