@@ -31,12 +31,12 @@ jobs:
       - name: Install Dependencies
         run: |
           #assume im in the Venv
-          python -m poetry install --no-interaction 
+          C:\Users\runneradmin\.local\bin\poetry.exe install --no-interaction 
           $act
 
       - name: Run Tests
         run: |
-          python3 -m poetry run python -m unittest discover -s tests
+          C:\Users\runneradmin\.local\bin\poetry.exe run python -m unittest discover -s tests
       - name: Run Linter
         run: |
           bandit -r .
