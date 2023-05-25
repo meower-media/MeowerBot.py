@@ -36,7 +36,7 @@ jobs:
 
           - name: Run Tests
             run: |
-              poetry run "unittest discover -s tests"
+              poetry run python -m unittest discover -s tests
           - name: Run Linter
             run: |
               bandit -r my_project
