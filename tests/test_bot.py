@@ -1,3 +1,4 @@
+# nosec
 import unittest
 from unittest.mock import MagicMock
 
@@ -13,7 +14,7 @@ class TestBot(unittest.TestCase):
     def setUp(self):
         self.bot = Bot()
         self.bot.username = "testuser"
-        self.bot._password = "testpassword"
+        self.bot._password = "testpassword" # nosec
         self.bot.wss = MagicMock()
 
     def test_handle_packet_statuscode(self):
@@ -92,8 +93,8 @@ class TestBot(unittest.TestCase):
 
         botm.CTX.assert_called_with(packet["val"], self.bot)
 
-        assert self.bot.run_command.called
-        assert self.bot.run_command.call_args[0][0] == botm.CTX.message
+        assert self.bot.run_command.called # nosec 
+        assert self.bot.run_command.call_args[0][0] == botm.CTX.message # nosec
 
         
 
@@ -208,9 +209,8 @@ class TestBot(unittest.TestCase):
         with patch("builtins.print", MagicMock()):
             self.bot._handle_status(status, listener)
 
-        assert self.bot.bad_exit
-
-
+        assert self.bot.bad_exit # nosec
+ 
     def test_handle_status_send_message_success(self):
         status = "I:100 | OK"
         listener = "__meowerbot__send_message"
