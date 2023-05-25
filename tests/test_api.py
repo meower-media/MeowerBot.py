@@ -1,3 +1,5 @@
+#lint:disable
+
 import unittest
 from unittest.mock import MagicMock, patch
 from MeowerBot.API import MeowerAPI

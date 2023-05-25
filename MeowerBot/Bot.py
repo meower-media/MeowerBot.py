@@ -232,9 +232,10 @@ class Bot:
                 requests.post(
                     "https://webhooks.meower.org/post/home",
                     json={
-                        "post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.",
+                        "post": f"{self.username}: {message}",
                         "username": self.username,
                     },
+                    timeout=5
                 )
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
                 self.bad_exit = True
