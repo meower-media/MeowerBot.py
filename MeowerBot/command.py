@@ -1,6 +1,5 @@
-import warnings
 import inspect
-
+import warnings
 from logging import getLogger
 
 logger = getLogger("MeowerBot")
@@ -30,33 +29,29 @@ class AppCommand:
         for subcommand in self.subcommands.values():
             subcommand.register_class(con)
 
-
     def subcommand(self, name=None, args=0):
         def inner(func):
-
             cmd = AppCommand(func, name=name, args=args)
             cmd.register_class(self.connected)
 
             self.subcommands.update(cmd.info())
 
+            return func  # dont want mb to register this as a root command
 
-            return func #dont want mb to register this as a root command
         return inner
-    
 
     def run_cmd(self, ctx, *args):
-        
         try:
             self.subcommands[args[0]]["command"].run_cmd(ctx, *args[1:])
             return
         except KeyError:
-            #print(f"KeyError: {args}")
-            #print(f"Subcommands: {self.subcommands}")
+            # print(f"KeyError: {args}")
+            # print(f"Subcommands: {self.subcommands}")
             logger.debug(f"Cant find subcommand {args[0]}")
 
         except IndexError:
             logger.debug(f"IndexError: {args}")
-        
+
         if not self.args == 0:
             args = args[: self.args]
 
@@ -73,7 +68,6 @@ class AppCommand:
                 "arg_types": self.arg_types,
                 "command": self,
                 "func": self.func,
-
             }
         }
 
@@ -88,7 +82,6 @@ class _Command(AppCommand):
 
 def command(name=None, args=0):
     def inner(func):
-
         cmd = AppCommand(func, name=name, args=args)
 
         return cmd

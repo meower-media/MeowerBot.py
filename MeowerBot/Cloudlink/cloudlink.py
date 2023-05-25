@@ -3,7 +3,6 @@
 #!/usr/bin/env python3
 
 
-
 version = "0.1.7.4"
 
 # Server based on https://github.com/Pithikos/python-websocket-server
@@ -27,10 +26,11 @@ Modified for use in MeowerBot.py by ShowierData9978
 """
 
 import json
-import threading
-import websocket as ws_client  # type: ignore
 import logging
 import logging as log
+import threading
+
+import websocket as ws_client  # type: ignore
 
 """
 Code formatting
@@ -59,7 +59,6 @@ class API:
 
     def client(self, ip="ws://127.0.0.1:3000/"):  # Runs CloudLink in client mode.
         try:
-
             # Change the link state to 2 (Client mode)
             self.wss = ws_client.WebSocketApp(
                 ip,
@@ -101,7 +100,6 @@ class API:
         self, msg
     ):  # User-friendly message sender for both server and client.
         try:
-
             self.logging.debug(f"Sending {json.dumps(msg)}")
             self.wss.send(json.dumps(msg))
         except Exception as e:
@@ -139,7 +137,6 @@ class CloudLink(API):
 
     def _on_connection_client(self, ws):  # Client-side connection handler
         try:
-
             self.logging.info("Connected")
             self.wss.send(
                 json.dumps({"cmd": "direct", "val": {"cmd": "type", "val": "py"}})
@@ -158,7 +155,6 @@ class CloudLink(API):
 
     def _on_packet_client(self, ws, message):  # Client-side packet handler
         try:
-
             self.logging.debug(f"New packet: {message}")
 
             tmp = json.loads(message)
@@ -178,7 +174,6 @@ class CloudLink(API):
                     try:
                         self.callback_function["on_packet"](message)
                     except Exception as e:
-
                         self.logging.error(f"Error on _on_packet_client: {e}")
 
                 threading.Thread(target=run).start()
@@ -187,7 +182,6 @@ class CloudLink(API):
 
     def _on_error_client(self, ws, error):  # Client-side error handler
         try:
-
             self.logging.error(f"Error: {error}")
             if not self.callback_function["on_error"] is None:
 
@@ -199,14 +193,12 @@ class CloudLink(API):
 
                 threading.Thread(target=run).start()
         except Exception as e:
-
             self.logging.error(f"Error on _on_error_client: {e}")
 
     def _closed_connection_client(
         self, ws, close_status_code, close_msg
     ):  # Client-side closed connection handler
         try:
-
             self.logging.info(
                 f"Closed, status: {close_status_code} with code {close_msg}"
             )
@@ -216,7 +208,6 @@ class CloudLink(API):
                     try:
                         self.callback_function["on_close"]()
                     except Exception as e:
-
                         self.logging.error(f"Error on _closed_connection_client: {e}")
 
                 threading.Thread(target=run).start()

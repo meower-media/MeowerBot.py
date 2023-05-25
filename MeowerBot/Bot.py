@@ -1,28 +1,18 @@
-import threading
-import shlex
-
-from .Cloudlink import CloudLink
-import sys
-
 import json
+import logging
+import shlex
+import sys
+import threading
+import time
 import traceback
 
 import requests
-
-
-import time
-
-from .command import AppCommand
-from .context import CTX
-
-import time
-import logging
-
-from .API import MeowerAPI
-
 from websocket._exceptions import WebSocketConnectionClosedException, WebSocketException
 
-import sys
+from .API import MeowerAPI
+from .Cloudlink import CloudLink
+from .command import AppCommand
+from .context import CTX
 
 if sys.version_info >= (3, 11):
     from enum import StrEnum
@@ -31,18 +21,18 @@ else:
 
 from typing import Union
 
-class cbids(StrEnum):
-        error = "error"
-        __raw__ = "__raw__"
-        login = "login"
-        close = "close"
-        statuscode = "statuscode"
-        ulist = "ulist"
-        message = "message"
-        raw_message = "raw_message"
-        chat_list = "chat_list"
-        direct = "direct"
 
+class cbids(StrEnum):
+    error = "error"
+    __raw__ = "__raw__"
+    login = "login"
+    close = "close"
+    statuscode = "statuscode"
+    ulist = "ulist"
+    message = "message"
+    raw_message = "raw_message"
+    chat_list = "chat_list"
+    direct = "direct"
 
 
 class Bot:
@@ -50,11 +40,8 @@ class Bot:
     A class that holds all of the networking for a meower bot to function and run
 
     """
-    __bridges__ = [
-			"Discord",
-			"Revower",
-			"revolt"
-		]
+
+    __bridges__ = ["Discord", "Revower", "revolt"]
 
     BOT_TAKEN_LISTENERS = [
         "__meowerbot__send_ip",
@@ -63,10 +50,7 @@ class Bot:
         "__meowerbot__cloudlink_trust",
     ]
 
-    BOT_NO_PMSG_RESPONSE = [
-        "I:500 | Bot",
-        "I: 500 | Bot"
-    ]
+    BOT_NO_PMSG_RESPONSE = ["I:500 | Bot", "I: 500 | Bot"]
 
     def _t_ping(self):
         while True:
@@ -74,7 +58,7 @@ class Bot:
 
             self.wss.sendPacket({"cmd": "ping", "val": ""})
 
-    def __init__(self, prefix=None, autoreload: int or None = None): #type: ignore
+    def __init__(self, prefix=None, autoreload: int or None = None):  # type: ignore
         self.wss = CloudLink()
         self.callbacks = {}
         self._last_to = "Home"
@@ -111,20 +95,18 @@ class Bot:
 
         self.cogs = {}
 
-
-
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
             return  # ignore
 
         if not kwargs:
             kwargs = {}
-        
-        if cbid == "error" and isinstance(args[0], KeyboardInterrupt()): 
+
+        if cbid == "error" and isinstance(args[0], KeyboardInterrupt()):
             self.logger.error("KeyboardInterrupt")
             self.bad_exit = True
             self.stop()
-            return 
+            return
 
         kwargs["bot"] = self
         for callback in self.callbacks[cbid]:
@@ -133,11 +115,8 @@ class Bot:
                     *args, **kwargs
                 )  # multi callback per id is supported (unlike cloudlink 0.1.7.3 LOL)
             except Exception as e:  # cq ignore
-
                 self.logger.error(traceback.format_exc())
                 self.run_cb("error", args=(e,))
-
-
 
     def __handle_error__(self, e):
         self.run_cb("error", args=(e,))
@@ -145,25 +124,20 @@ class Bot:
             self.__handle_close__()
             return
 
-
-        
-
-
     def _debug_fix(self, packet):
         packet = json.loads(packet)  # Server bug workaround
 
         try:
             self.__handle_packet__(packet)
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
-
             self.logger.error(traceback.format_exc())
-            self.run_cb("error", args=(e, ))
+            self.run_cb("error", args=(e,))
 
         try:
-            self.run_cb("__raw__", args=(packet, ))  # raw packets
+            self.run_cb("__raw__", args=(packet,))  # raw packets
         except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
             self.logger.error(traceback.format_exc())
-            self.run_cb("error", args=(e, ))
+            self.run_cb("error", args=(e,))
 
     def __handle_on_connect__(self):
         self.wss.sendPacket(
@@ -194,7 +168,7 @@ class Bot:
 
             self.commands.update(info)
 
-            return cmd #allow subcommands without a cog
+            return cmd  # allow subcommands without a cog
 
         return inner
 
@@ -236,7 +210,7 @@ class Bot:
                         "post": "ERROR: MeowerBot.py Webhooks Logging\n\n Account Softlocked.",
                         "username": self.username,
                     },
-                    timeout=5
+                    timeout=5,
                 )
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
                 self.bad_exit = True
@@ -256,9 +230,8 @@ class Bot:
 
             raise RuntimeError("Post Failed to send")
 
-    def callback(self, callback, cbid: Union[Union[cbids,  None], str] =None):
-        """Connects a callback ID to a callback
-        """
+    def callback(self, callback, cbid: Union[Union[cbids, None], str] = None):
+        """Connects a callback ID to a callback"""
         if cbid is None:
             cbid = callback.__name__
 
@@ -266,38 +239,34 @@ class Bot:
             self.callbacks[cbid] = []
         self.callbacks[cbid].append(callback)
 
-    
-
     def __handle_close__(self, *args, **kwargs):
         if self.autoreload:
-            self.autoreload = False #to stop race condisons 
+            self.autoreload = False  # to stop race condisons
             self.logger_in = True
-            self.autoreload_time *= 1.2 
-            
-            
-            time.sleep(self.autoreload_time)
-            self.autoreload = True #reset this, as i set it to false above.
+            self.autoreload_time *= 1.2
 
-            self.wss.state = 0 #type: ignore
-            self.wss.client(self.server) #type: ignore
-            return #dont want the close callback to be called here
+            time.sleep(self.autoreload_time)
+            self.autoreload = True  # reset this, as i set it to false above.
+
+            self.wss.state = 0  # type: ignore
+            self.wss.client(self.server)  # type: ignore
+            return  # dont want the close callback to be called here
 
         self.run_cb("close", args=args, kwargs=kwargs)
 
     def handle_bridges(self, packet):
         if packet["val"]["u"] in self.__bridges__ and ": " in packet["val"]["p"]:
-                split = packet["val"]["p"].split(": ", 1)
-                packet["val"]["p"] = split[1]
-                packet["val"]["u"] = split[0]
-        
-        if packet["val"]["p"].startswith(self.prefix+"#0000"):
+            split = packet["val"]["p"].split(": ", 1)
+            packet["val"]["p"] = split[1]
+            packet["val"]["u"] = split[0]
+
+        if packet["val"]["p"].startswith(self.prefix + "#0000"):
             packet["val"]["p"] = packet["val"]["p"].replace("#0000", "")
-        
+
         return packet
 
     def __handle_packet__(self, packet):
         if packet["cmd"] == "statuscode":
-
             self._handle_status(packet["val"], packet.get("listener", None))
 
             listener = packet.get("listener", None)
@@ -314,7 +283,6 @@ class Bot:
                 self.run_cb("message", args=(ctx.message,))
 
             else:
-
                 if ctx.user.username == self.username:
                     return
                 if not ctx.message.data.startswith(self.prefix):
@@ -332,22 +300,19 @@ class Bot:
             if listener == "mb_get_chat_list":
                 self.run_cb("chat_list", args=(packet["val"]["payload"], listener))
             elif listener == "__meowerbot__login":
-                self.api.login(packet['val']['payload']['token'])
+                self.api.login(packet["val"]["payload"]["token"])
             self.run_cb("direct", args=(packet["val"], listener))
-
-        
 
         else:
             listener = packet.get("listener")
             self.run_cb(packet["cmd"], args=(packet["val"], listener))
 
-        
-        if (packet["cmd"] == "pmsg") and  (packet["val"] not in self.BOT_NO_PMSG_RESPONSE):
-            self.wss.sendPacket({
-                "cmd": "pmsg",
-                "val": "I:500 | Bot",
-                "id": packet["origin"]
-            })
+        if (packet["cmd"] == "pmsg") and (
+            packet["val"] not in self.BOT_NO_PMSG_RESPONSE
+        ):
+            self.wss.sendPacket(
+                {"cmd": "pmsg", "val": "I:500 | Bot", "id": packet["origin"]}
+            )
 
     def run_command(self, message):
         args = shlex.split(str(message))
@@ -378,13 +343,12 @@ class Bot:
                         "listener": "__meowerbot__send_message",
                     }
                 )
-        #socket is closed, use webhooks
+        # socket is closed, use webhooks
         except WebSocketException as e:
             self.run_cb(cbid="error", args=(e,))
-            
 
     def send_typing(self, to="home"):
-        if  to == "home":
+        if to == "home":
             self.wss.sendPacket(
                 {
                     "cmd": "direct",
@@ -398,19 +362,19 @@ class Bot:
                 }
             )
         else:
-          self.wss.sendPacket(
-            {
-                "cmd": "direct",
-                "val": {
-                    "cmd": "set_chat_state",
+            self.wss.sendPacket(
+                {
+                    "cmd": "direct",
                     "val": {
-                        "chatid": to,
-                        "state": 100,
+                        "cmd": "set_chat_state",
+                        "val": {
+                            "chatid": to,
+                            "state": 100,
+                        },
                     },
-                },
-            }
-          )
-        
+                }
+            )
+
     def enter_chat(self, chatid="livechat"):
         self.wss.sendPacket(
             {
@@ -429,30 +393,25 @@ class Bot:
         """
         Unstable, use at your own risk
 
-        comes with callbacks: chat_list 
+        comes with callbacks: chat_list
         """
-        self.wss.sendPacket({
-            "cmd": "direct",
-            "val": {
-                "cmd": "create_chat",
-                "val": name
-            },
-            "listener": "mb_create_chat"
-        })
+        self.wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": {"cmd": "create_chat", "val": name},
+                "listener": "mb_create_chat",
+            }
+        )
 
         time.sleep(secs=0.5)
 
-        self.wss.sendPacket({
-            "cmd": "direct",
-            "val": {
-                "cmd": "get_chat_list",
-                "val": {
-                    "page": 1
-                }
-            },
-            "listener": "mb_get_chat_list"
-        })
-
+        self.wss.sendPacket(
+            {
+                "cmd": "direct",
+                "val": {"cmd": "get_chat_list", "val": {"page": 1}},
+                "listener": "mb_get_chat_list",
+            }
+        )
 
     def run(self, username, password, server="wss://server.meower.org"):
         """
@@ -469,6 +428,6 @@ class Bot:
         self.server = server
         self.api = MeowerAPI(username=username)
         self.wss.client(server)
-        
+
         if self.bad_exit:
             raise BaseException("Bot Account Softlocked")

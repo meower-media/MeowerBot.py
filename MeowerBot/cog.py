@@ -1,5 +1,6 @@
-from .command import AppCommand, command
 import weakref
+
+from .command import AppCommand, command
 
 
 class Cog:

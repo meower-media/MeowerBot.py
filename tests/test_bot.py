@@ -1,20 +1,18 @@
 # nosec
 import unittest
-from unittest.mock import MagicMock
+from io import StringIO
+from unittest.mock import MagicMock, patch
 
 from MeowerBot import Bot, botm
 
-from io import StringIO
-from unittest.mock import patch
-
-#Import the bot module here
+# Import the bot module here
 
 
 class TestBot(unittest.TestCase):
     def setUp(self):
         self.bot = Bot()
         self.bot.username = "testuser"
-        self.bot._password = "testpassword" # nosec
+        self.bot._password = "testpassword"  # nosec
         self.bot.wss = MagicMock()
 
     def test_handle_packet_statuscode(self):
@@ -32,33 +30,31 @@ class TestBot(unittest.TestCase):
         finally:
             self.bot.run_cb = run_cb
 
-    
     def test_handle_packet_ulist(self):
-        packet = {"cmd": "ulist", "val":"a;b;c;d"}
-        runcb = self.bot.run_cb 
+        packet = {"cmd": "ulist", "val": "a;b;c;d"}
+        runcb = self.bot.run_cb
         self.bot.run_cb = MagicMock()
-        
+
         try:
             result = self.bot.__handle_packet__(packet)
-            self.bot.run_cb.assert_called_with("ulist", self.bot.wss.statedata["ulist"]["usernames"])
+            self.bot.run_cb.assert_called_with(
+                "ulist", self.bot.wss.statedata["ulist"]["usernames"]
+            )
         except:
             raise
         finally:
             self.bot.run_cb = runcb
 
-        
-        
-
-
     def test_handle_packet_direct_with_message_callback(self):
-        packet = {"cmd": "direct", "val": {"u":"aa", "p":"aa", "origin":"a","post_origin":"a"}}
-        
+        packet = {
+            "cmd": "direct",
+            "val": {"u": "aa", "p": "aa", "origin": "a", "post_origin": "a"},
+        }
+
         self.bot.run_command = MagicMock()
 
-        
+        # edit bots imports
 
-        #edit bots imports
-        
         botm.CTX = MagicMock()
         botm.CTX.return_value = botm.CTX
         botm.CTX.message = MagicMock()
@@ -66,43 +62,45 @@ class TestBot(unittest.TestCase):
         run_cb = self.bot.run_cb
         self.bot.run_cb = MagicMock()
         self.bot.prefix = "!"
-        
+
         try:
             result = self.bot.__handle_packet__(packet)
 
-            self.bot.run_cb.assert_called_with("raw_message", args=(packet["val"], ))
-            
+            self.bot.run_cb.assert_called_with("raw_message", args=(packet["val"],))
+
         except:
             raise
         finally:
             self.bot.run_cb = run_cb
 
     def test_handle_packet_direct_without_message_callback(self):
-        packet = {"cmd": "direct", "val": {"p": "!help", "u": "A", "origin": "123", "post_origin": "123"}}
+        packet = {
+            "cmd": "direct",
+            "val": {"p": "!help", "u": "A", "origin": "123", "post_origin": "123"},
+        }
         self.bot.callbacks = {}
         self.bot.run_command = MagicMock()
         self.bot.prefix = "!"
 
-        #edit bots imports
-        
+        # edit bots imports
+
         botm.CTX = MagicMock()
         botm.CTX.return_value = botm.CTX
-        
+
         result = self.bot.__handle_packet__(packet)
-        
 
         botm.CTX.assert_called_with(packet["val"], self.bot)
 
-        assert self.bot.run_command.called # nosec 
-        assert self.bot.run_command.call_args[0][0] == botm.CTX.message # nosec
-
-        
+        assert self.bot.run_command.called  # nosec
+        assert self.bot.run_command.call_args[0][0] == botm.CTX.message  # nosec
 
     def test_handle_packet_direct_with_prefix(self):
-        packet = {"cmd": "direct", "val": {"p": ".help","u":"A", "origin": "123", "post_origin": "123"}}
+        packet = {
+            "cmd": "direct",
+            "val": {"p": ".help", "u": "A", "origin": "123", "post_origin": "123"},
+        }
         self.bot.callbacks = {}
 
-        
         self.bot.run_command = MagicMock()
         self.bot.prefix = "!"
 
@@ -119,22 +117,29 @@ class TestBot(unittest.TestCase):
         self.bot.run_cb.assert_called_with("other", args=("value", None))
 
     def test_handle_packet_pmsg(self):
-        packet = {"cmd": "pmsg", "val": "Hello, world!", "origin": "123" }
+        packet = {"cmd": "pmsg", "val": "Hello, world!", "origin": "123"}
         self.bot.BOT_NO_PMSG_RESPONSE = [""]
         self.bot.wss.sendPacket = MagicMock()
         self.bot.prefix = "!"
         result = self.bot.__handle_packet__(packet)
 
-        self.bot.wss.sendPacket.assert_called_with({"cmd": "pmsg", "val": "I:500 | Bot", "id": "123"})
+        self.bot.wss.sendPacket.assert_called_with(
+            {"cmd": "pmsg", "val": "I:500 | Bot", "id": "123"}
+        )
         botm.requests = MagicMock()
 
-        
-
     def test_handle_bridges_with_bridge(self):
-        packet = {"val": {"u": "user", "p": "user: message", "origin": "123", "post_origin": "123"}}
+        packet = {
+            "val": {
+                "u": "user",
+                "p": "user: message",
+                "origin": "123",
+                "post_origin": "123",
+            }
+        }
         self.bot.__bridges__ = ["user"]
 
-        self.bot.prefix  = "!"
+        self.bot.prefix = "!"
         result = self.bot.handle_bridges(packet)
 
         self.assertEqual(result["val"]["u"], "user")
@@ -160,7 +165,6 @@ class TestBot(unittest.TestCase):
 
         self.assertEqual(result["val"]["u"], "user")
         self.assertEqual(result["val"]["p"], "!command")
-
 
     def test_handle_status_trusted_access_enabled(self):
         status = "I:112 | Trusted Access enabled"
@@ -202,15 +206,12 @@ class TestBot(unittest.TestCase):
     def test_handle_status_login_failure(self):
         status = "E:104 | Internal"
         listener = "__meowerbot__login"
-        
 
-
-        
         with patch("builtins.print", MagicMock()):
             self.bot._handle_status(status, listener)
 
-        assert self.bot.bad_exit # nosec
- 
+        assert self.bot.bad_exit  # nosec
+
     def test_handle_status_send_message_success(self):
         status = "I:100 | OK"
         listener = "__meowerbot__send_message"
@@ -227,9 +228,12 @@ class TestBot(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             self.bot._handle_status(status, listener)
 
+
 import unittest
 from unittest.mock import MagicMock
+
 from MeowerBot import Bot
+
 
 class TestBotRun(unittest.TestCase):
     def setUp(self):
@@ -283,5 +287,5 @@ class TestBotRun(unittest.TestCase):
                 self.bot.run("testuser", "testpassword")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,16 +1,19 @@
 import unittest
 from unittest.mock import MagicMock
+
 from MeowerBot.cog import Cog
-from MeowerBot.command import command, AppCommand
+from MeowerBot.command import AppCommand, command
+
 
 class CogTestingCog(Cog):
-	@command("command1")
-	def command1(self):
-		pass
+    @command("command1")
+    def command1(self):
+        pass
 
-	@command("command2")
-	def command2(self):
-		pass
+    @command("command2")
+    def command2(self):
+        pass
+
 
 class TestCog(unittest.TestCase):
     def setUp(self):
@@ -19,9 +22,6 @@ class TestCog(unittest.TestCase):
     def test_commands(self):
         # Test that all commands are registered
         self.assertEqual(len(self.cog.__commands__), 2)
-
-		
-
 
         # Test that the commands are registered correctly
         self.assertIn("command1", self.cog.__commands__)
@@ -36,4 +36,4 @@ class TestCog(unittest.TestCase):
 
 
 if __name__ == "__main__":
-	unittest.main()
+    unittest.main()

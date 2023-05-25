@@ -1,12 +1,12 @@
-import requests
 from urllib.parse import urljoin
+
+import requests
 
 
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
 
     def __init__(self, username):
-
         self.session = requests.session()
         self.session.headers.update({"usename": username})
 

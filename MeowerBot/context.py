@@ -1,27 +1,25 @@
-from datetime import datetime
-
 import typing
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .Bot import Bot
 
 import weakref
+
 import requests
 
 
 class User:
     def __init__(self, bot, username):
         self.username = username
-        
+
         self.bot = bot
         self._raw = self.bot.api.get_user(self.username)
 
         self.level = self._raw["lvl"]
         self.pfp = self._raw["pfp_data"]
         self.quote = self._raw["quote"]
-
-    
 
     def ping(self, msg, to="home"):
         self.bot.send_msg(f"@{self.username} {msg}", to=to)
