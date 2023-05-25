@@ -1,7 +1,7 @@
 import threading
 import shlex
 
-from .cloudlink import CloudLink
+from .Cloudlink import CloudLink
 import sys
 
 import json
