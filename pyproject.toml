@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MeowerBot"
-version = "2.5.5"
+version = "2.5.7"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
 license = "MIT"
@@ -15,10 +15,10 @@ repository = "https://github.com/MeowerBots/MeowerBot.py"
 python = "^3.8"
 requests = "^2.28.0"
 websocket-client = "*"
-
+backports-strenum = { version = "^1.2.4", python = "<3.11" }
 
 [tool.poetry.group.extras.dependencies]
-backports-strenum = "^1.2.4"
+
 
 
 [tool.poetry.group.dev.dependencies]
