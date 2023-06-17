@@ -6,7 +6,6 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-|cl4 beta | ✅
 | 2.x.x   | :white_check_mark: |
 | 1.x.x   | :x:                |
 
@@ -16,4 +15,5 @@
 
 Use private reporting. 
 
-May get forwarded to [meower-media](https://github.com/meower-media-co/
+May get forwarded to [meower-media](https://github.com/meower-media-co/) if it is a Meower side issue.
+

@@ -5,7 +5,7 @@ MIT License
 
 """
 
-__version__ = "2.5.7"
+__version__ = "2.6.0"
 
 
 # Public library imports
