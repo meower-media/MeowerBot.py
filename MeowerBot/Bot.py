@@ -43,8 +43,6 @@ class cbids(StrEnum):
         chat_list = "chat_list"
         direct = "direct"
 
-
-
 class Bot:
     """
     A class that holds all of the networking for a meower bot to function and run
@@ -74,7 +72,7 @@ class Bot:
 
             self.wss.sendPacket({"cmd": "ping", "val": ""})
 
-    def __init__(self, prefix=None, autoreload: int or None = None): #type: ignore
+    def __init__(self, prefix=None, autoreload: int or None = None ): #type: ignore
         self.wss = CloudLink()
         self.callbacks = {}
         self._last_to = "Home"
@@ -111,8 +109,6 @@ class Bot:
 
         self.cogs = {}
 
-
-
     def run_cb(self, cbid, args=(), kwargs=None):  # cq: ignore
         if cbid not in self.callbacks:
             return  # ignore
@@ -137,8 +133,6 @@ class Bot:
                 self.logger.error(traceback.format_exc())
                 self.run_cb("error", args=(e,))
 
-
-
     def __handle_error__(self, e):
         self.run_cb("error", args=(e,))
         if type(e) == WebSocketConnectionClosedException and self.autoreload:
@@ -152,12 +146,7 @@ class Bot:
             self.wss = None # effectively kill the bot
             self.__handle_close__(            )            
             return
-        
-        
-
-        
-
-
+ 
     def _debug_fix(self, packet):
         packet = json.loads(packet)  # Server bug workaround
 
@@ -174,7 +163,6 @@ class Bot:
             self.__handle_error__(e)
             self.logger.error(traceback.format_exc())
             self.run_cb("error", args=(e, ))
-            
 
     def __handle_on_connect__(self):
         self.wss.sendPacket(
@@ -277,8 +265,6 @@ class Bot:
         if cbid not in self.callbacks:
             self.callbacks[cbid] = []
         self.callbacks[cbid].append(callback)
-
-    
 
     def __handle_close__(self, *args, **kwargs):
         if self.autoreload:
@@ -393,7 +379,6 @@ class Bot:
         #socket is closed, use webhooks
         except WebSocketException as e:
             self.run_cb(cbid="error", args=(e,))
-            
 
     def send_typing(self, to="home"):
         if  to == "home":
@@ -464,7 +449,6 @@ class Bot:
             },
             "listener": "mb_get_chat_list"
         })
-
 
     def run(self, username, password, server="wss://server.meower.org"):
         """
