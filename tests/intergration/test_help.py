@@ -8,7 +8,7 @@ from logging import basicConfig, DEBUG
 
 basicConfig(level=DEBUG)
 
-bot: Bot = Bot(prefix="!", autoreload=1)
+bot: Bot = Bot(autoreload=1)
 
 test: AppCommand
 
@@ -29,7 +29,5 @@ help = Help(bot)
 
 
 bot.register_cog(help)
-help.generate_help()
-print(help.pages)
 bot.run(env['uname'], env['password'])
 

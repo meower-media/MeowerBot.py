@@ -7,7 +7,7 @@ def _get_index_or(l, i, d):
 		r = l[i]
 		if str(r) == str(inspect._empty):
 			return d
-		return r
+		return r.__name__
 	except IndexError:
 		return d
 
@@ -15,11 +15,14 @@ class Help(Cog):
 	def __init__(self, bot, *args, **kwargs):
 		self.bot = bot
 		self.page = ""
+		self.bot.callback(self._login, "login")
 		Cog.__init__(self)
-
+		
 		
 
 	def generate_help(self):
+		if self.bot.prefix == f"@{self.bot.username}":
+			self.bot.prefix = f"@{self.bot.username} "
 		self.pages = []
 		self.page = ""
 		page_size = 0
@@ -53,12 +56,15 @@ class Help(Cog):
 
 		self.pages.append(self.page)
 
+		if self.bot.prefix == f"@{self.bot.username} ":
+			self.bot.prefix = f"@{self.bot.username}"
+
 	
 	def handle_command(self, name, cmd):
 		self.page += (f"{self.bot.prefix}{name} ")
 
 		for arg in cmd.args:
-			self.page += f"<{arg[0][0]}: {str(_get_index_or(arg, 1, 'any'))}> "
+			self.page += f"<{arg[0]}: {str(_get_index_or(arg, 1, 'any'))}> "
 
 		
 		for arg in cmd.optional_args:
@@ -80,5 +86,9 @@ class Help(Cog):
 			page = len(self.pages) - 1
 		
 		ctx.send_msg(self.pages[page])
+	
+
+	def _login(self, bot):
+		self.generate_help() #generate help on login, bugfix for default prefix and people being dumb
 
 		
