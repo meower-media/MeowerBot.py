@@ -1,6 +1,6 @@
 import warnings
 import inspect
-
+import traceback
 from logging import getLogger
 
 logger = getLogger("MeowerBot")
@@ -9,16 +9,41 @@ logger = getLogger("MeowerBot")
 class AppCommand:
     connected = None
 
-    def __init__(self, func, name=None, args=0):
+    def __init__(self, func, name=None, args=0, is_subcommand=False):
         if name is None:
             name = func.__name__
 
         self.name = name
         self.func = func
-        self.args = args
+        self.args_num = args
 
-        self.arg_names = inspect.getfullargspec(func)[0]
-        self.arg_types = func.__annotations__
+        spec = inspect.signature(func)
+
+        # Get the names and annotations of the arguments
+        self.args = [
+            (param.name, param.annotation)
+            for param in spec.parameters.values()
+            if param.name not in ["self", "ctx"]
+        ]
+
+        # Check if the function has an arbitrary number of positional arguments
+        self.has_unamed_args = any(
+            param.kind == inspect.Parameter.VAR_POSITIONAL for param in spec.parameters.values()
+        )
+
+        self.is_subcommand = is_subcommand
+
+        # Get the names, annotations, and default values of the keyword-only arguments
+        self.optional_args = [
+            (param.name, param.annotation, param.default)
+            for param in spec.parameters.values()
+            if param.kind == inspect.Parameter.KEYWORD_ONLY
+        ]
+
+        # Set the namespace based on whether the command is a subcommand or not
+        self.namespace = self.is_subcommand if type(self.is_subcommand) is str else self.name
+
+
         self.subcommands = {}
 
     def __call__(self, *args):
@@ -29,6 +54,7 @@ class AppCommand:
 
         for subcommand in self.subcommands.values():
             subcommand.register_class(con)
+
 
 
     def subcommand(self, name=None, args=0):
@@ -55,10 +81,10 @@ class AppCommand:
             logger.debug(f"Cant find subcommand {args[0]}")
 
         except IndexError:
-            logger.debug(f"IndexError: {args}")
+            logger.debug(traceback.format_exc())
         
-        if not self.args == 0:
-            args = args[: self.args]
+        if not self.args_num == 0:
+            args = args[:self.args_num]
 
         if self.connected is None:
             self.func(ctx, *args)
@@ -69,8 +95,10 @@ class AppCommand:
         return {
             self.name: {
                 "args": self.args,
-                "arg_names": self.arg_names,
-                "arg_types": self.arg_types,
+                "args_num": self.args_num,
+                "optional_args": self.optional_args,
+                "has_unamed_args": self.has_unamed_args,
+                "subcommands": self.subcommands,
                 "command": self,
                 "func": self.func,
 

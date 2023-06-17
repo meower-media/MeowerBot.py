@@ -76,8 +76,9 @@ class API:
 
             # Run the client
             self.wss.run_forever()
-        except Exception as e:
+        except BaseException as e:
             self.logging.error(f"Error at client: {e}")
+            self._on_error_client(self.wss, e)
 
     def stop(self, abrupt=False):  # Stops CloudLink (not sure if working)
         self.wss.close()
@@ -94,8 +95,9 @@ class API:
                 self.logging.error(
                     f"Error: Callback {callback_id} is not a valid callback id!"
                 )
-        except Exception as e:
+        except BaseException as e:
             self.logging.error(f"Error at callback: {e}")
+            self._on_error_client(self.wss, e)
 
     def sendPacket(
         self, msg
@@ -104,8 +106,9 @@ class API:
 
             self.logging.debug(f"Sending {json.dumps(msg)}")
             self.wss.send(json.dumps(msg))
-        except Exception as e:
+        except BaseException as e:
             self.logging.error(f"Error on sendPacket (client): {e}")
+            self._on_error_client(self.wss, e)
 
     def getUsernames(self):  # Returns the username list.
         return self.statedata["ulist"]["usernames"]
@@ -149,12 +152,15 @@ class CloudLink(API):
                 def run(*args):
                     try:
                         self.callback_function["on_connect"]()
-                    except Exception as e:
+                    except BaseException as e:
                         self.logging.error(f"Error on _on_connection_client: {e}")
+                        self._on_error_client(self.wss, error)
 
                 threading.Thread(target=run).start()
-        except Exception as e:
+        except BaseException as e:
             self.logging.info(f"Error on _on_connection_client: {e}")
+            self._on_error_client(self.wss, e)
+
 
     def _on_packet_client(self, ws, message):  # Client-side packet handler
         try:
@@ -177,13 +183,15 @@ class CloudLink(API):
                 def run(*args):
                     try:
                         self.callback_function["on_packet"](message)
-                    except Exception as e:
+                    except BaseException as e:
 
                         self.logging.error(f"Error on _on_packet_client: {e}")
+                        self._on_error_client(self.wss, e)
 
                 threading.Thread(target=run).start()
-        except Exception as e:
+        except BaseException as e:
             self.logging.error(f"Error on _on_packet_client: {e}")
+            self._on_error_client(self.wss, e)
 
     def _on_error_client(self, ws, error):  # Client-side error handler
         try:
@@ -194,13 +202,16 @@ class CloudLink(API):
                 def run(*args):
                     try:
                         self.callback_function["on_error"](error)
-                    except Exception as e:
+                    except BaseException as e:
                         self.logging.error(f"Error on _on_error_client: {e}")
 
+                        self._on_error_client(self.wss, e)
+
                 threading.Thread(target=run).start()
-        except Exception as e:
+        except BaseException as e:
 
             self.logging.error(f"Error on _on_error_client: {e}")
+            self._on_error_client(self.wss, e)
 
     def _closed_connection_client(
         self, ws, close_status_code, close_msg
@@ -215,10 +226,12 @@ class CloudLink(API):
                 def run(*args):
                     try:
                         self.callback_function["on_close"]()
-                    except Exception as e:
+                    except BaseException as e:
 
                         self.logging.error(f"Error on _closed_connection_client: {e}")
+                        self._on_error_client(self.wss, e)
 
                 threading.Thread(target=run).start()
-        except Exception as e:
+        except BaseException as e:
             self.logging.error(f"Error on _closed_connection_client: {e}")
+            self._on_error_client(self.wss, e)

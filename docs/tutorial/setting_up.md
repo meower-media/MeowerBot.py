@@ -61,6 +61,4 @@ The context system is MeowerBot.py's way of processing raw websocket data and co
 
 It is always activated everytime someone sends a post, that your bot receves
 
-<p align="center" href="./callbacks.md">
-Next page
-</p>
+[Next](./callbacks.md)

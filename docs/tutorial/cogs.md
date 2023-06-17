@@ -54,3 +54,4 @@ bot = Bot()
 bot.register_cog(YourCog(bot))
 ```
 
+[Next](./help.md)

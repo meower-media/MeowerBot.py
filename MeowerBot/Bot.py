@@ -1,7 +1,7 @@
 import threading
 import shlex
 
-from .cloudlink import CloudLink
+from .cl import CloudLink
 import sys
 
 import json
@@ -145,6 +145,15 @@ class Bot:
             self.__handle_close__()
             return
 
+        if (type(e)) == KeyboardInterrupt:
+            #kill all bot threads
+            self.bad_exit = True
+
+            self.wss = None # effectively kill the bot
+            self.__handle_close__(            )            
+            return
+        
+        
 
         
 
@@ -154,16 +163,18 @@ class Bot:
 
         try:
             self.__handle_packet__(packet)
-        except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
-
+        except BaseException as e:  # cq: skip #IDC ABOUT GENERAL EXCP
+            self.__handle_error__(e)
             self.logger.error(traceback.format_exc())
             self.run_cb("error", args=(e, ))
 
         try:
             self.run_cb("__raw__", args=(packet, ))  # raw packets
-        except Exception as e:  # cq: skip #IDC ABOUT GENERAL EXCP
+        except BaseException as e:  # cq: skip #IDC ABOUT GENERAL EXCP
+            self.__handle_error__(e)
             self.logger.error(traceback.format_exc())
             self.run_cb("error", args=(e, ))
+            
 
     def __handle_on_connect__(self):
         self.wss.sendPacket(
@@ -240,7 +251,8 @@ class Bot:
                 )
                 print("CRITICAL ERROR! ACCOUNT SOFTLOCKED!!!!.", file=sys.__stdout__)
                 self.bad_exit = True
-                self.wss.stop()
+                del self.wss
+                
                 return
 
             if status != "I:100 | OK":

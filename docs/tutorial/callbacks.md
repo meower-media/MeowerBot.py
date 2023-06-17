@@ -146,3 +146,4 @@ bot.callback(raw_msg, cbid="__raw__") # If the cbid is not specifed, it will use
 
 
 
+[Next](./cogs.md)

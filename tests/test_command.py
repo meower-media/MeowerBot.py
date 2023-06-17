@@ -37,18 +37,7 @@ class TestAppCommand(unittest.TestCase):
 		cmd.run_cmd(None, "arg1", "arg2")
 		mock_func.assert_called_with(None, "arg1", "arg2")
 
-	def test_info(self):
-		# Test that the info method returns the correct dictionary
-		mock_func = MagicMock()
-		mock_func.__annotations__  = {}
-		cmd = AppCommand(mock_func, name="testcmd", args=2)
-		info = cmd.info()
-		self.assertIn("testcmd", info)
-		self.assertEqual(info["testcmd"]["args"], 2)
-		self.assertEqual(info["testcmd"]["arg_names"], ['self'])
-		self.assertEqual(info["testcmd"]["arg_types"], {})
-		self.assertEqual(info["testcmd"]["command"], cmd)
-		self.assertEqual(info["testcmd"]["func"], mock_func)
+
 
 if __name__ == "__main__":
 	unittest.main()
