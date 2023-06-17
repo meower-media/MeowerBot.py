@@ -60,13 +60,7 @@ To create the command within your bot, you need to add the following code to you
 	help = Help(bot)
 	```
 
-- 3: Generate the menus for the help command
-
-	```py
-	help.generate_help()
-	```
-
-- 4: Add the help command to your bot
+- 3: Add the help command to your bot
 
 	```py
 	bot.register_cog(help)
