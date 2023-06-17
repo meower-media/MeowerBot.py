@@ -19,7 +19,6 @@ class DiscBotMeower(Bot):
 		self.callback(self.on_chatlist, "chatlist")
 		self.callback(self.on_raw_packet, "__raw__")
 
-
 	def on_message(self, msg):
         if ctx.user.username == self.username:
             return
