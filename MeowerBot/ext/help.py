@@ -1,5 +1,5 @@
 from MeowerBot.cog import Cog
-from MeowerBot.command import command
+from MeowerBot.command import command, AppCommand
 import inspect
 
 def _get_index_or(l, i, d):
@@ -60,7 +60,7 @@ class Help(Cog):
 			self.bot.prefix = f"@{self.bot.username}"
 
 	
-	def handle_command(self, name, cmd):
+	def handle_command(self, name, cmd: AppCommand):
 		self.page += (f"{self.bot.prefix}{name} ")
 
 		for arg in cmd.args:
@@ -69,6 +69,11 @@ class Help(Cog):
 		
 		for arg in cmd.optional_args:
 			self.page += f"[{arg[0]}: {str(_get_index_or(arg, 1, 'any'))}: optional ] "
+		
+		if cmd.func.__doc__ is not None:
+			self.page += f"\n\t{cmd.func.__doc__}"
+			
+		
 		
 		self.page += "\n"
 

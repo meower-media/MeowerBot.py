@@ -23,6 +23,7 @@ def sub(ctx, *args):
 
 @bot.command(args=0)
 def reloadtime(ctx):
+	"__doc__ test"
 	ctx.send_msg(f"My reload time is {round(bot.autoreload_time)}" )
 
 help = Help(bot)
