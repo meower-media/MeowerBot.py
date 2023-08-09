@@ -42,6 +42,8 @@ class cbids(StrEnum):
 		direct = "direct"
 
 class Bot(Client):
+	messages = []
+	message_condition = asyncio.Condition()
 	"""
 	A class that holds all of the networking for a meower bot to function and run
 	"""
@@ -256,8 +258,15 @@ class Bot(Client):
 			packet = self.handle_bridges(packet)
 
 			ctx = CTX(packet["val"], self)
+			async with self.message_condition:
+				self.messages.insert(0, ctx.message)
+				self.message_condition.notify_all()
+
+
 			if "message" in self.callbacks:
+                
 				await self.run_cb("message", args=(ctx.message,))
+				
 
 			else:
 
@@ -395,6 +404,16 @@ class Bot(Client):
 			},
 			"listener": "mb_get_chat_list"
 		})
+	
+	async def wait_for_message(self, activation, timeout=100):
+		timeout = min(timeout, 50)
+		def wrapper():
+			return activation(self.messages[0])
+
+		async with self.message_condition:
+			await asyncio.wait_for(self.message_condition.wait_for(wrapper), timeout)
+
+		return self.messages[0]
 
 	async def run(self, username, password, server="wss://server.meower.org"):
 		"""
