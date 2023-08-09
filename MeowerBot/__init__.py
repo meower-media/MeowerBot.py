@@ -12,5 +12,6 @@ __version__ = "2.6.2"
 from . import Bot as botm
 
 from .Bot import Bot
+from .Bot import cbids
 
 __all__ = ["__version__", "Bot", "botm"]

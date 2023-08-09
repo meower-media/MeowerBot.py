@@ -23,8 +23,8 @@ class User:
 
     
 
-    def ping(self, msg, to="home"):
-        self.bot.send_msg(f"@{self.username} {msg}", to=to)
+    async def ping(self, msg, to="home"):
+        await self.bot.send_msg(f"@{self.username} {msg}", to=to)
 
     def __str__(self):
         return str(self.__dict__)
@@ -54,8 +54,8 @@ class CTX:
         self.bot = bot
         self.message.ctx = weakref.proxy(self)  # type: ignore
 
-    def send_msg(self, msg):
-        self.bot.send_msg(msg, to=self.message.chat)
+    async def send_msg(self, msg):
+        await self.bot.send_msg(msg, to=self.message.chat)
 
-    def reply(self, msg):
-        self.user.ping(msg, to=self.message.chat)
+    async def reply(self, msg):
+        await self.user.ping(msg, to=self.message.chat)
