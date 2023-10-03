@@ -35,7 +35,7 @@ class YourCog(Cog):
         self.bot = bot
 
     @command()
-    def yourcommand(ctx):
+    def yourcommand(self, ctx):
         print("YourCommand Has Been RUN!")
 
         ctx.reply("hello!")
