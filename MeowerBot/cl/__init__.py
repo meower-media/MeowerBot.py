@@ -5,61 +5,61 @@ import asyncio
 
 
 class Client:
-    ws: websockets.WebSocketClientProtocol
+	ws: websockets.WebSocketClientProtocol
 
-    def __init__(self):
-        self.ws = None
-        pass
+	def __init__(self):
+		self.ws = None
+		pass
 
-    async def _connect(self):
-        pass
+	async def _connect(self):
+		pass
 
-    async def _disconnect(self):
-        pass
+	async def _disconnect(self):
+		pass
 
-    async def _message(self, message):
-        pass
+	async def _message(self, message):
+		pass
 
-    async def _error(self, error):
-        pass
+	async def _error(self, error):
+		pass
 
-    async def sendPacket(self, message):
-        await self.ws.send(json.dumps(message))
-
-
-    async def close(self, reason=None):
-        await self.ws.close(reason=reason)
-
-    async def connect(self, server):
-           async for websocket in websockets.connect(server):
-                try:
-
-                    self.ws = websocket
-                    await self._connect()
-
-                    async for message in websocket:
-                        try:
+	async def sendPacket(self, message):
+		await self.ws.send(json.dumps(message))
 
 
-                            await self._message(json.loads(message))
+	async def close(self, reason=None):
+		await self.ws.close(reason=reason)
+
+	async def connect(self, server):
+		async for websocket in websockets.connect(server):
+			try:
+
+				self.ws = websocket
+				await self._connect()
+
+				async for message in websocket:
+					try:
 
 
-                        except websockets.ConnectionClosed:
-                            raise
+						await self._message(json.loads(message))
 
-                        except Exception as e:
 
-                            await self._error(e)
-                            pass
+					except websockets.ConnectionClosed:
+						raise
 
-                except websockets.ConnectionClosed:
-                    await self._disconnect()
-                    pass
+					except Exception as e:
 
-                except Exception as e:
-                    await self._error(e)
-                    pass
+						await self._error(e)
+						pass
 
-           await self._disconnect()
+			except websockets.ConnectionClosed:
+				await self._disconnect()
+				pass
+
+			except Exception as e:
+				await self._error(e)
+				pass
+
+		await self._disconnect()
 
 

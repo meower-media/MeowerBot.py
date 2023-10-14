@@ -10,25 +10,12 @@ import weakref
 import requests
 
 
-class User:
-    def __init__(self, bot, username):
-        self.username = username
+
+class Chat:
+    def __init__(self, id, display_name):
+        self.id = id
+        self.display_name = display_name
         
-        self.bot = bot
-        self._raw = self.bot.api.get_user(self.username)
-
-        self.level = self._raw["lvl"]
-        self.pfp = self._raw["pfp_data"]
-        self.quote = self._raw["quote"]
-
-    
-
-    async def ping(self, msg, to="home"):
-        await self.bot.send_msg(f"@{self.username} {msg}", to=to)
-
-    def __str__(self):
-        return str(self.__dict__)
-
 
 class Post:
     def __init__(self, bot, _raw):
