@@ -5,14 +5,16 @@ import ujson as json
 from .types import generic
 from .types.api.reports import ReportRequest, Report, AdminNotesResponse
 from .types.api.request.reports import UpdateReportBody, UpdateNotesBody
+from .types.api.request.chats import ChatBody
 from .types.generic import Post
+from .types.api.chats import Chats, ChatGroup
 
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
 
     def __init__(self, username):
         self.headers = {"username": username}
-        self.client = AsyncClient(headers=self.headers, base_url=self.base_uri)
+        self.client = AsyncClient(headers=self.headers, base_url=self.base_uri, params={"autoget": None})
 
 
 
@@ -20,7 +22,7 @@ class MeowerAPI:
         self.headers.update({"token": token})
     
     async def admin_get_reports(self, timeout=None) -> ReportRequest:
-        resp = await self.client.get("/admin/reports", timeout=timeout, params={"autoget": None})
+        resp = await self.client.get("/admin/reports", timeout=timeout)
 
         if resp.status_code == 404: 
             raise RuntimeError("[API] 404 Not found") 
@@ -117,4 +119,98 @@ class MeowerAPI:
 
     # TODO: Implement wrapper for https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/admin.py#L74-L1564
     
+    async def get_chats(self) -> Chats:
+        resp = await self.client.get(f"/chats/")
 
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Token or username supplied! This is required to send authenticated API requests")
+
+        return Chats.from_json(resp.text)
+    
+    async def create_chat(self, **kwargs: ChatBody) -> ChatGroup:
+        resp = await self.client.post(f"/chats/", json=kwargs)
+
+        if resp.status_code == 401:
+            raise RuntimeError(json.parse(resp.text)["type"])
+        
+        return ChatGroup.from_json(resp.text)
+
+    async def get_chat(self, uuid: generic.UUID) -> ChatGroup:
+        resp = await self.client.get(f"/chats/{uuid}")
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Token or username supplied! This is required to send authenticated API requests")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+
+
+
+        return ChatGroup.from_json(resp.text)
+    
+    async def update_chat(self, uuid: generic.UUID, **kwargs: ChatBody) -> ChatGroup:
+        resp = await self.client.patch(f"/chats/{uuid}", josn=kwargs)
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Updating chat")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+        
+
+        return ChatGroup.from_json(resp.text)
+    
+    async def leave_chat(self, uuid: generic.UUID) -> dict:
+        resp = await self.client.delete(f"/chats/{uuid}")
+
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Updating chat")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+        
+        return {"error": False}
+
+    async def add_user_to_chat(self, uuid: generic.UUID, username: str) -> ChatGroup:
+        resp = await self.client.put(f"/chats/{uuid}/members/{username}")
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Updating chat")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+
+        return ChatGroup.from_json(resp.text)
+    
+    async def transfer_chat_ownership(self, uuid: generic.UUID, username: str) -> ChatGroup:
+        resp = await self.client.post(f"/chats/{uuid}/members/{username}/transfer")
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Updating chat")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+
+        return ChatGroup.from_json(resp.text)
