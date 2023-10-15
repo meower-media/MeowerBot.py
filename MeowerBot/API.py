@@ -117,7 +117,7 @@ class MeowerAPI:
 
         return Post.from_json(resp.text)
 
-    # TODO: Implement wrapper for https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/admin.py#L74-L1564
+    
     
     async def get_chats(self) -> Chats:
         resp = await self.client.get(f"/chats/")
@@ -144,8 +144,6 @@ class MeowerAPI:
 
         if resp.status_code == 404: 
             raise RuntimeError("[API] 404 Chat Not found") 
-
-
 
         return ChatGroup.from_json(resp.text)
     
@@ -214,3 +212,10 @@ class MeowerAPI:
             raise RuntimeError("[API] 404 Chat Not found") 
 
         return ChatGroup.from_json(resp.text)
+
+    # TODO: Implement wrapper for https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/admin.py#L74-L1564
+    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/home.py
+    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/posts.py
+    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/inbox.py
+    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/search.py
+    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/users.py
