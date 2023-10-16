@@ -61,3 +61,10 @@ class User:
     pfp_data: int
     quote: str
     uuid: UUID
+
+@dataclass_json
+@dataclass
+class Relationship:
+    username: str
+    state: int
+    updated_at: int

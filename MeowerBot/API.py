@@ -3,11 +3,15 @@ from urllib.parse import urljoin
 from httpx import AsyncClient, Auth
 import ujson as json
 from .types import generic
-from .types.api.reports import ReportRequest, Report, AdminNotesResponse
+from .types.api.reports import ReportRequest, Report, AdminNotesResponse, PagedRequest
 from .types.api.request.reports import UpdateReportBody, UpdateNotesBody
 from .types.api.request.chats import ChatBody
 from .types.generic import Post
 from .types.api.chats import Chats, ChatGroup
+from .types.api.request import PostBody
+from .types.api.user import User, Relationship
+from .types.api.request.Users import UpdateRelationshipBody
+from typing_extensions import Unpack
 
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
@@ -22,13 +26,13 @@ class MeowerAPI:
         self.headers.update({"token": token})
     
     async def admin_get_reports(self, timeout=None) -> ReportRequest:
-        resp = await self.client.get("/admin/reports", timeout=timeout)
+        resp = await self.client.get("/admin/reports", timeout=timeout, params=kwargs)
 
         if resp.status_code == 404: 
             raise RuntimeError("[API] 404 Not found") 
 
         return ReportRequest.from_json(
-            
+            resp.text
         )
     
     async def admin_get_report(self, uuid: generic.UUID) -> Report:
@@ -75,8 +79,8 @@ class MeowerAPI:
 
         return AdminNotesResponse.from_json(resp.text)
     
-    async def admin_create_note(self, indentifier: str, **kwargs: UpdateNotesBody) -> AdminNotesResponse:
-        resp = await self.client.put(f"/admin/notes/{indentifier}", json=kwargs)
+    async def admin_create_note(self, indentifier: str, **kwargs: Unpack[UpdateNotesBody]) -> AdminNotesResponse:
+        resp = await self.client.put(f"/admin/notes/{indentifier}", params=kwargs, json=kwargs)
         if resp.status_code == 403:
             raise RuntimeError("[API] 403 Found: You are not allowed to edit/create notes")
         
@@ -127,7 +131,7 @@ class MeowerAPI:
 
         return Chats.from_json(resp.text)
     
-    async def create_chat(self, **kwargs: ChatBody) -> ChatGroup:
+    async def create_chat(self, **kwargs: Unpack[ChatBody]) -> ChatGroup:
         resp = await self.client.post(f"/chats/", json=kwargs)
 
         if resp.status_code == 401:
@@ -147,7 +151,7 @@ class MeowerAPI:
 
         return ChatGroup.from_json(resp.text)
     
-    async def update_chat(self, uuid: generic.UUID, **kwargs: ChatBody) -> ChatGroup:
+    async def update_chat(self, uuid: generic.UUID, **kwargs: Unpack[ChatBody]) -> ChatGroup:
         resp = await self.client.patch(f"/chats/{uuid}", josn=kwargs)
 
         if resp.status_code == 429:
@@ -213,9 +217,139 @@ class MeowerAPI:
 
         return ChatGroup.from_json(resp.text)
 
+    async def get_posts(self, chat: str | generic.UUID, page: int = 1) -> PagedRequest[Post]:
+        if chat == "home":
+            resp = await self.client.get(f"/home/", params={"page": page})
+        else:
+            resp = await self.client.get(f"/posts/{chat}", params={"page": page})
+        
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+
+
+        return PagedRequest[Post].from_json(resp.text)
+    
+    async def send_post(self, chat: str | generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
+        if chat == "home":
+            resp = await self.client.post(f"/home/", json=kwargs)
+        else:
+            resp = await self.client.post(f"/posts/{chat}", json=kwargs)
+        
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Sending posts")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Chat Not found") 
+        
+        return Post.from_json(resp.text)
+
+    async def get_post(self, uuid: generic.UUID) -> Post:
+        resp = await self.client.get(f"/posts", params={"id": uuid})
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Post Not found") 
+        
+        return Post.from_json(resp.text)
+
+    async def update_post(self, uuid: generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
+        resp = await self.client.patch(f"/posts", params={"id": uuid}, json=kwargs)
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Sending posts")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Post Not found") 
+
+        return Post.from_json(resp.text)
+
+    async def delete_post(self, uuid: generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
+        resp = await self.client.patch(f"/posts", params={"id": uuid})
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Deleting posts")
+
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 404: 
+            raise RuntimeError("[API] 404 Post Not found") 
+
+        return Post.from_json(resp.text)
+    
+    async def get_inbox(self) -> PagedRequest[PostBody]:
+        resp = await self.client.get("/inbox")
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+        return PagedRequest[PostBody].from_json(resp.text)
+
+    async def search_users(self, query: str, page: int = 1 ) -> PagedRequest[User]:
+        resp = await self.client.get("/search/users", params={"q": query, "p": page},)
+
+        return PagedRequest[User].from_json(resp.text)
+
+    async def search_home(self, query: str, page: int = 1) -> PagedRequest[Post]:
+        resp = await self.client.get("/search/home", params={"q": query, "p": page})
+        return PagedRequest[Post].from_json(resp.text)
+
     # TODO: Implement wrapper for https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/admin.py#L74-L1564
-    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/home.py
-    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/posts.py
-    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/inbox.py
-    # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/search.py
     # TODO: https://github.com/meower-media-co/Meower-Server/blob/better-moderation/rest_api/users.py
+
+    async def _get_user(self, username, url, json=None, page=1, query = None):
+        resp = await self.client.get(urljoin(f"/users/{username}/", url), json=json, params={"q": query, "p": page})
+        if resp.status_code == 404:
+            raise RuntimeError("[API] User does not exist")
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+
+        if resp.status_code == 429:
+            raise RuntimeError("[API] Ratelimited: Updating chat")
+
+        if resp.status_code == 403:
+            raise RuntimeError("[API] Blocked from doing this action")
+
+        return resp.text
+
+    async def get_user_posts(self, username, query, page = 1) -> PagedRequest[Post]:
+        return PagedRequest[Post].from_json(await self._get_user(username, "posts", query=query, page=page))
+
+    async def get_user_relationship(self, username) -> Relationship:
+        return Relationship.from_json(await self._get_user(username, "relationship"))
+    
+    async def edit_user_relationship(self, username, **kwargs: Unpack[UpdateRelationshipBody]) -> Relationship:
+        resp = await self.client.patch(f"/users/{username}/relationship", json=kwargs)
+
+        if resp.status_code == 404:
+            raise RuntimeError("[API] User does not exist")
+
+        if resp.status_code == 401:
+            raise RuntimeError("[API] No Auth to do this action")
+
+        
+
+
+
+        return Relationship.from_json(resp.text)
+
+    async def dm_user(self, username) -> ChatGroup:
+        return ChatGroup.from_json(self._get_user(username, 'dm'))
