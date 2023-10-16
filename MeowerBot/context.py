@@ -88,7 +88,7 @@ class Context:
         self.bot = bot
 
     async def send_msg(self, msg):
-        self.message.chat.send_msg(msg)
+        await self.message.chat.send_msg(msg)
 
     async def reply(self, msg):
         await self.message.reply(msg)
