@@ -128,6 +128,7 @@ class Bot(Client):
 		self.callbacks[callback].append(func)
 	
 
+
 	
 
 	
@@ -161,9 +162,9 @@ class Bot(Client):
 			self.prefix = "@" + self.username
 		self.logger = logging.getLogger(f"MeowerBot {self.username}")
 		self.server = server
-		try:
-			self.api = MeowerAPI(username=username)
-		except: # nosec
-			pass
+		
+		self.api = MeowerAPI(username=username)
+	
+			
 		await self.connect(server)
 		

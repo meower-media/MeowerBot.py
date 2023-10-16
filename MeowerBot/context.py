@@ -12,10 +12,14 @@ import requests
 
 
 class Chat:
-    def __init__(self, id, display_name):
+    def __init__(self, id, display_name, bot: "Bot"):
         self.id = id
         self.display_name = display_name
-        
+        self.bot: "Bot" = bot
+
+    async def send_msg(self, message):
+        self.bot.api.send_post(self.id, message)
+
 
 class Post:
     def __init__(self, bot, _raw):
