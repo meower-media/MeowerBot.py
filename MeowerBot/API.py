@@ -4,14 +4,10 @@ from httpx import AsyncClient, Auth
 import ujson as json
 from .types import generic
 from .types.api.reports import ReportRequest, Report, AdminNotesResponse, PagedRequest
-from .types.api.request.reports import UpdateReportBody, UpdateNotesBody
-from .types.api.request.chats import ChatBody
 from .types.generic import Post
 from .types.api.chats import Chats, ChatGroup
-from .types.api.request import PostBody
 from .types.api.user import User, Relationship
-from .types.api.request.Users import UpdateRelationshipBody
-from typing_extensions import Unpack
+from typing import Literal
 
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
@@ -47,8 +43,8 @@ class MeowerAPI:
 
         return Report.from_json(resp.text)
     
-    async def admin_edit_report(self, uuid: generic.UUID, **kwargs: UpdateReportBody) -> Report:
-        resp = await self.client.patch(f"/admin/reports/{uuid}", json=kwargs)
+    async def admin_edit_report(self, uuid: generic.UUID, status: Literal["no_action_taken", "action_taken"]) -> Report:
+        resp = await self.client.patch(f"/admin/reports/{uuid}", json={"status": status})
         
         if resp.status_code == 403:
             raise RuntimeError("[API] 403 Found: You are not allowed to edit reports")
@@ -79,8 +75,8 @@ class MeowerAPI:
 
         return AdminNotesResponse.from_json(resp.text)
     
-    async def admin_create_note(self, indentifier: str, **kwargs: Unpack[UpdateNotesBody]) -> AdminNotesResponse:
-        resp = await self.client.put(f"/admin/notes/{indentifier}", params=kwargs, json=kwargs)
+    async def admin_create_note(self, indentifier: str, notes: str) -> AdminNotesResponse:
+        resp = await self.client.put(f"/admin/notes/{indentifier}", json={"notes": notes})
         if resp.status_code == 403:
             raise RuntimeError("[API] 403 Found: You are not allowed to edit/create notes")
         
@@ -131,8 +127,8 @@ class MeowerAPI:
 
         return Chats.from_json(resp.text)
     
-    async def create_chat(self, **kwargs: Unpack[ChatBody]) -> ChatGroup:
-        resp = await self.client.post(f"/chats/", json=kwargs)
+    async def create_chat(self, nickname: str) -> ChatGroup:
+        resp = await self.client.post(f"/chats/", json={"nickname": nickname})
 
         if resp.status_code == 401:
             raise RuntimeError(json.parse(resp.text)["type"])
@@ -151,8 +147,8 @@ class MeowerAPI:
 
         return ChatGroup.from_json(resp.text)
     
-    async def update_chat(self, uuid: generic.UUID, **kwargs: Unpack[ChatBody]) -> ChatGroup:
-        resp = await self.client.patch(f"/chats/{uuid}", josn=kwargs)
+    async def update_chat(self, uuid: generic.UUID, nickname: str) -> ChatGroup:
+        resp = await self.client.patch(f"/chats/{uuid}", josn={"nickname": nickname})
 
         if resp.status_code == 429:
             raise RuntimeError("[API] Ratelimited: Updating chat")
@@ -233,11 +229,11 @@ class MeowerAPI:
 
         return PagedRequest[Post].from_json(resp.text)
     
-    async def send_post(self, chat: str | generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
+    async def send_post(self, chat: str | generic.UUID, content: str) -> Post:
         if chat == "home":
-            resp = await self.client.post(f"/home/", json=kwargs)
+            resp = await self.client.post(f"/home/", json={"content": content})
         else:
-            resp = await self.client.post(f"/posts/{chat}", json=kwargs)
+            resp = await self.client.post(f"/posts/{chat}", json={"content": content})
         
         if resp.status_code == 429:
             raise RuntimeError("[API] Ratelimited: Sending posts")
@@ -261,8 +257,8 @@ class MeowerAPI:
         
         return Post.from_json(resp.text)
 
-    async def update_post(self, uuid: generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
-        resp = await self.client.patch(f"/posts", params={"id": uuid}, json=kwargs)
+    async def update_post(self, uuid: generic.UUID,  content: str) -> Post:
+        resp = await self.client.patch(f"/posts", params={"id": uuid}, json={"content": content})
 
         if resp.status_code == 429:
             raise RuntimeError("[API] Ratelimited: Sending posts")
@@ -277,7 +273,7 @@ class MeowerAPI:
 
         return Post.from_json(resp.text)
 
-    async def delete_post(self, uuid: generic.UUID, **kwargs: Unpack[PostBody]) -> Post:
+    async def delete_post(self, uuid: generic.UUID) -> Post:
         resp = await self.client.patch(f"/posts", params={"id": uuid})
 
         if resp.status_code == 429:
@@ -336,8 +332,8 @@ class MeowerAPI:
     async def get_user_relationship(self, username) -> Relationship:
         return Relationship.from_json(await self._get_user(username, "relationship"))
     
-    async def edit_user_relationship(self, username, **kwargs: Unpack[UpdateRelationshipBody]) -> Relationship:
-        resp = await self.client.patch(f"/users/{username}/relationship", json=kwargs)
+    async def edit_user_relationship(self, username, state: Literal[0, 1, 2]) -> Relationship:
+        resp = await self.client.patch(f"/users/{username}/relationship", json={"state": state})
 
         if resp.status_code == 404:
             raise RuntimeError("[API] User does not exist")
