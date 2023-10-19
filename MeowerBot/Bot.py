@@ -12,7 +12,7 @@ import requests
 import time
 
 from .command import AppCommand
-from .context import CTX
+from .context import Context, Post, PartialUser, User
 
 import time
 import logging
@@ -22,10 +22,7 @@ from .API import MeowerAPI
 import asyncio
 import sys
 
-if sys.version_info >= (3, 11):
-	from enum import StrEnum
-else:
-	from backports.strenum import StrEnum
+from enum import StrEnum
 
 from typing import Union
 
@@ -34,11 +31,9 @@ class cbids(StrEnum):
 		__raw__ = "__raw__"
 		login = "login"
 		close = "close"
-		statuscode = "statuscode"
 		ulist = "ulist"
 		message = "message"
 		raw_message = "raw_message"
-		chat_list = "chat_list"
 		direct = "direct"
 
 callbacks = [i for i in cbids]
@@ -46,6 +41,8 @@ callbacks = [i for i in cbids]
 class Bot(Client):
 	messages = []
 	message_condition = asyncio.Condition()
+
+	
 	"""
 	A class that holds all of the networking for a meower bot to function and run
 	"""
@@ -128,21 +125,101 @@ class Bot(Client):
 		self.callbacks[callback].append(func)
 	
 
+	def subcommand(self, name=None, args=0, aliases = None):
+		def inner(func):
 
+			cmd = AppCommand(func, name=name, args=args)
+			cmd.register_class(self.connected)
+
+			self.commands = AppCommand.add_command(self.commands, cmd)
+
+
+			return cmd #dont want mb to register this as a root command
+		return inner
+
+	def update_commands():
+		for cog in self.cogs:
+			cog.update_commands()
+
+			self.commands = self.commands.update(cog.__commands__)
+
+	async def error(self, err: Exception): pass
+	async def __raw__(self, packet: dict): pass
+	async def login(self, token: str): pass 
+	async def close(self): pass
+	async def ulist(self, ulist): pass
+
+	async def message(self, message: Post): 
+		message = self.handle_bridges(message)
 	
 
+	async def raw_message(self, data: dict): pass
+	async def direct(self, data: dict): pass
+
 	
-
-
+	async def _run_event(self, event: cbids, *args, **kwargs):
+		err = await asyncio.gather(*([getattr(self, event)] + self.callbacks[event]), return_exceptions=True)
+		for i in err:
+			if isinstance(i, Exception):
+				await self._error(i)
 
 
 	# websocket
+	
+	def handle_bridges(self, message: Post):
+		fetch = False
+		if isinstance(message.user, User):
+			fetch = True
+
+		if message.user.name in self.__bridges__ and ":" in message.data:
+			split = message.data.split(": ", 1)
+			message.data = split[1]
+			message.user = PartialUser(split[0], self)
+			if fetch:
+				message.user = await message.user.fetch()
+		
+		
+
+		if message.data.startswith(self.prefix + "#0000"):
+			message.data = message.data.replace("#0000", "")
+			
+		return packet
+
+
 
 	async def _connect(self):
-		pass
+		await self.sendPacket({"cmd": "direct", "val": {
+			"cmd": "type", "val": "MeowerBot.py"
+		}})
+
+		if (await self.send_statuscode_request({ "cmd": "direct", val: "meower", "listener": "send_tkey" }))["val"] != "I: 100 | OK":
+			raise RuntimeError("Meower Trust Failed!")
+		
+		resp = await self.send_data_request(
+			{
+  				"cmd": "direct",
+  				"val": {
+				    "cmd": "authpswd",
+				    "val": {
+				      "username": self.username,
+				      "pswd": self.password
+				    }
+			  }
+		   }
+		)	
+	
+		if resp[1]["val"] != "I: 100 | OK":
+			raise Exception(f"Wrong Username or Password!\n {resp[1]['val']}")
+
+		self.api.login(resp[0]["val"["val"]["pswd"]])
+
+		await self._run_event(cbids.login, resp[0]["val"]["pswd"])
+
+	
+
 
 	async def _disconnect(self):
-		pass
+		await self._run_event(cbids.close)
 
 	async def _message(self, message):
 		pass

@@ -9,14 +9,31 @@ logger = getLogger("MeowerBot")
 class AppCommand:
 	connected = None
 
-	def __init__(self, func, name=None, args=0, is_subcommand=False):
+	@staticmethod
+	def add_command(obj: dict, command: AppCommand, ignore_subcommands = True):
+		if command.is_subcommand and ignore_subcommands:
+			return obj
+
+		for alias in cmd.alias + [cmd.name]:
+			obj[alias] = cmd
+
+		
+		
+
+		return obj
+		
+
+	def __init__(self, func, alias = None, name=None, args=0, is_subcommand=False):
 		if name is None:
 			name = func.__name__
 		
+		if alias is None:
+			alias = []
+
 		self.name = name
 		self.func = func
 		self.args_num = args
-
+		self.alias = alias
 		spec = inspect.signature(func)
 
 		# Get the names and annotations of the arguments
@@ -57,16 +74,16 @@ class AppCommand:
 
 
 
-	def subcommand(self, name=None, args=0):
+	def subcommand(self, name=None, args=0, aliases = None):
 		def inner(func):
 
 			cmd = AppCommand(func, name=name, args=args)
 			cmd.register_class(self.connected)
 
-			self.subcommands.update(cmd.info())
+			self.subcommand = AppCommand.add_command(self.subcommands, cmd)
+			self.connected.update_commands()
 
-
-			return func #dont want mb to register this as a root command
+			return cmd #dont want mb to register this as a root command
 		return inner
 	
 
@@ -93,27 +110,8 @@ class AppCommand:
 		else:
 			await self.func(self.connected, ctx, *args)
 
-	def info(self):
-		return {
-			self.name: {
-				"args": self.args,
-				"args_num": self.args_num,
-				"optional_args": self.optional_args,
-				"has_unamed_args": self.has_unamed_args,
-				"subcommands": self.subcommands,
-				"command": self,
-				"func": self.func,
+	
 
-			}
-		}
-
-
-class _Command(AppCommand):
-	def __init__(self, func, *args, name=None, **kwargs):
-		super().__init__(func, *args, name=name, **kwargs)
-		warnings.warn(
-			"MeowerBot.command._Command has been renamed to MeowerBot.command.AppCommand"
-		)
 
 
 def command(name=None, args=0):

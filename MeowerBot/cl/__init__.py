@@ -2,13 +2,16 @@ import websockets
 import orjson
 import json
 import asyncio
-
+import random
 
 class Client:
 	ws: websockets.WebSocketClientProtocol
+	message_condition = asyncio.Condition()
+	__messages: str
 
 	def __init__(self):
 		self.ws = None
+		self.__messages = []
 		pass
 
 	async def _connect(self):
@@ -26,6 +29,54 @@ class Client:
 	async def sendPacket(self, message):
 		await self.ws.send(json.dumps(message))
 
+	async def _wait_for_packet(self, conditions, expected_count=None, timeout=None):
+		"""
+		Wait for multiple JSON packets, each meeting a specific condition, in the bot's messages list.
+		Args:
+		- conditions (list of dict): A list of dictionaries, each representing a condition to check for.
+		- expected_count (int): Optional. The number of conditions to wait for. If None, wait for all conditions.
+		- timeout (float): Optional. Maximum time to wait in seconds for the specified conditions. If None, it will wait indefinitely.
+		Returns:
+		- A list of messages that meet the specified conditions, or None if timeout is reached.
+		"""
+		start_time = time.time()
+		received_packets = []
+
+		while True:
+			async with self.message_condition:
+				for condition in conditions:
+					if expected_count is not None and len(received_packets) >= expected_count:
+						return received_packets
+					found = False
+					for message in self.__messages:
+						if all(message.get(key) == value for key, value in condition.items()):
+							received_packets.append(message)
+							found = True
+							break
+					if not found:
+						break
+
+				if expected_count is None and len(received_packets) == len(conditions):
+					return received_packets
+				if timeout is not None and time.time() - start_time >= timeout:
+					return None
+				await asyncio.sleep(0.1)
+	
+	async def send_data_request(self, packet, timeout = None):
+		if packet.get("listener") == None:
+			# This does not need to be sucure lmao
+			packet["listener"] = random.random() # nosec
+
+		await self.sendPacket(packet)
+		return self._wait_for_packet({"listener": packet["listener"]}, expected_count=2,  timeout=timeout)
+
+	async def send_statuscode_request(self, packet, timeout = 0):
+		if packet.get("listener") == None:
+			# This does not need to be sucure lmao
+			packet["listener"] = random.random() # nosec
+
+		await self.sendPacket(packet)
+		return self._wait_for_packet({"listener": packet["listener"]}, expected_count=1,  timeout=timeout)[0]
 
 	async def close(self, reason=None):
 		await self.ws.close(reason=reason)
@@ -39,9 +90,14 @@ class Client:
 
 				async for message in websocket:
 					try:
+						data = json.loads(message)
+						with self.message_condition:
+							self.__messages.append(data)
+							self.message_condition.notify_all()
+							self.__messages = self.__messages[:50]
+							
 
-
-						await self._message(json.loads(message))
+						await self._message(data)
 
 
 					except websockets.ConnectionClosed:
