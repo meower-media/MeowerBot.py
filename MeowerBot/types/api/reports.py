@@ -17,17 +17,6 @@ class PagedRequest(Generic[T]):
     index: Optional[List[UUID]]
     autoget: Optional[List[T]]
 
-@dataclass_json
-@dataclass
-class Report:
-    _id: UUID
-    content: Content
-    escalated: bool
-    reports: List[ReportDetails]
-    status: str
-    type_: str = field(metadata=config(field_name="type"))
-
-
 
 
 @dataclass_json
@@ -37,6 +26,18 @@ class ReportDetails:
     reason: str
     time: int
     user: str
+    
+@dataclass_json
+@dataclass
+class Report:
+    _id: UUID
+    content: Post
+    escalated: bool
+    reports: List[ReportDetails]
+    status: str
+    type_: str = field(metadata=config(field_name="type"))
+
+
 
 class ReportRequest(PagedRequest):
     autoget: List[Report]

@@ -12,7 +12,7 @@ import requests
 import time
 
 from .command import AppCommand
-from .context import Context, Post, PartialUser, User
+from .context import Context, Post, PartialUser, User, PartialChat
 
 import time
 import logging
@@ -35,6 +35,7 @@ class cbids(StrEnum):
 		message = "message"
 		raw_message = "raw_message"
 		direct = "direct"
+		statuscode = "statuscode"
 
 callbacks = [i for i in cbids]
 
@@ -76,7 +77,7 @@ class Bot(Client):
 				await self._error(e)
 				break
 
-	def __init__(self, prefix=None ): #type: ignore
+	def __init__(self, prefix=None): #type: ignore
 		super().__init__()
 		self.callbacks = {i: [] for i in callbacks}
 		self.ulist = []
@@ -119,10 +120,13 @@ class Bot(Client):
 		def inner(func):
 			callback = callback if callback is not None else func.__name__
 
-		if func.__name__ not in callbacks:
-			raise TypeError(f"{func.__name__} is not a valid listener")
+			if func.__name__ not in callbacks:
+				raise TypeError(f"{func.__name__} is not a valid listener")
 		
-		self.callbacks[callback].append(func)
+			self.callbacks[callback].append(func)
+
+			return func
+		return inner
 	
 
 	def subcommand(self, name=None, args=0, aliases = None):
@@ -137,11 +141,13 @@ class Bot(Client):
 			return cmd #dont want mb to register this as a root command
 		return inner
 
-	def update_commands():
+	def update_commands(self):
 		for cog in self.cogs:
 			cog.update_commands()
 
 			self.commands = self.commands.update(cog.__commands__)
+
+
 
 	async def error(self, err: Exception): pass
 	async def __raw__(self, packet: dict): pass
@@ -150,8 +156,9 @@ class Bot(Client):
 	async def ulist(self, ulist): pass
 
 	async def message(self, message: Post): 
-		message = self.handle_bridges(message)
-	
+		message = await self.handle_bridges(message)
+	async def statuscode(self, status, listerner):
+		pass
 
 	async def raw_message(self, data: dict): pass
 	async def direct(self, data: dict): pass
@@ -166,7 +173,7 @@ class Bot(Client):
 
 	# websocket
 	
-	def handle_bridges(self, message: Post):
+	async def handle_bridges(self, message: Post):
 		fetch = False
 		if isinstance(message.user, User):
 			fetch = True
@@ -183,56 +190,102 @@ class Bot(Client):
 		if message.data.startswith(self.prefix + "#0000"):
 			message.data = message.data.replace("#0000", "")
 			
-		return packet
+		return message
 
+
+	def command(self, name=None, args=0, aliases = None):
+		def inner(func):
+
+			cmd = AppCommand(func, name=name, args=args)
+			cmd.register_class(self)
+
+			self.subcommand = AppCommand.add_command(self.commands, cmd)
+			
+
+			return cmd 
+		return inner
+	
 
 
 	async def _connect(self):
+		await self.sendPacket({ "cmd": "direct", "val": "meower", "listener": "send_tkey" })
+		
 		await self.sendPacket({"cmd": "direct", "val": {
-			"cmd": "type", "val": "MeowerBot.py"
+			"cmd": "type", "val": "py"
 		}})
 
-		if (await self.send_statuscode_request({ "cmd": "direct", val: "meower", "listener": "send_tkey" }))["val"] != "I: 100 | OK":
-			raise RuntimeError("Meower Trust Failed!")
-		
-		resp = await self.send_data_request(
-			{
-  				"cmd": "direct",
-  				"val": {
-				    "cmd": "authpswd",
-				    "val": {
-				      "username": self.username,
-				      "pswd": self.password
-				    }
-			  }
-		   }
-		)	
+		resp = await self.send_data_request({
+			"cmd": "direct",
+			"val": {
+				"cmd": "authpswd",
+				"val": {
+					"username": str(self.username).strip(), 
+					"pswd": str(self.password).strip()
+				}	
+			}
+		})	
 	
 		if resp[1]["val"] != "I: 100 | OK":
 			raise Exception(f"Wrong Username or Password!\n {resp[1]['val']}")
 
-		self.api.login(resp[0]["val"["val"]["pswd"]])
+		self.api.login(resp[0]['val']['payload']['token'])
 
-		await self._run_event(cbids.login, resp[0]["val"]["pswd"])
+		await self._run_event(cbids.login, resp[0]['val']['payload']['token'])
 
 	
 
 
 	async def _disconnect(self):
+		
 		await self._run_event(cbids.close)
 
+	def get_chat(self, id):
+		return PartialChat(id, self)
+
 	async def _message(self, message):
-		pass
+		if (message.get("listener")) != "mb_login":
+			self.logger.debug(message)
+		match message["cmd"]:
+			case "statuscode":
+				return await self._run_event(cbids.statuscode, message["val"], message.get("listener"))
+			
+			case "ulist":
+				self.ulist = message["val"].split(";")
+
+				return await self._run_event(cbids.ulist, self.ulist)
+			
+			case "direct":
+				if "post_origin" in message["val"]: # post 
+					post = Post(self, message["val"], chat=self.get_chat())
+					with self.message_condition:
+						self.messages.append(post)
+						self.message_condition.notify_all()
+				else:
+					return await self._run_event(cbids.direct, message)
+				
+
+        
+		if (message["cmd"] == "pmsg") and  (message["val"] not in self.BOT_NO_PMSG_RESPONSE):
+				self.wss.sendPacket({
+						"cmd": "pmsg",
+						"val": "I:500 | Bot",
+						"id": message["origin"]
+				})
+
+
+
+
+					
 
 	async def _error(self, error):
 		pass
 
-	async def run(self, username, password, server="wss://server.meower.org"):
+	async def start(self, username, password, server="wss://server.meower.org", ):
 		"""
 		Runs The bot (Blocking)
 		"""
 		self.username = username
-		self._password = password
+		self.password = password
 
 		asyncio.create_task(self._t_ping())
 		if self.prefix is None:
@@ -244,4 +297,14 @@ class Bot(Client):
 	
 			
 		await self.connect(server)
-		
+	
+	def run(self, username, password, server="wss://server.meower.org", ):
+		"""
+			Runs the bot  (Blocking)
+		"""
+		loop = asyncio.get_event_loop()
+		fut = loop.create_task( self.start(username, password, server=server) )
+		loop.run_forever()
+
+
+

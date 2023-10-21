@@ -1,15 +1,13 @@
 from datetime import datetime
 
-import typing
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .Bot import Bot
 
-import weakref
-import requests
 from .types.api.chats import ChatGroup
 from .types.api.user import User as RawUser
+from .types.generic import Post
 
 class PartialChat:
     def __init__(self, id, bot: "Bot"):
@@ -41,7 +39,7 @@ class PartialUser:
         self.bot = bot
 
     async def fetch(self):
-        return User(self.username, RawUser.from_json(await self.bot.api._get_user(username, "")))
+        return User(self.username, RawUser.from_json(await self.bot.api._get_user(self.username, "")))
 
 class User(PartialUser):
     def __init__(self, username, bot, data: RawUser):
@@ -78,7 +76,7 @@ class Post:
         return str(self.data)
     
     async def reply(self, message):
-        self.chat.send_msg(f"@{self.user.name} [{self.id}]")
+        self.chat.send_msg(f"@{self.user.username} [{self.id}] {message}")
 
 
 class Context:

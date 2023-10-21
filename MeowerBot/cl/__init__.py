@@ -3,7 +3,7 @@ import orjson
 import json
 import asyncio
 import random
-
+import time
 class Client:
 	ws: websockets.WebSocketClientProtocol
 	message_condition = asyncio.Condition()
@@ -39,11 +39,14 @@ class Client:
 		Returns:
 		- A list of messages that meet the specified conditions, or None if timeout is reached.
 		"""
+
+		
 		start_time = time.time()
 		received_packets = []
 
 		while True:
 			async with self.message_condition:
+				await self.message_condition.wait()
 				for condition in conditions:
 					if expected_count is not None and len(received_packets) >= expected_count:
 						return received_packets
@@ -53,6 +56,8 @@ class Client:
 							received_packets.append(message)
 							found = True
 							break
+						elif message["cmd"] == "statuscode":
+							return ([None]*expected_count - 1) + [message]
 					if not found:
 						break
 
@@ -60,7 +65,6 @@ class Client:
 					return received_packets
 				if timeout is not None and time.time() - start_time >= timeout:
 					return None
-				await asyncio.sleep(0.1)
 	
 	async def send_data_request(self, packet, timeout = None):
 		if packet.get("listener") == None:
@@ -68,7 +72,7 @@ class Client:
 			packet["listener"] = random.random() # nosec
 
 		await self.sendPacket(packet)
-		return self._wait_for_packet({"listener": packet["listener"]}, expected_count=2,  timeout=timeout)
+		return await self._wait_for_packet({"listener": packet["listener"]}, expected_count=2,  timeout=timeout)
 
 	async def send_statuscode_request(self, packet, timeout = 0):
 		if packet.get("listener") == None:
@@ -76,17 +80,20 @@ class Client:
 			packet["listener"] = random.random() # nosec
 
 		await self.sendPacket(packet)
-		return self._wait_for_packet({"listener": packet["listener"]}, expected_count=1,  timeout=timeout)[0]
+		return (await self._wait_for_packet({"listener": packet["listener"]}, expected_count=1,  timeout=timeout))[0]
 
 	async def close(self, reason=None):
 		await self.ws.close(reason=reason)
 
-	async def connect(self, server):
-		async for websocket in websockets.connect(server):
+	async def connect(self, server, cookies=None):
+		async for websocket in websockets.connect(server, ping_interval = None): # Meower uses its own implementation, crashes the connection if left on.
 			try:
 
 				self.ws = websocket
-				await self._connect()
+				try:
+					await self._connect()
+				except Exception as e:
+					print(e)
 
 				async for message in websocket:
 					try:

@@ -22,7 +22,7 @@ class MeowerAPI:
         self.headers.update({"token": token})
     
     async def admin_get_reports(self, timeout=None) -> ReportRequest:
-        resp = await self.client.get("/admin/reports", timeout=timeout, params=kwargs)
+        resp = await self.client.get("/admin/reports", timeout=timeout)
 
         if resp.status_code == 404: 
             raise RuntimeError("[API] 404 Not found") 
@@ -289,13 +289,13 @@ class MeowerAPI:
 
         return Post.from_json(resp.text)
     
-    async def get_inbox(self) -> PagedRequest[PostBody]:
+    async def get_inbox(self) -> PagedRequest[Post]:
         resp = await self.client.get("/inbox")
 
         if resp.status_code == 401:
             raise RuntimeError("[API] No Auth to do this action")
 
-        return PagedRequest[PostBody].from_json(resp.text)
+        return PagedRequest[Post].from_json(resp.text)
 
     async def search_users(self, query: str, page: int = 1 ) -> PagedRequest[User]:
         resp = await self.client.get("/search/users", params={"q": query, "p": page},)

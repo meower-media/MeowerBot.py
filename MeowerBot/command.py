@@ -10,12 +10,12 @@ class AppCommand:
 	connected = None
 
 	@staticmethod
-	def add_command(obj: dict, command: AppCommand, ignore_subcommands = True):
+	def add_command(obj: dict, command: "AppCommand", ignore_subcommands = True):
 		if command.is_subcommand and ignore_subcommands:
 			return obj
 
-		for alias in cmd.alias + [cmd.name]:
-			obj[alias] = cmd
+		for alias in command.alias + [command.name]:
+			obj[alias] = command
 
 		
 		

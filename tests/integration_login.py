@@ -1,23 +1,21 @@
 from MeowerBot import Bot
-from MeowerBot import cbids
-from MeowerBot.context import CTX, Post
+from MeowerBot.context import Context, Post
+from MeowerBot.API import MeowerAPI
 import asyncio
 import logging
 from os import environ as env
 
 logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("websockets.client").setLevel(level=logging.INFO)
+#logging.getLogger("websockets.client").setLevel(level=logging.INFO)
 
 bot = Bot()
 
-async def on_login(bot):
+@bot.event
+async def login(t):
 	print("Logged in!")
 
-
-bot.callback(on_login, cbids.login)
-
-@bot.command(aname="ping")
-async def ping(ctx: CTX):
+@bot.command(name="ping")
+async def ping(ctx: Context):
 	await ctx.send_msg("Pong!\n My latency is: " + str(bot.latency))
 
 	def predicate(msg: Post):
@@ -25,7 +23,8 @@ async def ping(ctx: CTX):
 
 	msg = await bot.wait_for_message(predicate, timeout=100)
 	await ctx.send_msg("You said: " + str(msg))
-async def main():
-	await bot.run(env["uname"], env["password"])
 
-asyncio.run(main())
+MeowerAPI.base_uri =  "http://beta.meower.org:5174/api/"
+
+bot.run(env['uname'], env['password'], server="wss://beta.meower.org/api/v0/cloudlink")
+
