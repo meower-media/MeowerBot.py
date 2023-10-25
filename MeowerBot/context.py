@@ -15,7 +15,7 @@ class PartialChat:
         self.bot: "Bot" = bot
 
     async def send_msg(self, message) -> Post:
-        return await Post(self.bot, self.bot.api.send_post(self.id, message).to_dict(), self)
+        return await Post(self.bot, (await (self.bot.api.send_post(self.id, message))).to_dict(), self)
 
     async def fetch(self):
         return Chat(await self.bot.api.get_chat(self.id))
@@ -64,7 +64,7 @@ class Post:
     def __init__(self, bot, _raw, chat):
         self.bot = bot
         self._raw = _raw
-        self.user: User = User(bot, self._raw["u"])
+        self.user: PartialUser = PartialUser(bot, self._raw["u"])
 
         self.chat: PartialChat = PartialChat(chat, bot)
         self.data = self._raw["p"]
@@ -81,7 +81,7 @@ class Post:
 
 class Context:
     def __init__(self, post, bot):
-        self.message = Post(bot, post)
+        self.message = post
         self.user = self.message.user
         self.bot = bot
 

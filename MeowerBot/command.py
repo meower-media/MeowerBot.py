@@ -105,12 +105,9 @@ class AppCommand:
 		if not self.args_num == 0:
 			args = args[:self.args_num]
 
-		if self.connected is None:
-			await self.func(ctx, *args)
-		else:
-			await self.func(self.connected, ctx, *args)
-
-	
+		
+		await self.func(ctx, *args)
+		
 
 
 

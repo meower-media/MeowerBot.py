@@ -6,12 +6,13 @@ import random
 import time
 class Client:
 	ws: websockets.WebSocketClientProtocol
-	message_condition = asyncio.Condition()
-	__messages: str
+	message_condition: asyncio.Condition
+	_packets: list
 
 	def __init__(self):
 		self.ws = None
-		self.__messages = []
+		self._packets = []
+		self.message_condition = asyncio.Condition()
 		pass
 
 	async def _connect(self):
@@ -51,7 +52,7 @@ class Client:
 					if expected_count is not None and len(received_packets) >= expected_count:
 						return received_packets
 					found = False
-					for message in self.__messages:
+					for message in self._packets:
 						if all(message.get(key) == value for key, value in condition.items()):
 							received_packets.append(message)
 							found = True
@@ -66,14 +67,6 @@ class Client:
 				if timeout is not None and time.time() - start_time >= timeout:
 					return None
 	
-	async def send_data_request(self, packet, timeout = None):
-		if packet.get("listener") == None:
-			# This does not need to be sucure lmao
-			packet["listener"] = random.random() # nosec
-
-		await self.sendPacket(packet)
-		return await self._wait_for_packet({"listener": packet["listener"]}, expected_count=2,  timeout=timeout)
-
 	async def send_statuscode_request(self, packet, timeout = 0):
 		if packet.get("listener") == None:
 			# This does not need to be sucure lmao
@@ -85,35 +78,35 @@ class Client:
 	async def close(self, reason=None):
 		await self.ws.close(reason=reason)
 
-	async def connect(self, server, cookies=None):
+	async def connect(self, server):
+		loop = asyncio.get_event_loop()
 		async for websocket in websockets.connect(server, ping_interval = None): # Meower uses its own implementation, crashes the connection if left on.
 			try:
 
 				self.ws = websocket
 				try:
-					await self._connect()
+					t = loop.create_task(self._connect())
 				except Exception as e:
-					print(e)
+					await self._error(e)
 
 				async for message in websocket:
 					try:
 						data = json.loads(message)
-						with self.message_condition:
-							self.__messages.append(data)
+						async with self.message_condition._lock:
+							self._packets.append(data)
 							self.message_condition.notify_all()
-							self.__messages = self.__messages[:50]
+							self._packets = self._packets[:50]
 							
 
 						await self._message(data)
 
 
 					except websockets.ConnectionClosed:
-						raise
+						await self._disconnect()
 
 					except Exception as e:
 
 						await self._error(e)
-						pass
 
 			except websockets.ConnectionClosed:
 				await self._disconnect()
@@ -121,7 +114,6 @@ class Client:
 
 			except Exception as e:
 				await self._error(e)
-				pass
 
 		await self._disconnect()
 

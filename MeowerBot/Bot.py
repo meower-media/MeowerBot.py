@@ -1,30 +1,12 @@
 import shlex
-
 from .cl import Client
-import sys
-
-import json
 import traceback
-
-import requests
-
-
-import time
-
 from .command import AppCommand
 from .context import Context, Post, PartialUser, User, PartialChat
-
-import time
 import logging
-
 from .API import MeowerAPI
-
 import asyncio
-import sys
-
 from enum import StrEnum
-
-from typing import Union
 
 class cbids(StrEnum):
 		error = "error"
@@ -36,7 +18,7 @@ class cbids(StrEnum):
 		raw_message = "raw_message"
 		direct = "direct"
 		statuscode = "statuscode"
-
+print(str(cbids.error))
 callbacks = [i for i in cbids]
 
 class Bot(Client):
@@ -73,13 +55,13 @@ class Bot(Client):
 				await self.sendPacket({"cmd": "ping", "val": ""})
 				self.logger.debug(msg="Sent ping")
 			except Exception as e:
-				self.logger.error(e)
 				await self._error(e)
 				break
 
 	def __init__(self, prefix=None): #type: ignore
 		super().__init__()
-		self.callbacks = {i: [] for i in callbacks}
+		self.callbacks = {str(i): [] for i in callbacks}
+		self.callbacks["__raw__"] = []
 		self.ulist = []
 
 		# to be used in start
@@ -92,7 +74,6 @@ class Bot(Client):
 		self.server = None
 
 		self.cogs = {}
-
 	# Interface
 
 	def event(self, func):
@@ -149,7 +130,9 @@ class Bot(Client):
 
 
 
-	async def error(self, err: Exception): pass
+	async def error(self, err: Exception): 
+		raise err
+
 	async def __raw__(self, packet: dict): pass
 	async def login(self, token: str): pass 
 	async def close(self): pass
@@ -157,6 +140,14 @@ class Bot(Client):
 
 	async def message(self, message: Post): 
 		message = await self.handle_bridges(message)
+
+		if not message.data.startswith(self.prefix):
+			return
+		
+		message.data = message.data.removeprefix(self.prefix)
+
+		await self.run_commands(message)
+
 	async def statuscode(self, status, listerner):
 		pass
 
@@ -165,11 +156,19 @@ class Bot(Client):
 
 	
 	async def _run_event(self, event: cbids, *args, **kwargs):
-		err = await asyncio.gather(*([getattr(self, event)] + self.callbacks[event]), return_exceptions=True)
-		for i in err:
-			if isinstance(i, Exception):
-				await self._error(i)
+		events = [getattr(self, str(event))]
+		for i in self.callbacks[str(event)]:
+			if type(i) is list:
+				events.extend(i)
+			elif callable(i):  # Check if the element is callable
+				events.append(i)
 
+		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if callable(i)], return_exceptions=True)
+		for i in err:
+			if i is not None:
+				if isinstance(i, Exception) and event != cbids.error:
+					await self._error(i)
+			
 
 	# websocket
 	
@@ -178,7 +177,7 @@ class Bot(Client):
 		if isinstance(message.user, User):
 			fetch = True
 
-		if message.user.name in self.__bridges__ and ":" in message.data:
+		if message.user.username in self.__bridges__ and ":" in message.data:
 			split = message.data.split(": ", 1)
 			message.data = split[1]
 			message.user = PartialUser(split[0], self)
@@ -191,7 +190,18 @@ class Bot(Client):
 			message.data = message.data.replace("#0000", "")
 			
 		return message
+	
+	def get_context(self, message: Post):
+		return Context(message, self)
 
+	async def run_commands(self, message: Post):
+
+		args = shlex.split(str(message))
+
+		try:
+			await self.commands[args[0]].run_cmd(self.get_context(message), *args[1:])
+		except Exception as e:
+			await self._error(e)
 
 	def command(self, name=None, args=0, aliases = None):
 		def inner(func):
@@ -214,23 +224,40 @@ class Bot(Client):
 			"cmd": "type", "val": "py"
 		}})
 
-		resp = await self.send_data_request({
-			"cmd": "direct",
-			"val": {
-				"cmd": "authpswd",
+
+		async with self.message_condition:
+			await self.sendPacket({
+				"cmd": "direct",
 				"val": {
-					"username": str(self.username).strip(), 
-					"pswd": str(self.password).strip()
-				}	
-			}
-		})	
+					"cmd": "authpswd",
+					"val": {
+						"username": str(self.username).strip(), 
+						"pswd": str(self.password).strip()
+					}	
+				},
+				"listener": "mb.py_login"
+			})	
+
+			while True:
+
+				await self.message_condition.wait()
+			
+				if self._packets[-1].get("listener") != "mb.py_login":
+					continue
+
+				if self._packets[-1]["cmd"] == "statuscode" and self._packets[-1]["val"] != "I: 100 | OK":
+					raise Exception(f"Wrong Username or Password!\n {self._packets[-1]["val"]}")
+
+				if not (self._packets[-1]["cmd"] == "direct" and "payload" in self._packets[-1]["val"].keys()):
+					continue
+
+				break
+ 
+			await self.api.login(self._packets[-1]['val']['payload']['token'])
+
+			await self._run_event(cbids.login, self._packets[-1]['val']['payload']['token'])
+
 	
-		if resp[1]["val"] != "I: 100 | OK":
-			raise Exception(f"Wrong Username or Password!\n {resp[1]['val']}")
-
-		self.api.login(resp[0]['val']['payload']['token'])
-
-		await self._run_event(cbids.login, resp[0]['val']['payload']['token'])
 
 	
 
@@ -256,10 +283,13 @@ class Bot(Client):
 			
 			case "direct":
 				if "post_origin" in message["val"]: # post 
-					post = Post(self, message["val"], chat=self.get_chat())
-					with self.message_condition:
+					await self._run_event(cbids.__raw__, message["val"])
+					post = Post(self, message["val"], chat=message["val"]["post_origin"])
+					async with self.message_condition:
 						self.messages.append(post)
 						self.message_condition.notify_all()
+					
+					await self._run_event(cbids.message, post)
 				else:
 					return await self._run_event(cbids.direct, message)
 				
@@ -278,7 +308,9 @@ class Bot(Client):
 					
 
 	async def _error(self, error):
-		pass
+
+		await self._run_event(cbids.error, error)
+
 
 	async def start(self, username, password, server="wss://server.meower.org", ):
 		"""
