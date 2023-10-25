@@ -61,4 +61,14 @@ The context system is MeowerBot.py's way of processing raw websocket data and co
 
 It is always activated everytime someone sends a post, that your bot receves
 
+- 3:
+  running the bot
+
+  Running the bot is extremely simple.
+
+  ```py
+  bot.run(username, password, server="wss://server.meower.org"):
+  ```
+
+  we recommend that you use a `.env` to store your username and password 
 [Next](./callbacks.md)
