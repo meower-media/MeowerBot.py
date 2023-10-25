@@ -72,7 +72,7 @@ class Help(Cog):
 		
 		if cmd.func.__doc__ is not None:
 			self.page += f"\n\t{cmd.func.__doc__}"
-			
+
 		
 		
 		self.page += "\n"
@@ -85,15 +85,15 @@ class Help(Cog):
 		self.page += "\n"
 
 	@command(name="help")
-	def help(self, ctx, page: int=0):
+	async def help(self, ctx, page: int=0):
 
 		if page >= len(self.pages):
 			page = len(self.pages) - 1
 		
-		ctx.send_msg(self.pages[page])
+		await ctx.send_msg(self.pages[page])
 	
 
-	def _login(self, bot):
+	async def _login(self, bot):
 		self.generate_help() #generate help on login, bugfix for default prefix and people being dumb
 
 		

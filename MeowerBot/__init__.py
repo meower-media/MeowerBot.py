@@ -5,12 +5,12 @@ MIT License
 
 """
 
-__version__ = "2.6.2"
+__version__ = "3.0.0"
 
 
 # Public library imports
 from . import Bot as botm
 
-from .Bot import Bot
+from .Bot import Bot, cbids
 
-__all__ = ["__version__", "Bot", "botm"]
+__all__ = ["__version__", "Bot", "botm", "cbids"]
