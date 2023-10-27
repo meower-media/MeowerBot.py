@@ -211,8 +211,8 @@ class Bot(Client):
 			cmd = AppCommand(func, name=name, args=args)
 			cmd.register_class(self)
 
-			self.subcommand = AppCommand.add_command(self.commands, cmd)
-			
+			self.commands = AppCommand.add_command(self.commands, cmd)
+					
 
 			return cmd 
 		return inner
