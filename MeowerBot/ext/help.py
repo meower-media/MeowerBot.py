@@ -1,5 +1,6 @@
 from MeowerBot.cog import Cog
-from MeowerBot.command import command, AppCommand
+from MeowerBot.command import command, AppCommand, callback
+from MeowerBot import cbids
 import inspect
 
 def _get_index_or(l, i, d):
@@ -15,7 +16,7 @@ class Help(Cog):
 	def __init__(self, bot, *args, **kwargs):
 		self.bot = bot
 		self.page = ""
-		self.bot.callback(self._login, "login")
+		self.pages = []
 		Cog.__init__(self)
 		
 		
@@ -23,6 +24,7 @@ class Help(Cog):
 	def generate_help(self):
 		if self.bot.prefix == f"@{self.bot.username}":
 			self.bot.prefix = f"@{self.bot.username} "
+
 		self.pages = []
 		self.page = ""
 		page_size = 0
@@ -31,26 +33,26 @@ class Help(Cog):
 			self.page+= f"-- [ {name} ] --\n"
 			page_size = len(self.page)
 
-			for command in cog.__commands__.values():
-				self.handle_command(command["command"].name, command["command"])
+			for command in cog.commands.values():
+				self.handle_command(command.name, command)
 
 				if page_size >= 500:
-					self.pages.append(page)
-					self.page = f"-- [ {name} ] --\n"
+					self.pages.append(self.pages)
+					self.page = f"\n-- [ {name} ] --\n"
 					page_size = len(self.page)
 		
-		self.page += "-- [ Unsorted ] --\n"
+		self.page += "\n-- [ Unsorted ] --\n"
 		page_size = len(self.page)
 
 	
 		
 		for name, comamnd in self.bot.commands.items():
-			if comamnd["command"].connected is not None: continue #skip cog based commands
+			if comamnd.connected is not None: continue #skip cog based commands
 
-			self.handle_command(name, comamnd["command"])
+			self.handle_command(name, comamnd)
 
 			if page_size >= 500:
-				self.pages.append(page)
+				self.pages.append(self.pages)
 				self.page = f"-- [ Unsorted ] --\n"
 				page_size = len(self.page)
 
@@ -79,7 +81,7 @@ class Help(Cog):
 
 		for subcommand_name, command in cmd.subcommands.items():
 			self.page += f"\t"
-			self.handle_command(f"{name} {subcommand_name}", command["command"])
+			self.handle_command(f"{name} {subcommand_name}", command)
 			self.page += "\n"
 		
 		self.page += "\n"
@@ -93,7 +95,9 @@ class Help(Cog):
 		await ctx.send_msg(self.pages[page])
 	
 
-	async def _login(self, bot):
+	@callback(cbids.login)
+	@staticmethod
+	async def _login(token):
+		self = Help.__instence__
+		self.bot.logger.info("Generating Help")
 		self.generate_help() #generate help on login, bugfix for default prefix and people being dumb
-
-		

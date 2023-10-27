@@ -105,9 +105,10 @@ class AppCommand:
 		if not self.args_num == 0:
 			args = args[:self.args_num]
 
-		
-		await self.func(ctx, *args)
-		
+		if self.connected is  None:
+			await self.func(ctx, *args)
+		else:
+			await self.func(self.connected, ctx, *args)
 
 
 
@@ -119,3 +120,14 @@ def command(name=None, args=0):
 		return cmd
 
 	return inner
+
+class CB:
+	def __init__(self, func, id):
+		self.func = func
+		self.id = id
+
+def callback(cbid):
+	def inner(func):
+		return CB(func, cbid)
+	return inner
+

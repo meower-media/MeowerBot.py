@@ -15,7 +15,7 @@ class PartialChat:
         self.bot: "Bot" = bot
 
     async def send_msg(self, message) -> Post:
-        return await Post(self.bot, (await (self.bot.api.send_post(self.id, message))).to_dict(), self)
+        return Post(self.bot, (await (self.bot.api.send_post(self.id, message))).to_dict(), self)
 
     async def fetch(self):
         return Chat(await self.bot.api.get_chat(self.id))

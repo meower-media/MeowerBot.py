@@ -7,7 +7,7 @@ import logging
 from .API import MeowerAPI
 import asyncio
 from enum import StrEnum
-
+from .cog import Cog
 class cbids(StrEnum):
 		error = "error"
 		__raw__ = "__raw__"
@@ -123,15 +123,17 @@ class Bot(Client):
 		return inner
 
 	def update_commands(self):
-		for cog in self.cogs:
+		for cog in self.cogs.values():
 			cog.update_commands()
 
-			self.commands = self.commands.update(cog.__commands__)
-
+			self.commands.update(cog.commands)
+			for i in cog.callbacks.keys():
+				print(self.callbacks)
+				self.callbacks[str(i)].append(cog.callbacks[str(i)])
 
 
 	async def error(self, err: Exception): 
-		raise err
+		self.logger.error(traceback.print_exception(err))
 
 	async def __raw__(self, packet: dict): pass
 	async def login(self, token: str): pass 
@@ -259,8 +261,10 @@ class Bot(Client):
 
 	
 
-	
+	def register_cog(self, cog: Cog):
+		self.cogs[cog.__class__.__name__] = cog
 
+		self.update_commands()
 
 	async def _disconnect(self):
 		
@@ -318,7 +322,7 @@ class Bot(Client):
 		"""
 		self.username = username
 		self.password = password
-
+		self.update_commands()
 		asyncio.create_task(self._t_ping())
 		if self.prefix is None:
 			self.prefix = "@" + self.username
