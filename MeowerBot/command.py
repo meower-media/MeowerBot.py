@@ -80,7 +80,7 @@ class AppCommand:
 			cmd = AppCommand(func, name=name, args=args)
 			cmd.register_class(self.connected)
 
-			self.subcommand = AppCommand.add_command(self.subcommands, cmd)
+			self.subcommands = AppCommand.add_command(self.subcommands, cmd)
 			self.connected.update_commands()
 
 			return cmd #dont want mb to register this as a root command

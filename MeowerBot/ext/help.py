@@ -30,18 +30,18 @@ class Help(Cog):
 		page_size = 0
 		for name, cog in self.bot.cogs.items():
 
-			self.page+= f"-- [ {name} ] --\n"
+			self.page+= f"-- [ {name} ] -- \n "
 			page_size = len(self.page)
 
 			for command in cog.commands.values():
 				self.handle_command(command.name, command)
 
 				if page_size >= 500:
-					self.pages.append(self.pages)
-					self.page = f"\n-- [ {name} ] --\n"
+					self.pages.append(self.page)
+					self.page = f"-- [ {name} ] -- \n "
 					page_size = len(self.page)
 		
-		self.page += "\n-- [ Unsorted ] --\n"
+		self.page += "-- [ Unsorted ] -- \n  "
 		page_size = len(self.page)
 
 	
@@ -52,8 +52,8 @@ class Help(Cog):
 			self.handle_command(name, comamnd)
 
 			if page_size >= 500:
-				self.pages.append(self.pages)
-				self.page = f"-- [ Unsorted ] --\n"
+				self.pages.append(self.page)
+				self.page = f"-- [ Unsorted ] -- \n "
 				page_size = len(self.page)
 
 		self.pages.append(self.page)
@@ -77,14 +77,14 @@ class Help(Cog):
 
 		
 		
-		self.page += "\n"
+		self.page += " \n "
 
 		for subcommand_name, command in cmd.subcommands.items():
-			self.page += f"\t"
+			self.page += f" \t "
 			self.handle_command(f"{name} {subcommand_name}", command)
-			self.page += "\n"
+			self.page += " \n "
 		
-		self.page += "\n"
+		self.page += " \n "
 
 	@command(name="help")
 	async def help(self, ctx, page: int=0):

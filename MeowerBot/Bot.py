@@ -18,7 +18,7 @@ class cbids(StrEnum):
 		raw_message = "raw_message"
 		direct = "direct"
 		statuscode = "statuscode"
-print(str(cbids.error))
+
 callbacks = [i for i in cbids]
 
 class Bot(Client):
@@ -128,7 +128,6 @@ class Bot(Client):
 
 			self.commands.update(cog.commands)
 			for i in cog.callbacks.keys():
-				print(self.callbacks)
 				self.callbacks[str(i)].append(cog.callbacks[str(i)])
 
 
@@ -209,7 +208,6 @@ class Bot(Client):
 		def inner(func):
 
 			cmd = AppCommand(func, name=name, args=args)
-			cmd.register_class(self)
 
 			self.commands = AppCommand.add_command(self.commands, cmd)
 					

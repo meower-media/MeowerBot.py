@@ -10,6 +10,9 @@ from .types.api.user import User, Relationship
 from typing import Literal
 from httpx import Response
 
+def _post_fix(msg):
+    return "\n".join(msg.split("\n"))
+
 class MeowerAPI:
     base_uri = "https://api.meower.org/"
 
@@ -232,12 +235,12 @@ class MeowerAPI:
         return PagedRequest[Post].from_json(resp.text)
     
     async def send_post(self, chat: str | generic.UUID, content: str) -> Post:
+        content = _post_fix(content)
         if chat == "home":
             resp = await self.client.post(f"/home/", json={"content": content})
         else:
             resp = await self.client.post(f"/posts/{chat}", json={"content": content})
         
-        print(resp.text, resp.status_code)
         if resp.status_code == 429:
             raise RuntimeError("[API] Ratelimited: Sending posts")
 
@@ -249,7 +252,6 @@ class MeowerAPI:
         if resp.status_code == 404: 
             raise RuntimeError("[API] 404 Chat Not found") 
         
-        print(resp.text)
         return Post.from_json(resp.text)
 
     async def get_post(self, uuid: generic.UUID) -> Post:
@@ -262,6 +264,8 @@ class MeowerAPI:
         return Post.from_json(resp.text)
 
     async def update_post(self, uuid: generic.UUID,  content: str) -> Post:
+        content = _post_fix(content)
+
         resp = await self.client.patch(f"/posts", params={"id": uuid}, json={"content": content})
 
         if resp.status_code == 429:
