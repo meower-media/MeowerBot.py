@@ -1,6 +1,6 @@
 # MeowerBot.py
 
-A bot lib for Meower
+A bot library made for [Meower Media Co](https://github.com/meower-media-co/)
 
 
 ## License
