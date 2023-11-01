@@ -10,7 +10,9 @@ see [LICENSE](./LICENSE)
 
 ## docs
 
-The Docs are located [here](https://meowerbot-py.showierdata.tech/)
+Currently, there is no documentation as a full rewrite just happened. 
+
+
 
 
 ## Quick Example
