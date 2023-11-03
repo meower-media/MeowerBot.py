@@ -179,9 +179,9 @@ class Bot(Client):
 			fetch = True
 
 		if message.user.username in self.__bridges__ and ":" in message.data:
-			split = message.data.split(": ", 1)
-			message.data = split[1]
-			message.user = PartialUser(split[0], self)
+			split = message.data.split(":", 1)
+			message.data = split[1].strip()
+			message.user = PartialUser(split[0].strip(), self)
 			if fetch:
 				message.user = await message.user.fetch()
 		
@@ -272,7 +272,7 @@ class Bot(Client):
 		return PartialChat(id, self)
 
 	async def _message(self, message):
-		if (message.get("listener")) != "mb_login":
+		if (message.get("listener")) != "mb.py_login":
 			self.logger.debug(message)
 		match message["cmd"]:
 			case "statuscode":

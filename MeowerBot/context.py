@@ -7,18 +7,30 @@ if TYPE_CHECKING:
 
 from .data.api.chats import ChatGroup
 from .data.api.user import User as RawUser
-from .data.generic import Post
+from .data.generic import Post as RawPost
+from .api.shared import api_resp
+
+from typing import Optional
 
 class PartialChat:
     def __init__(self, id, bot: "Bot"):
         self.id = id
         self.bot: "Bot" = bot
 
-    async def send_msg(self, message) -> Post:
-        return Post(self.bot, (await (self.bot.api.send_post(self.id, message))).to_dict(), self)
+    async def send_msg(self, message) -> Optional["Post"]:
+        data, status = await self.bot.api.send_post(self.id, message)
 
-    async def fetch(self):
-        return Chat(await self.bot.api.get_chat(self.id))
+        if status != 200:
+            return None
+        return Post(self.bot, data.to_dict(), self)
+
+    async def fetch(self) -> Optional["Chat"]:
+        data, status = await self.bot.api.chats.get(self.id)
+        
+        if status != 200:
+            return None
+
+        return Chat(data)
 
 class Chat(PartialChat):
     def __init__(self, data: ChatGroup, bot):
@@ -35,11 +47,13 @@ class Chat(PartialChat):
 
 class PartialUser:
     def __init__(self, username, bot: "Bot"):
-        self.username = username
+        self.username: str = username
         self.bot = bot
 
-    async def fetch(self):
-        return User(self.username, RawUser.from_json(await self.bot.api._get_user(self.username, "")))
+    async def fetch(self) -> Optional["User"]:
+        data, status = api_resp(RawUser, await self.bot.api.users._get(self.username, ""))
+
+        return User(self.username, self.bot, data) if status == 200 else None
 
 class User(PartialUser):
     def __init__(self, username, bot, data: RawUser):
@@ -61,16 +75,16 @@ class User(PartialUser):
         
 
 class Post:
-    def __init__(self, bot, _raw, chat):
-        self.bot                 = bot
-        self._raw                = _raw
-        self.user: PartialUser   = PartialUser(bot, self._raw["u"])
+    def __init__(self, bot, _raw: RawPost, chat):
+        self.bot = bot
+        self._raw  = _raw
+        self.user: PartialUser = PartialUser(bot, self._raw["u"])
 
-        self.chat: PartialChat   = PartialChat(chat, bot)
-        self.data                = self._raw["p"]
-        self._id                 = self._raw["post_id"]
-        self.type                = self._raw["type"]
-        self.date                = datetime.fromtimestamp(self._raw["t"]["e"])
+        self.chat: PartialChat = PartialChat(chat, bot)
+        self.data: str  = self._raw["p"]
+        self._id = self._raw["post_id"]
+        self.type = self._raw["type"]
+        self.date = datetime.fromtimestamp(self._raw["t"]["e"])
 
     def __str__(self):
         return str(self.data)
@@ -80,7 +94,7 @@ class Post:
 
 
 class Context:
-    def __init__(self, post, bot):
+    def __init__(self, post: Post, bot):
         self.message = post
         self.user = self.message.user
         self.bot = bot
