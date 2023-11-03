@@ -3,8 +3,6 @@ import os
 
 sys.path.append(os.path.abspath('sphinxext'))
 
-extensions = ['myst-parser']
-
 source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'markdown',
