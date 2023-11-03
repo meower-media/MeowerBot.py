@@ -5,8 +5,7 @@ sys.path.append(os.path.abspath('sphinxext'))
 
 source_suffix = {
     '.rst': 'restructuredtext',
-    '.txt': 'markdown',
-    '.md': 'markdown',
+    '.txt': 'restructuredtext',
 }
 
 version = "2.3.0"
