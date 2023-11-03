@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .Bot import Bot
 
-from .types.api.chats import ChatGroup
-from .types.api.user import User as RawUser
-from .types.generic import Post
+from .data.api.chats import ChatGroup
+from .data.api.user import User as RawUser
+from .data.generic import Post
 
 class PartialChat:
     def __init__(self, id, bot: "Bot"):
@@ -47,30 +47,30 @@ class User(PartialUser):
 
         self.data: RawUser = data
 
-        self.banned = self.data.banned
-        self.created = self.data.created
-        self.flags = self.data.flags
-        self.last_seen = self.data.last_seen
-        self.data.lower_username =  self.data.lower_username
-        self.lvl = self.data.lvl
-        self.name = self.data.name
-        self.permissions = self.data.permissions
-        self.pfp_data = self.data.pfp_data
-        self.quote = self.data.quote
-        self.id = self.data.uuid
+        self.banned              = self.data.banned
+        self.created             = self.data.created
+        self.flags               = self.data.flags
+        self.last_seen           = self.data.last_seen
+        self.data.lower_username = self.data.lower_username
+        self.lvl                 = self.data.lvl
+        self.name                = self.data.name
+        self.permissions         = self.data.permissions
+        self.pfp_data            = self.data.pfp_data
+        self.quote               = self.data.quote
+        self.id                  = self.data.uuid
         
 
 class Post:
     def __init__(self, bot, _raw, chat):
-        self.bot = bot
-        self._raw = _raw
-        self.user: PartialUser = PartialUser(bot, self._raw["u"])
+        self.bot                 = bot
+        self._raw                = _raw
+        self.user: PartialUser   = PartialUser(bot, self._raw["u"])
 
-        self.chat: PartialChat = PartialChat(chat, bot)
-        self.data = self._raw["p"]
-        self._id = self._raw["post_id"]
-        self.type = self._raw["type"]
-        self.date = datetime.fromtimestamp(self._raw["t"]["e"])
+        self.chat: PartialChat   = PartialChat(chat, bot)
+        self.data                = self._raw["p"]
+        self._id                 = self._raw["post_id"]
+        self.type                = self._raw["type"]
+        self.date                = datetime.fromtimestamp(self._raw["t"]["e"])
 
     def __str__(self):
         return str(self.data)

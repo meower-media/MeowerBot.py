@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MeowerBot"
-version = "3.0.2"
+version = "3.0.3"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
 license = "MIT"
@@ -28,6 +28,7 @@ ujson = "^5.8.0"
 [tool.poetry.group.dev.dependencies]
 bandit = "^1.7.5"
 jedi = "^0.19.1"
+python-dotenv = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

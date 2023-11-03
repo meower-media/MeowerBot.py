@@ -90,17 +90,10 @@ class AppCommand:
 	async def run_cmd(self, ctx, *args):
 	
 		try:
-			await self.subcommands[args[0]]["command"].run_cmd(ctx, *args[1:])
+			await self.subcommands[args[0]].run_cmd(ctx, *args[1:]) # If a subcommand does not exist, basicly ignore it so we can get the the main command 
 			return
 		except KeyError:
-			#print(f"KeyError: {args}")
-			#print(f"Subcommands: {self.subcommands}")
-			logger.debug(f"Cant find subcommand {args[0]}")
-		except IndexError:
-			pass
-
-		except IndexError:
-			logger.debug(traceback.format_exc())
+			logger.debug("Cannot find subcommand", traceback.format_exc()) # we dont have access to the bot here, so the best we can do it log it. 
 		
 		if not self.args_num == 0:
 			args = args[:self.args_num]

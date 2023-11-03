@@ -4,7 +4,7 @@ import traceback
 from .command import AppCommand
 from .context import Context, Post, PartialUser, User, PartialChat
 import logging
-from .API import MeowerAPI
+from .api import MeowerAPI
 import asyncio
 from enum import StrEnum
 from .cog import Cog
@@ -41,7 +41,7 @@ class Bot(Client):
 		"I:500 | Bot",
 		"I: 500 | Bot"
 	]
-	ulist = None
+	userlist = None
 
 	@property
 	def latency(self):

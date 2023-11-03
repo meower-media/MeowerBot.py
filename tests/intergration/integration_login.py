@@ -1,8 +1,13 @@
 from MeowerBot import Bot
 from MeowerBot.context import Context, Post
-from MeowerBot.API import MeowerAPI
+
 import asyncio
 import logging
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from os import environ as env
 from MeowerBot.ext.help import Help as HelpExt
 logging.basicConfig(level=logging.DEBUG)
@@ -20,7 +25,5 @@ async def ping(ctx: Context):
 
 	
 
-MeowerAPI.base_uri = "https://beta.meower.org/api/"
 bot.register_cog(HelpExt(bot))
-bot.run(env["uname"], env["pswd"], server="wss://beta.meower.org/api/v0/cloudlink") 
-
+bot.run(env["uname"], env["pswd"])
