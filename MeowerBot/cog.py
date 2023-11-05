@@ -1,40 +1,40 @@
-from .command import AppCommand, command, CB
-import weakref
+from .command import AppCommand, CB
 import types
-import warnings
+from typing import Union
+
+
 class Cog:
-    commands = None
-    callbacks = None
-    __instence__ = None
+	commands: dict[str, AppCommand]
+	callbacks: dict[str, list[types.CoroutineType]]
 
-    def __init__(self) -> None:
-        if isinstance(self.__instence__, Cog):
-            return
-            
+	__instence__: Union["Cog", None] = None
 
-        self.__class__.__instence__ = self
-        self.commands = {}
-        self.callbacks = {}
-        self.update_commands()
+	def __init__(self) -> None:
+		if isinstance(self.__instence__, Cog):
+			return
 
-    def update_commands(self):
-        for command in self.__dir__():
-            attr = getattr(self, command)
-            if isinstance(attr, AppCommand):
-                attr.register_class(self)
-                self.commands = AppCommand.add_command(self.commands, attr)
-            elif isinstance(attr, CB):
-                self.callbacks[attr.id] = attr.func
-                
+		self.__class__.__instence__ = self
+		self.commands = {}
+		self.callbacks = {}
+		self.update_commands()
 
-    def __new__(cls, *args, **kwargs):
-        if cls.__instence__ is None:
-            self = super().__new__(cls)
+	def update_commands(self):
+		for command in self.__dir__():
+			attr = getattr(self, command)
+			if isinstance(attr, AppCommand):
+				attr.register_class(self)
+				self.commands = AppCommand.add_command(self.commands, attr)
+			elif isinstance(attr, CB):
+				self.callbacks[attr.id] = attr.func
 
-            return self
+	def __new__(cls, *args, **kwargs):
+		if cls.__instence__ is None:
+			self = super().__new__(cls)
 
-        else:
-            return cls.__instence__
+			return self
 
-    def get_info(self):
-        return self.__commands__
+		else:
+			return cls.__instence__
+
+	def get_info(self):
+		return self.__commands__

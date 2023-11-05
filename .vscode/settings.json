@@ -1,8 +1,23 @@
 {
     "python.formatting.provider": "none",
-    "python.linting.banditEnabled": true,
+    "python.linting.banditEnabled": false,
     "python.linting.enabled": true,
     "[python]": {
         "editor.defaultFormatter": "ms-python.python"
-    }
+    },
+    "python.linting.banditArgs": [
+        // "-ll",
+        // "-ii",
+        "--ini=${workspaceFolder}/.bandit",
+        "-r",
+        "."
+    ],
+    "files.associations": {
+        ".bandit": "ini",
+    },
+    "python.linting.mypyEnabled": false,
+    "python.linting.pylintEnabled": false,
+    "python.linting.flake8Enabled": true,
+    "python.linting.pycodestyleEnabled": false,
+    "editor.insertSpaces": false
 }

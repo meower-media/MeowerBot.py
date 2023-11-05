@@ -1,6 +1,4 @@
-import warnings
 import inspect
-import traceback
 from logging import getLogger
 
 logger = getLogger("MeowerBot")
@@ -10,23 +8,23 @@ class AppCommand:
 	connected = None
 
 	@staticmethod
-	def add_command(obj: dict, command: "AppCommand", ignore_subcommands = True):
+	def add_command(obj: dict, command: "AppCommand", ignore_subcommands: bool = True):
 		if command.is_subcommand and ignore_subcommands:
 			return obj
 
 		for alias in command.alias + [command.name]:
 			obj[alias] = command
 
-		
-		
+
+
 
 		return obj
-		
 
-	def __init__(self, func, alias = None, name=None, args=0, is_subcommand=False):
+
+	def __init__(self, func, alias: list[str] = None, name=None, args=0, is_subcommand=False):
 		if name is None:
 			name = func.__name__
-		
+
 		if alias is None:
 			alias = []
 
@@ -74,7 +72,7 @@ class AppCommand:
 
 
 
-	def subcommand(self, name=None, args=0, aliases = None):
+	def subcommand(self, name=None, args=0, aliases=None):
 		def inner(func):
 
 			cmd = AppCommand(func, name=name, args=args)
@@ -83,26 +81,29 @@ class AppCommand:
 			self.subcommands = AppCommand.add_command(self.subcommands, cmd)
 			self.connected.update_commands()
 
-			return cmd #dont want mb to register this as a root command
+			return cmd # dont want mb to register this as a root command
 		return inner
-	
 
-	async def run_cmd(self, ctx, *args):
-	
+	async def run_cmd(self, ctx, *args) -> Exception | None: # basicly optinal
+
 		try:
-			return await self.subcommands[args[0]].run_cmd(ctx, *args[1:]) # If a subcommand does not exist, basicly ignore it so we can get the the main command 
-		
+			return await self.subcommands[args[0]].run_cmd(ctx, *args[1:]) # If a subcommand does not exist, basicly ignore it so we can get the the main command
+
 		except (KeyError, IndexError):
-			logger.debug("Cannot find subcommand", traceback.format_exc()) # we dont have access to the bot here, so the best we can do it log it. 
-		
+			logger.error("Cannot find subcommand") # we dont have access to the bot here, so the best we can do it log it.
+
 		if not self.args_num == 0:
 			args = args[:self.args_num]
 
-		if self.connected is  None:
-			await self.func(ctx, *args)
-		else:
-			await self.func(self.connected, ctx, *args)
+		try:
+			if self.connected is None:
+				await self.func(ctx, *args)
+			else:
+				await self.func(self.connected, ctx, *args)
+		except Exception as e:
+			return e
 
+		return None
 
 
 def command(name=None, args=0):
@@ -114,13 +115,14 @@ def command(name=None, args=0):
 
 	return inner
 
+
 class CB:
 	def __init__(self, func, id):
 		self.func = func
 		self.id = id
 
+
 def callback(cbid):
 	def inner(func):
 		return CB(func, cbid)
 	return inner
-

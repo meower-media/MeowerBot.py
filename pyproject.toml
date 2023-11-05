@@ -26,9 +26,9 @@ ujson = "^5.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
-bandit = "^1.7.5"
-jedi = "^0.19.1"
 python-dotenv = "^1.0.0"
+types-ujson = "^5.8.0.1"
+flake8 = "^6.1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
