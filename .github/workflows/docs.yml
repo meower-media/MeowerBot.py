@@ -36,7 +36,7 @@ jobs:
       - name: Install Dependencies
         run: |
           poetry install --no-interaction
-          poetry run pip install -r docs/source/requirements.txt
+          poetry run pip install --upgrade --force-reinstall -r  docs/source/requirements.txt
 
       - name: Build Documentation
         run: |
