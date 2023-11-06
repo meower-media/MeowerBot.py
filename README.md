@@ -10,10 +10,7 @@ see [LICENSE](./LICENSE)
 
 ## docs
 
-Currently, there is no documentation as a full rewrite just happened.
-
-
-
+The docs are located on my domain made with sphinx. They are located [here](https://meowerbot.showierdata.xyz/)
 
 ## Quick Example
 
