@@ -18,8 +18,3 @@ if [[ "$OSTYPE" == "msys" ]]; then
 else
 	make $MAKEVARS
 fi
-
-
-# running server
-echo "localhost:8000"
-python -m http.server -d build/html
