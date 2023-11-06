@@ -1,13 +1,11 @@
-from dataclasses import dataclass, field
-from dataclasses_json import config, dataclass_json
-from typing import List
-from dataclasses import dataclass, field
-from dataclasses_json import config, dataclass_json
-from typing import List, TypeVar, Generic, Optional, NewType
+from dataclasses import dataclass
+from dataclasses_json import dataclass_json
+from typing import TypeVar, NewType
 
 T = TypeVar("T")
 UUID = NewType("UUID", str)
 BitFlag = NewType("BitFlag", int)
+
 
 @dataclass_json
 @dataclass
@@ -19,6 +17,7 @@ class Timestamp:
     mo: str
     s: str
     y: str
+
 
 @dataclass_json
 @dataclass

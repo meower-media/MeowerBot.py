@@ -1,3 +1,4 @@
+from __future__ import annotations
 import shlex
 from .cl import Client
 import traceback
@@ -8,9 +9,11 @@ from .api import MeowerAPI
 import asyncio
 from enum import StrEnum
 from .cog import Cog
+from typing import Dict, Callable
 
 
 class cbids(StrEnum):
+	"""Callbacks that the bot calls. You can find more documentation in :class:`MeowerBot.bot.Bot`"""
 	error = "error"
 	__raw__ = "__raw__"
 	login = "login"
@@ -25,29 +28,32 @@ callbacks = [i for i in cbids] # type: ignore
 
 
 class Bot(Client):
-	messages: list[Post] = []
-	message_condition = asyncio.Condition()
+	"""A class that holds all of the networking for a meower bot to function and run"""
 
+	messages: list[Post] = [] #: :meta private: :meta hide-value:
+	message_condition = asyncio.Condition() #: :meta private: :meta hide-value:
 
-	"""
-	A class that holds all of the networking for a meower bot to function and run
-	"""
-	__bridges__ = [
+	__bridges__ = [ #: :meta public: :meta hide-value:
 			"Discord",
 			"Revower",
 			"revolt"
-		]
+	]
 
 
-
-	BOT_NO_PMSG_RESPONSE = [
+	BOT_NO_PMSG_RESPONSE = [ #: :meta private: :meta hide-value:
 		"I:500 | Bot",
 		"I: 500 | Bot"
 	]
-	userlist = None
+
+	userlist: list[str] = None #: :meta hide-value:
 
 	@property
-	def latency(self):
+	def latency(self) -> int:
+		"""Gets the latency of the bot
+
+		:return: Bot latency
+		:rtype: int
+		"""
 		return self.ws.latency
 
 	async def _t_ping(self):
@@ -62,44 +68,44 @@ class Bot(Client):
 				break
 
 	def __init__(self, prefix=None): # type: ignore
+
 		super().__init__()
-		self.callbacks = {str(i): [] for i in callbacks}
+		self.callbacks: Dict[str, list[Callable]] = {str(i): [] for i in callbacks}
 		self.callbacks["__raw__"] = []
-		self.ulist = []
+		self.userlist = []
 
 		# to be used in start
-		self.username = None
-		self.password = None
+		self.username: str = None #: :meta hide-value:
+		self.password: str = None #: :meta hide-value:
 
 		self.commands = {}
 		self.prefix = prefix
 		self.logger = logging.getLogger("MeowerBot")
-		self.server = None
+		self.server: str = None
 
-		self.cogs = {}
+		self.cogs: Dict[str, Cog] = {}
 	# Interface
 
-	def event(self, func):
-		"""
-		Creates a callback that takes over the original functionality of the bot.
-		throws an error if the function name is not a valid callback
+	def event(self, func: Callable):
+		"""Creates a callback that takes over the original functionality of the bot.
 
-		throws:
-			- TypeError
+		valid callbacks are defined in :class:`cbids`
 
+		:param func: The function that
+		:type func: Callable
+		:raises TypeError: The func provided does not have a valid callback name
 		"""
 		if func.__name__ not in callbacks:
 			raise TypeError(f"{func.__name__} is not a valid callback")
 
 		setattr(self, func.__name__, func)
 
-	def listen(self, callback=None):
+	def listen(self, callback: str = None):
 		"""
-		Does the same thing as @link Bot.event but does not replace the bots original functionality, most usefull for librarys
-		throws an error if the function name is not a valid callback
+		Does the same thing as :meth MeowerBot.bot.Bot.event:but does not replace the bots original functionality
 
-		throws:
-			- TypeError
+		valid callbacks are defined in :class:`cbids`
+		:raises TypeError: The listener provided is not valid
 		"""
 		def inner(func):
 			nonlocal callback
@@ -113,19 +119,6 @@ class Bot(Client):
 			return func
 		return inner
 
-
-	def subcommand(self, name=None, args=0, aliases: list[str] = None):
-		def inner(func):
-
-			cmd = AppCommand(func, name=name, args=args)
-			cmd.register_class(self.connected)
-
-			self.commands = AppCommand.add_command(self.commands, cmd)
-
-
-			return cmd # dont want mb to register this as a root command
-		return inner
-
 	def update_commands(self):
 		for cog in self.cogs.values():
 			cog.update_commands()
@@ -136,14 +129,45 @@ class Bot(Client):
 
 
 	async def error(self, err: Exception):
+		"""Handles errors for the bot.
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
 		self.logger.error(traceback.print_exception(err))
 
-	async def __raw__(self, packet: dict): pass
-	async def login(self, token: str): pass
-	async def close(self): pass
-	async def ulist(self, ulist): pass
+	async def __raw__(self, packet: dict):
+		"""Callback for raw packets. Gets called before the bot does any processing.
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
+		pass
+
+	async def login(self, token: str):
+		"""Gets called when the bot is fully ready and logged into meower
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
+		pass
+
+	async def close(self):
+		"""Gets called when the bot get disconnected from meower
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
+		pass
+
+	async def ulist(self, ulist: list[str]):
+		"""Gets called when a user connects to meower.
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
+		pass
 
 	async def message(self, message: Post):
+		"""Method for overiding how the bot handles messages.
+
+		This is a callback for :meth:`MeowerBot.bot.Bot.event`
+		"""
 		message = await self.handle_bridges(message)
 
 		if not message.data.startswith(self.prefix):
@@ -165,10 +189,10 @@ class Bot(Client):
 		for i in self.callbacks[str(event)]:
 			if type(i) is list:
 				events.extend(i)
-			elif callable(i):  # Check if the element is callable
+			elif Callable(i):  # Check if the element is Callable
 				events.append(i)
 
-		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if callable(i)], return_exceptions=True)
+		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if Callable(i)], return_exceptions=True)
 		for i in err:
 			if i is not None:
 				if isinstance(i, Exception) and event != cbids.error:
@@ -348,3 +372,6 @@ class Bot(Client):
 		loop.run_forever()
 
 		return fut
+
+
+__all__ = ["Bot", "cbids"]

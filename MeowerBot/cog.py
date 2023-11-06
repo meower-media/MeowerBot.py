@@ -38,3 +38,5 @@ class Cog:
 
 	def get_info(self):
 		return self.__commands__
+
+__all__ = ["Cog"]

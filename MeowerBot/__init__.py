@@ -9,8 +9,8 @@ __version__ = "3.0.3"
 
 
 # Public library imports
-from . import Bot as botm
+from . import bot as botm
 
-from .Bot import Bot, cbids
+from .bot import Bot, cbids
 
 __all__ = ["__version__", "Bot", "botm", "cbids"]

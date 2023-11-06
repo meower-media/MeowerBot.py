@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-	from .Bot import Bot
+	from .bot import Bot
 
 from .data.api.chats import ChatGroup
 from .data.api.user import User as RawUser

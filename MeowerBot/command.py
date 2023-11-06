@@ -126,3 +126,5 @@ def callback(cbid):
 	def inner(func):
 		return CB(func, cbid)
 	return inner
+
+__all__ = ["callback", "CB", "command", "AppCommand"]
