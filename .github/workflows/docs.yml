@@ -24,19 +24,17 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          # Activate the virtual environment if using Poetry
-          source .venv/bin/activate
 
           # Install dependencies using Poetry
           poetry install --no-interaction
 
           # Install additional dependencies from a requirements file
-          pip install -r docs/source/requirements.txt
+          poetry run pip install -r docs/source/requirements.txt
 
       - name: Build Documentation
         run: |
           cd docs/
-          bash ./build.sh
+          poetry run bash ./build.sh
 
       - name: Push docs
         run: |
