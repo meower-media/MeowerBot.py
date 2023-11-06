@@ -30,7 +30,7 @@ jobs:
 
       - name: Install Poetry
         run: |
-          pip install poetry
+          pip install poetry --no-cache-dir    
           poetry --version
 
       - name: Install Dependencies
