@@ -1,7 +1,7 @@
-MeowerBot.Bot module
+MeowerBot.bot module
 ====================
 
-.. automodule:: MeowerBot.Bot
+.. automodule:: MeowerBot.bot
    :members:
    :undoc-members:
    :show-inheritance:

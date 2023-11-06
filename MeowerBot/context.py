@@ -1,10 +1,5 @@
 from datetime import datetime
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-	from .bot import Bot
-
 from .data.api.chats import ChatGroup
 from .data.api.user import User as RawUser
 from .api.shared import api_resp
@@ -13,9 +8,9 @@ from typing import Optional
 
 
 class PartialChat:
-	def __init__(self, id, bot: "Bot"):
+	def __init__(self, id, bot):
 		self.id = id
-		self.bot: "Bot" = bot
+		self.bot = bot
 
 	async def send_msg(self, message) -> Optional["Post"]:
 		data, status = await self.bot.api.send_post(self.id, message)
@@ -34,7 +29,7 @@ class PartialChat:
 
 
 class Chat(PartialChat):
-	def __init__(self, data: ChatGroup, bot: "Bot"):
+	def __init__(self, data: ChatGroup, bot):
 		super().__init__(data._id, bot)
 
 		self.created	 = data.created
@@ -49,7 +44,7 @@ class Chat(PartialChat):
 
 
 class PartialUser:
-	def __init__(self, username: str, bot: "Bot"):
+	def __init__(self, username: str, bot):
 		self.username: str = username
 		self.bot = bot
 
@@ -81,7 +76,7 @@ class User(PartialUser):
 
 
 class Post:
-	def __init__(self, bot: "Bot", _raw: dict, chat):
+	def __init__(self, bot, _raw: dict, chat):
 		self.bot = bot
 		self._raw = _raw
 		self.user: PartialUser | User = PartialUser(self._raw["u"], bot)

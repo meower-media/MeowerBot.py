@@ -16,7 +16,7 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   MeowerBot.Bot
+   MeowerBot.bot
    MeowerBot.cog
    MeowerBot.command
    MeowerBot.context
