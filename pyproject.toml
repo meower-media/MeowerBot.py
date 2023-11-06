@@ -17,7 +17,6 @@ websockets = "^11.0.3"
 orjson = "^3.9.4"
 httpx = "^0.25.0"
 dataclasses-json = "^0.6.1"
-typing-extensions = "^4.8.0"
 ujson = "^5.8.0"
 
 
