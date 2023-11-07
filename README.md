@@ -1,18 +1,8 @@
 # MeowerBot.py
 
-A bot library made for [Meower](https://github.com/meower-media-co/)
+A Python Bot libary with an API like nextcord or discord.py, but instead of discord, it is made for the FOSS Social media [Meower](https://github.com/meower-media-co/)
 
-
-## License
-
-see [LICENSE](./LICENSE)
-
-
-## docs
-
-The docs are located on my domain made with sphinx. They are located [here](https://meowerbot.showierdata.xyz/)
-
-## Quick Example
+## Examples
 
 ```py
 from MeowerBot import Bot
@@ -48,4 +38,8 @@ bot.run(env["uname"], env["pswd"])
 
 That example may be outdated. if it is outdated, the correct version is in [here](./tests/intergration/integration_login.py)
 
+## Extra links
+
 There are extra examples [here](./tests/intergration/)
+The docs are located on my domain made with sphinx. They are located [here](https://meowerbot.showierdata.xyz/)
+MeowerBot.py's [LICENSE](./LICENSE)
