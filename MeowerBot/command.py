@@ -21,7 +21,7 @@ class AppCommand:
 		return obj
 
 
-	def __init__(self, func, alias: list[str] = None, name=None, args=0, is_subcommand=False):
+	def __init__(self, func, alias: list[str] = None, name=None, args=0, is_subcommand=False): # type: ignore
 		if name is None:
 			name = func.__name__
 

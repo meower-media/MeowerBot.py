@@ -4,7 +4,7 @@ from MeowerBot import cbids
 import inspect
 
 
-def _get_index_or(lst: list, i, d):
+def _get_index_or(lst, i, d):
 	try:
 		r = lst[i]
 		if str(r) == str(inspect._empty):
@@ -15,11 +15,14 @@ def _get_index_or(lst: list, i, d):
 
 
 class Help(Cog):
+	__instence__: "Help"
+
 	def __init__(self, bot, *args, **kwargs):
+		Cog.__init__(self)
 		self.bot = bot
 		self.page = ""
 		self.pages = []
-		Cog.__init__(self)
+
 
 
 
@@ -35,8 +38,8 @@ class Help(Cog):
 			self.page += f"-- [ {name} ] -- \n "
 			page_size = len(self.page)
 
-			for cmd in cog.commands.values():
-				self.handle_command(cmd.name, cmd)
+			for command in cog.commands.values(): # noqa
+				self.handle_command(command.name, command)
 
 				if page_size >= 500:
 					self.pages.append(self.page)
@@ -56,7 +59,7 @@ class Help(Cog):
 
 			if page_size >= 500:
 				self.pages.append(self.page)
-				self.page = "-- [ Unsorted ] -- \n "
+				self.page = f"-- [ Unsorted ] -- \n " # noqa
 				page_size = len(self.page)
 
 		self.pages.append(self.page)
@@ -82,9 +85,9 @@ class Help(Cog):
 
 		self.page += " \n "
 
-		for subcommand_name, cmd in cmd.subcommands.items():
-			self.page += " \t "
-			self.handle_command(f"{name} {subcommand_name}", cmd)
+		for subcommand_name, command in cmd.subcommands.items(): # noqa
+			self.page += f" \t" # noqa
+			self.handle_command(f"{name} {subcommand_name}", command)
 			self.page += " \n "
 
 		self.page += " \n "
@@ -97,10 +100,11 @@ class Help(Cog):
 
 		await ctx.send_msg(self.pages[page])
 
-
 	@callback(cbids.login)
 	@staticmethod
 	async def _login(token):
 		self = Help.__instence__
+		assert self is not None
+
 		self.bot.logger.info("Generating Help")
 		self.generate_help() # generate help on login, bugfix for default prefix and people being dumb
