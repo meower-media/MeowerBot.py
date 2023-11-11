@@ -189,10 +189,10 @@ class Bot(Client):
 		for i in self.callbacks[str(event)]:
 			if type(i) is list:
 				events.extend(i)
-			elif Callable(i):  # Check if the element is Callable
+			elif callable(i):  # Check if the element is Callable
 				events.append(i)
 
-		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if Callable(i)], return_exceptions=True)
+		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if callable(i)], return_exceptions=True)
 		for i in err:
 			if i is not None:
 				if isinstance(i, Exception) and event != cbids.error:
