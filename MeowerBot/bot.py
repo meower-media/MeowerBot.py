@@ -177,9 +177,7 @@ class Bot(Client):
 
 		await self.run_commands(message)
 
-	async def statuscode(self, status, listerner):
-		pass
-
+	async def statuscode(self, status, listerner): pass
 	async def raw_message(self, data: dict): pass
 	async def direct(self, data: dict): pass
 
@@ -270,19 +268,19 @@ class Bot(Client):
 				"listener": "mb.py_login"
 			})
 
-		while True:
-			await self.message_condition.wait()
+			while True:
+				await self.message_condition.wait()
 
-			if self._packets[-1].get("listener") != "mb.py_login":
-				continue
+				if self._packets[-1].get("listener") != "mb.py_login":
+					continue
 
-			if self._packets[-1]["cmd"] == "statuscode" and self._packets[-1]["val"] != "I: 100 | OK":
-				raise Exception(f"Wrong Username or Password!\n {self._packets[-1]['val']}")
+				if self._packets[-1]["cmd"] == "statuscode" and self._packets[-1]["val"] != "I: 100 | OK":
+					raise Exception(f"Wrong Username or Password!\n {self._packets[-1]['val']}")
 
-			if not (self._packets[-1]["cmd"] == "direct" and "payload" in self._packets[-1]["val"].keys()):
-				continue
+				if not (self._packets[-1]["cmd"] == "direct" and "payload" in self._packets[-1]["val"].keys()):
+					continue
 
-			break
+				break
 
 
 	async def _process_login_response(self):

@@ -17,11 +17,12 @@ def _get_index_or(lst, i, d):
 class Help(Cog):
 	__instence__: "Help"
 
-	def __init__(self, bot, *args, **kwargs):
+	def __init__(self, bot, disable_command_newlines=False, *args, **kwargs):
 		Cog.__init__(self)
 		self.bot = bot
 		self.page = ""
 		self.pages = []
+		self.disable_command_newlines = disable_command_newlines
 
 
 
@@ -88,7 +89,8 @@ class Help(Cog):
 		for subcommand_name, command in cmd.subcommands.items(): # noqa
 			self.page += f" \t" # noqa
 			self.handle_command(f"{name} {subcommand_name}", command)
-			self.page += " \n "
+			if not self.disable_command_newlines:
+				self.page += " \n "
 
 		self.page += " \n "
 
