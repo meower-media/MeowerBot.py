@@ -5,7 +5,7 @@ from typing import Any, Union
 
 class Cog:
 	commands: dict[str, AppCommand]
-	callbacks: dict[str, list[types.CoroutineType[Any, Any, Any]]]
+	callbacks: dict[str, list[types.CoroutineType]]
 
 	__instence__: Union["Cog", None] = None
 
@@ -19,6 +19,12 @@ class Cog:
 		self.update_commands()
 
 	def update_commands(self):
+		if not hasattr(self, "commands"):
+			self.commands = {}
+
+		if not hasattr(self, "callbacks"):
+			self.callbacks = {}
+
 		for command in self.__dir__():
 			attr = getattr(self, command)
 			if isinstance(attr, AppCommand):
