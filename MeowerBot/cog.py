@@ -1,11 +1,11 @@
 from .command import AppCommand, CB
 import types
-from typing import Union
+from typing import Any, Union
 
 
 class Cog:
 	commands: dict[str, AppCommand]
-	callbacks: dict[str, list[types.CoroutineType]]
+	callbacks: dict[str, list[types.CoroutineType[Any, Any, Any]]]
 
 	__instence__: Union["Cog", None] = None
 

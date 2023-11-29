@@ -1,5 +1,7 @@
 from __future__ import annotations
+from ast import Call
 import shlex
+from unittest.mock import AsyncMagicMixin
 from .cl import Client
 import traceback
 from .command import AppCommand
@@ -9,7 +11,7 @@ from .api import MeowerAPI
 import asyncio
 from enum import StrEnum
 from .cog import Cog
-from typing import Dict, Callable
+from typing import Any, Dict, Callable, List
 
 
 class cbids(StrEnum):
@@ -30,7 +32,7 @@ callbacks = [i for i in cbids] # type: ignore
 class Bot(Client):
 	"""A class that holds all of the networking for a meower bot to function and run"""
 
-	messages: list[Post] = [] #: :meta private: :meta hide-value:
+	messages: List[Post] = [] #: :meta private: :meta hide-value:
 	message_condition = asyncio.Condition() #: :meta private: :meta hide-value:
 
 	__bridges__ = [ #: :meta public: :meta hide-value:
@@ -45,7 +47,7 @@ class Bot(Client):
 		"I: 500 | Bot"
 	]
 
-	userlist: list[str] = None #: :meta hide-value:
+	userlist: List[str] = None #: :meta hide-value: #type: ignore
 
 	@property
 	def latency(self) -> int:
@@ -70,18 +72,18 @@ class Bot(Client):
 	def __init__(self, prefix=None): # type: ignore
 
 		super().__init__()
-		self.callbacks: Dict[str, list[Callable]] = {str(i): [] for i in callbacks}
+		self.callbacks: Dict[str, List[Callable]] = {str(i): [] for i in callbacks}
 		self.callbacks["__raw__"] = []
 		self.userlist = []
 
 		# to be used in start
-		self.username: str = None #: :meta hide-value:
-		self.password: str = None #: :meta hide-value:
+		self.username: str  = None #: :meta hide-value:  # type: ignore # pyright: ignore
+		self.password: str  = None #: :meta hide-value:  # type: ignore # pyright: ignore
 
 		self.commands = {}
 		self.prefix = prefix
 		self.logger = logging.getLogger("MeowerBot")
-		self.server: str = None
+		self.server: str  = None  # type: ignore # pyright: ignore
 
 		self.cogs: Dict[str, Cog] = {}
 	# Interface
@@ -100,7 +102,7 @@ class Bot(Client):
 
 		setattr(self, func.__name__, func)
 
-	def listen(self, callback: str = None):
+	def listen(self, callback: str = None): # type: ignore # pyright: ignore
 		"""
 		Does the same thing as :meth MeowerBot.bot.Bot.event:but does not replace the bots original functionality
 
@@ -125,7 +127,7 @@ class Bot(Client):
 
 			self.commands.update(cog.commands)
 			for i in cog.callbacks.keys():
-				self.callbacks[str(i)].append(cog.callbacks[str(i)])
+				self.callbacks[str(i)].append(cog.callbacks[str(i)])  # type: ignore # pyright: ignore
 
 
 	async def error(self, err: Exception):
@@ -156,7 +158,7 @@ class Bot(Client):
 		"""
 		pass
 
-	async def ulist(self, ulist: list[str]):
+	async def ulist(self, ulist: List[str]):
 		"""Gets called when a user connects to meower.
 
 		This is a callback for :meth:`MeowerBot.bot.Bot.event`
@@ -170,10 +172,10 @@ class Bot(Client):
 		"""
 		message = await self.handle_bridges(message)
 
-		if not message.data.startswith(self.prefix):
+		if not message.data.startswith(self.prefix): #type: ignore[PylancereportGeneralTypeIssues]
 			return
 
-		message.data = message.data.removeprefix(self.prefix)
+		message.data = message.data.removeprefix(self.prefix) #type: ignore[PylancereportGeneralTypeIssues]
 
 		await self.run_commands(message)
 
@@ -183,10 +185,11 @@ class Bot(Client):
 
 
 	async def _run_event(self, event: cbids, *args, **kwargs):
-		events = [getattr(self, str(event))]
+		events: List[Callable] = [getattr(self, str(event))]
+
 		for i in self.callbacks[str(event)]:
 			if type(i) is list:
-				events.extend(i)
+				events.extend(i) # type: ignore
 			elif callable(i):  # Check if the element is Callable
 				events.append(i)
 
@@ -213,7 +216,7 @@ class Bot(Client):
 					message.user = data
 
 
-		if message.data.startswith(self.prefix + "#0000"):
+		if message.data.startswith(self.prefix + "#0000"): #type: ignore[PylancereportGeneralTypeIssues]
 			message.data = message.data.replace("#0000", "")
 
 		return message
@@ -233,7 +236,7 @@ class Bot(Client):
 			await self._run_event(cbids.error, err)
 
 
-	def command(self, name=None, args=0, aliases: list[str] = None):
+	def command(self, name=None, args=0, aliases: List[str] = None): # type: ignore
 		def inner(func):
 
 			cmd = AppCommand(func, name=name, args=args)
@@ -307,13 +310,13 @@ class Bot(Client):
 				return await self._run_event(cbids.statuscode, message["val"], message.get("listener"))
 
 			case "ulist":
-				self.ulist = message["val"].split(";")
+				self.userlist = message["val"].split(";")
 
-				return await self._run_event(cbids.ulist, self.ulist)
+				return await self._run_event(cbids.ulist, self.userlist)
 
 			case "direct":
 				if "post_origin" in message["val"]: # post
-					await self._run_event(cbids.__raw__, message["val"])
+					await self._run_event(cbids.__raw__, message["val"]) # type: ignore[call-arg]
 					post = Post(self, message["val"], chat=message["val"]["post_origin"])
 					async with self.message_condition:
 						self.messages.append(post)
@@ -326,7 +329,7 @@ class Bot(Client):
 
 
 		if (message["cmd"] == "pmsg") and (message["val"] not in self.BOT_NO_PMSG_RESPONSE):
-			self.wss.sendPacket({
+			await self.sendPacket({
 					"cmd": "pmsg",
 					"val": "I:500 | Bot",
 					"id": message["origin"]

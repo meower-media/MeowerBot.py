@@ -79,7 +79,6 @@ class AppCommand:
 			cmd.register_class(self.connected)
 
 			self.subcommands = AppCommand.add_command(self.subcommands, cmd)
-			self.connected.update_commands()
 
 			return cmd # dont want mb to register this as a root command
 		return inner

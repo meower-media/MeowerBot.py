@@ -91,7 +91,7 @@ class Post:
 		return str(self.data)
 
 	async def reply(self, message):
-		self.chat.send_msg(f"@{self.user.username} [{self.id}] {message}")
+		await self.chat.send_msg(f"@{self.user.username} [{self._id}] {message}")
 
 
 class Context:

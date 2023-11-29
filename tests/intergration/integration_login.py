@@ -25,5 +25,9 @@ async def login(t):
 async def ping(ctx: Context):
 	await ctx.send_msg("Pong!\n My latency is: " + str(bot.latency))
 
+
+@ping.subcommand(name="pong")
+async def pong(ctx: Context, *message: str):
+	await ctx.send_msg(f"Pong!{" ".join(message)}")
 bot.register_cog(HelpExt(bot, disable_command_newlines=True))
 bot.run(env["uname"], env["pswd"])
