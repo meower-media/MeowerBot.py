@@ -38,7 +38,8 @@ class Bot(Client):
 	__bridges__ = [ #: :meta public: :meta hide-value:
 			"Discord",
 			"Revower",
-			"revolt"
+			"revolt",
+			"Guilded"
 	]
 
 
