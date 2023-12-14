@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from typing import NewType, TypeVar
+
 from dataclasses_json import dataclass_json
-from typing import TypeVar, NewType
 
 T = TypeVar("T")
 UUID = NewType("UUID", str)

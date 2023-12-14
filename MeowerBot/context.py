@@ -1,10 +1,9 @@
 from datetime import datetime
+from typing import Optional
 
+from .api.shared import api_resp
 from .data.api.chats import ChatGroup
 from .data.api.user import User as RawUser
-from .api.shared import api_resp
-
-from typing import Optional
 
 
 class PartialChat:

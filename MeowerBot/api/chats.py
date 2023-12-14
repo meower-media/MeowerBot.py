@@ -1,10 +1,8 @@
-from httpx import AsyncClient
-from ..data import generic
-from ..data.api.chats import Chats, ChatGroup
-
-from httpx import Response
+from httpx import AsyncClient, Response
 
 from .shared import api_resp
+from ..data import generic
+from ..data.api.chats import ChatGroup, Chats
 
 
 def chat_return(resp: Response):
@@ -15,7 +13,7 @@ class Chats:
 	def __init__(self, client: AsyncClient) -> None:
 		self.client = client
 
-	async def fetch_all(self) -> Chats:
+	async def fetch_all(self):
 		return api_resp(Chats, await self.client.get("/chats/", params={"autoget": None}))
 
 	async def create(self, nickname: str):
@@ -27,6 +25,7 @@ class Chats:
 	async def update(self, uuid: generic.UUID, nickname: str):
 		return chat_return(await self.client.patch(f"/chats/{uuid}", josn={"nickname": nickname}))
 
+	# noinspection PyTypeChecker
 	async def leave(self, uuid: generic.UUID) -> dict:
 		return api_resp(dict, await self.client.delete(f"/chats/{uuid}"))
 

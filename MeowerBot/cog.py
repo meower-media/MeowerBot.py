@@ -1,19 +1,20 @@
-from .command import AppCommand, CB
 import types
-from typing import Any, Union
+from typing import Union
+
+from .command import AppCommand, CB
 
 
 class Cog:
 	commands: dict[str, AppCommand]
 	callbacks: dict[str, list[types.CoroutineType]]
 
-	__instence__: Union["Cog", None] = None
+	__instance__: Union["Cog", None] = None
 
 	def __init__(self) -> None:
-		if isinstance(self.__instence__, Cog):
+		if isinstance(self.__instance__, Cog):
 			return
 
-		self.__class__.__instence__ = self
+		self.__class__.__instance__ = self
 		self.commands = {}
 		self.callbacks = {}
 		self.update_commands()
@@ -34,12 +35,12 @@ class Cog:
 				self.callbacks[attr.id] = attr.func
 
 	def __new__(cls, *args, **kwargs):
-		if cls.__instence__ is None:
+		if cls.__instance__ is None:
 			self = super().__new__(cls)
 
 			return self
 
 		else:
-			return cls.__instence__
+			return cls.__instance__
 
 __all__ = ["Cog"]

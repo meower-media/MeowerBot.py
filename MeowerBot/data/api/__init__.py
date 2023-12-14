@@ -1,11 +1,11 @@
-from dataclasses import dataclass, field
-from dataclasses_json import config, dataclass_json
-from typing import List, TypeVar, Generic, Optional, NewType
+from dataclasses import dataclass
 
+from dataclasses_json import dataclass_json
 
-from ..generic import Post, UUID
 from .reports import PagedRequest
 from .user import User
+from ..generic import Post
+
 
 class Inbox(PagedRequest[Post]): pass
 class PostList(PagedRequest[Post]): pass

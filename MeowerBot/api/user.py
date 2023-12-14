@@ -1,16 +1,15 @@
+from typing import Literal
+from urllib.parse import urljoin
+
 from httpx import AsyncClient
 
+from .shared import api_resp
+from ..data.api.chats import ChatGroup
 from ..data.api.reports import PagedRequest
-from ..data.generic import Post
 from ..data.api.user import (
 	Relationship
 )
-from ..data.api.chats import ChatGroup
-
-from typing import Literal
-
-from .shared import api_resp
-from urllib.parse import urljoin
+from ..data.generic import Post
 
 
 class User:
@@ -30,4 +29,4 @@ class User:
 		return api_resp(Relationship, await self.client.patch(f"/users/{username}/relationship", json={"state": state}))
 
 	async def dm(self, username):
-		return api_resp(ChatGroup, self._get(username, 'dm'))
+		return api_resp(ChatGroup, await self._get(username, 'dm'))

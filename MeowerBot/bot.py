@@ -1,41 +1,40 @@
-from __future__ import annotations
-from ast import Call
-import shlex
-from unittest.mock import AsyncMagicMixin
-from .cl import Client
-import traceback
-from .command import AppCommand
-from .context import Context, Post, PartialUser, User, PartialChat
-import logging
-from .api import MeowerAPI
 import asyncio
+import logging
+import shlex
+import traceback
 from enum import StrEnum
+from typing import Callable, Dict, List
+
+from .api import MeowerAPI
+from .cl import Client
 from .cog import Cog
-from typing import Any, Dict, Callable, List
+from .command import AppCommand
+from .context import Context, PartialChat, PartialUser, Post, User
 
 
-class cbids(StrEnum):
+class CallBackIds(StrEnum):
 	"""Callbacks that the bot calls. You can find more documentation in :class:`MeowerBot.bot.Bot`"""
 	error = "error"
 	__raw__ = "__raw__"
 	login = "login"
-	close = "close"
+	disconnect = "disconnect"
 	ulist = "ulist"
 	message = "message"
 	raw_message = "raw_message"
 	direct = "direct"
 	statuscode = "statuscode"
 
-callbacks = [i for i in cbids] # type: ignore
+cbids = CallBackIds
+callbacks = [i for i in CallBackIds] # type: ignore
 
 
 class Bot(Client):
-	"""A class that holds all of the networking for a meower bot to function and run"""
+	"""A class that holds all the networking for a Meower bot to function and run"""
 
-	messages: List[Post] = [] #: :meta private: :meta hide-value:
+	messages: List[Post] = []  #: :meta private: :meta hide-value:
 	message_condition = asyncio.Condition() #: :meta private: :meta hide-value:
 
-	__bridges__ = [ #: :meta public: :meta hide-value:
+	__bridges__ = [  #: :meta public: :meta hide-value:
 			"Discord",
 			"Revower",
 			"revolt"
@@ -72,18 +71,19 @@ class Bot(Client):
 	def __init__(self, prefix=None): # type: ignore
 
 		super().__init__()
+		self.api = None
 		self.callbacks: Dict[str, List[Callable]] = {str(i): [] for i in callbacks}
 		self.callbacks["__raw__"] = []
 		self.userlist = []
 
 		# to be used in start
-		self.username: str  = None #: :meta hide-value:  # type: ignore # pyright: ignore
-		self.password: str  = None #: :meta hide-value:  # type: ignore # pyright: ignore
+		self.username: str  = None # type: ignore #: :meta hide-value:
+		self.password: str  = None # type: ignore #: :meta hide-value:
 
 		self.commands = {}
 		self.prefix = prefix
 		self.logger = logging.getLogger("MeowerBot")
-		self.server: str  = None  # type: ignore # pyright: ignore
+		self.server: str  = None  # type: ignore
 
 		self.cogs: Dict[str, Cog] = {}
 	# Interface
@@ -91,7 +91,7 @@ class Bot(Client):
 	def event(self, func: Callable):
 		"""Creates a callback that takes over the original functionality of the bot.
 
-		valid callbacks are defined in :class:`cbids`
+		valid callbacks are defined in :class:`CallBackIds`
 
 		:param func: The function that
 		:type func: Callable
@@ -102,11 +102,11 @@ class Bot(Client):
 
 		setattr(self, func.__name__, func)
 
-	def listen(self, callback: str = None): # type: ignore # pyright: ignore
+	def listen(self, callback: str = None):
 		"""
 		Does the same thing as :meth MeowerBot.bot.Bot.event:but does not replace the bots original functionality
 
-		valid callbacks are defined in :class:`cbids`
+		valid callbacks are defined in :class:`CallBackIds`
 		:raises TypeError: The listener provided is not valid
 		"""
 		def inner(func):
@@ -151,7 +151,7 @@ class Bot(Client):
 		"""
 		pass
 
-	async def close(self):
+	async def disconnect(self):
 		"""Gets called when the bot get disconnected from meower
 
 		This is a callback for :meth:`MeowerBot.bot.Bot.event`
@@ -172,10 +172,10 @@ class Bot(Client):
 		"""
 		message = await self.handle_bridges(message)
 
-		if not message.data.startswith(self.prefix): #type: ignore[PylancereportGeneralTypeIssues]
+		if not message.data.startswith(self.prefix):
 			return
 
-		message.data = message.data.removeprefix(self.prefix) #type: ignore[PylancereportGeneralTypeIssues]
+		message.data = message.data.removeprefix(self.prefix)
 
 		await self.run_commands(message)
 
@@ -184,7 +184,7 @@ class Bot(Client):
 	async def direct(self, data: dict): pass
 
 
-	async def _run_event(self, event: cbids, *args, **kwargs):
+	async def _run_event(self, event: CallBackIds, *args, **kwargs):
 		events: List[Callable] = [getattr(self, str(event))]
 
 		for i in self.callbacks[str(event)]:
@@ -196,7 +196,7 @@ class Bot(Client):
 		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if callable(i)], return_exceptions=True)
 		for i in err:
 			if i is not None:
-				if isinstance(i, Exception) and event != cbids.error:
+				if isinstance(i, Exception) and event != CallBackIds.error:
 					await self._error(i)
 
 	# websocket
@@ -216,7 +216,7 @@ class Bot(Client):
 					message.user = data
 
 
-		if message.data.startswith(self.prefix + "#0000"): #type: ignore[PylancereportGeneralTypeIssues]
+		if message.data.startswith(self.prefix + "#0000"):
 			message.data = message.data.replace("#0000", "")
 
 		return message
@@ -233,13 +233,13 @@ class Bot(Client):
 			self.get_context(message), *args[1:]
 		)) is not None:
 
-			await self._run_event(cbids.error, err)
+			await self._run_event(CallBackIds.error, err)
 
 
 	def command(self, name=None, args=0, aliases: List[str] = None): # type: ignore
 		def inner(func):
 
-			cmd = AppCommand(func, name=name, args=args)
+			cmd = AppCommand(func, name=name, args=args, alias=aliases)
 
 			self.commands = AppCommand.add_command(self.commands, cmd)
 
@@ -288,7 +288,7 @@ class Bot(Client):
 
 	async def _process_login_response(self):
 		await self.api.login(self._packets[-1]['val']['payload']['token'])
-		await self._run_event(cbids.login, self._packets[-1]['val']['payload']['token'])
+		await self._run_event(CallBackIds.login, self._packets[-1]['val']['payload']['token'])
 
 	def register_cog(self, cog: Cog):
 		self.cogs[cog.__class__.__name__] = cog
@@ -297,35 +297,35 @@ class Bot(Client):
 
 	async def _disconnect(self):
 
-		await self._run_event(cbids.close)
+		await self._run_event(CallBackIds.disconnect)
 
-	def get_chat(self, id):
-		return PartialChat(id, self)
+	def get_chat(self, chat_id: str):
+		return PartialChat(chat_id, self)
 
 	async def _message(self, message: dict):
 		if (message.get("listener")) != "mb.py_login":
 			self.logger.debug(message)
 		match message["cmd"]:
 			case "statuscode":
-				return await self._run_event(cbids.statuscode, message["val"], message.get("listener"))
+				return await self._run_event(CallBackIds.statuscode, message["val"], message.get("listener"))
 
 			case "ulist":
 				self.userlist = message["val"].split(";")
 
-				return await self._run_event(cbids.ulist, self.userlist)
+				return await self._run_event(CallBackIds.ulist, self.userlist)
 
 			case "direct":
 				if "post_origin" in message["val"]: # post
-					await self._run_event(cbids.__raw__, message["val"]) # type: ignore[call-arg]
+					await self._run_event(CallBackIds.__raw__, message["val"]) # type: ignore[call-arg]
 					post = Post(self, message["val"], chat=message["val"]["post_origin"])
 					async with self.message_condition:
 						self.messages.append(post)
 						self.message_condition.notify_all()
 						self.messages = self.messages[0: 50]
 
-					await self._run_event(cbids.message, post)
+					await self._run_event(CallBackIds.message, post)
 				else:
-					return await self._run_event(cbids.direct, message)
+					return await self._run_event(CallBackIds.direct, message)
 
 
 		if (message["cmd"] == "pmsg") and (message["val"] not in self.BOT_NO_PMSG_RESPONSE):
@@ -342,7 +342,7 @@ class Bot(Client):
 
 	async def _error(self, error):
 
-		await self._run_event(cbids.error, error)
+		await self._run_event(CallBackIds.error, error)
 
 
 	async def start(self, username, password, server="wss://server.meower.org", ):
@@ -352,6 +352,7 @@ class Bot(Client):
 		self.username = username
 		self.password = password
 		self.update_commands()
+		# noinspection PyAsyncCall
 		asyncio.create_task(self._t_ping())
 		if self.prefix is None:
 			self.prefix = "@" + self.username
@@ -375,4 +376,4 @@ class Bot(Client):
 		return fut
 
 
-__all__ = ["Bot", "cbids"]
+__all__ = ["Bot", "CallBackIds", 'cbids']

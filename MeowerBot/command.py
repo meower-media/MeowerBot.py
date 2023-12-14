@@ -1,5 +1,6 @@
 import inspect
 from logging import getLogger
+from typing import Any, Optional
 
 logger = getLogger("MeowerBot")
 
@@ -7,6 +8,7 @@ logger = getLogger("MeowerBot")
 class AppCommand:
 	connected = None
 
+	# noinspection PyShadowingNames
 	@staticmethod
 	def add_command(obj: dict, command: "AppCommand", ignore_subcommands: bool = True):
 		if command.is_subcommand and ignore_subcommands:
@@ -75,21 +77,25 @@ class AppCommand:
 	def subcommand(self, name=None, args=0, aliases=None):
 		def inner(func):
 
-			cmd = AppCommand(func, name=name, args=args)
+			cmd = AppCommand(func, name=name, args=args, alias=aliases)
 			cmd.register_class(self.connected)
 
 			self.subcommands = AppCommand.add_command(self.subcommands, cmd)
 
-			return cmd # dont want mb to register this as a root command
+			return cmd # don't want mb to register this as a root command
 		return inner
 
-	async def run_cmd(self, ctx, *args) -> Exception | None: # basicly optinal
+	async def run_cmd(self, ctx, *args) -> Optional[Exception]:
 
 		try:
-			return await self.subcommands[args[0]].run_cmd(ctx, *args[1:]) # If a subcommand does not exist, basicly ignore it so we can get the the main command
+			# If a subcommand does not exist, ignore it,
+			# so we can get the main command
+			return await self.subcommands[args[0]].run_cmd(ctx, *args[1:])
+
 
 		except (KeyError, IndexError):
-			logger.error("Cannot find subcommand") # we dont have access to the bot here, so the best we can do it log it.
+			if self.subcommands is not {}:
+				logger.error("Cannot find subcommand") # we don't have access to the bot here, so the best we can do it log it.
 
 		if not self.args_num == 0:
 			args = args[:self.args_num]
@@ -121,9 +127,9 @@ class CB:
 		self.id = id
 
 
-def callback(cbid):
-	def inner(func):
-		return CB(func, cbid)
+def callback(callback_id: str) -> callable:
+	def inner(func: Any) -> CB:
+		return CB(func, callback_id)
 	return inner
 
 __all__ = ["callback", "CB", "command", "AppCommand"]
