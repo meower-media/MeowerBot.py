@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MeowerBot"
-version = "3.1.3"
+version = "3.2.0"
 description = "A meower bot lib for py"
 authors = ["showierdata9978 <68120127+showierdata9978@users.noreply.github.com>"]
 license = "MIT"
@@ -20,15 +20,14 @@ dataclasses-json = "^0.6.1"
 ujson = "^5.8.0"
 
 
-[tool.poetry.group.extras.dependencies]
-
-
 
 [tool.poetry.group.dev.dependencies]
-python-dotenv = "^1.0.0"
+
 types-ujson = "^5.8.0.1"
 flake8 = "^6.1.0"
+python-dotenv = "^1.0.0"
+httpx = "^0.25.2"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=1.0.0", ]
 build-backend = "poetry.core.masonry.api"

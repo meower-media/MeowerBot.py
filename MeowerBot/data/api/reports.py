@@ -1,11 +1,12 @@
 from dataclasses import dataclass, field
-from dataclasses_json import config, dataclass_json
-from typing import List, TypeVar, Generic, Optional, NewType
+from typing import Generic, List, Optional, TypeVar
 
+from dataclasses_json import config, dataclass_json
 
 from ..generic import Post, UUID
 
 T = TypeVar("T")
+
 
 @dataclass_json
 @dataclass
@@ -26,7 +27,8 @@ class ReportDetails:
     reason: str
     time: int
     user: str
-    
+
+
 @dataclass_json
 @dataclass
 class Report:
@@ -42,8 +44,6 @@ class Report:
 class ReportRequest(PagedRequest):
     autoget: List[Report]
 
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 
 @dataclass_json
 @dataclass

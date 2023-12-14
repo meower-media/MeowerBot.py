@@ -1,7 +1,10 @@
 
 from dataclasses import dataclass, field
+
 from dataclasses_json import config, dataclass_json
-from ..generic import UUID, BitFlag
+
+from ..generic import BitFlag, UUID
+
 
 class UserFlags:
     SYSTEM = 1

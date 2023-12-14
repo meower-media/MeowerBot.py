@@ -1,13 +1,14 @@
-from MeowerBot.cog import Cog
-from MeowerBot.command import command, AppCommand, callback
-from MeowerBot import cbids
 import inspect
+
+from MeowerBot.cog import Cog
+from MeowerBot.command import AppCommand, callback, command
+from MeowerBot import CallBackIds
 
 
 def _get_index_or(lst, i, d):
 	try:
 		r = lst[i]
-		if str(r) == str(inspect._empty):
+		if str(r) == "":
 			return d
 		return r.__name__
 	except IndexError:
@@ -15,7 +16,8 @@ def _get_index_or(lst, i, d):
 
 
 class Help(Cog):
-	__instence__: "Help"
+	__instance__: "Help"
+	_generated: bool = False
 
 	def __init__(self, bot, disable_command_newlines=False, *args, **kwargs):
 		Cog.__init__(self)
@@ -70,7 +72,7 @@ class Help(Cog):
 
 
 	def handle_command(self, name, cmd: AppCommand):
-		self.page += (f"{self.bot.prefix}{name} ")
+		self.page += f"{self.bot.prefix}{name} "
 
 		for arg in cmd.args:
 			self.page += f"<{arg[0]}: {str(_get_index_or(arg, 1, 'any'))}> "
@@ -102,11 +104,14 @@ class Help(Cog):
 
 		await ctx.send_msg(self.pages[page])
 
-	@callback(cbids.login)
+	@callback(CallBackIds.login)
 	@staticmethod
 	async def _login(token):
-		self = Help.__instence__
+		self = Help.__instance__
 		assert self is not None
+		if self._generated:
+			return
 
+		self._generated = True
 		self.bot.logger.info("Generating Help")
-		self.generate_help() # generate help on login, bugfix for default prefix and people being dumb
+		self.generate_help() # generate help on login, bugfix for default prefix, and people being dumb

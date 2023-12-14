@@ -1,5 +1,7 @@
+from typing import Tuple, Union
+
 from httpx import Response
-from typing import Union, Tuple
+
 from ..data.generic import Post
 
 

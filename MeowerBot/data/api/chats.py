@@ -1,10 +1,10 @@
-from dataclasses import dataclass, field
-from dataclasses_json import config, dataclass_json
-from typing import List, TypeVar, Generic, Optional, NewType
+from dataclasses import dataclass
+from typing import List, Optional
 
+from dataclasses_json import dataclass_json
 
-from ..generic import Post, UUID
 from .reports import PagedRequest
+
 
 @dataclass_json
 @dataclass
@@ -17,5 +17,6 @@ class ChatGroup:
     nickname: Optional[str]
     owner: Optional[str]
     type: int
+
 
 class Chats(PagedRequest[ChatGroup]): pass

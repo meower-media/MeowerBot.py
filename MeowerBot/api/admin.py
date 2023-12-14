@@ -1,9 +1,10 @@
-from httpx import AsyncClient
-from ..data.api.reports import ReportRequest, Report, AdminNotesResponse
-from ..data import generic
 from typing import Literal
 
+from httpx import AsyncClient
+
 from .shared import api_resp, post_resp
+from ..data import generic
+from ..data.api.reports import AdminNotesResponse, Report, ReportRequest
 
 
 def notes_return(resp): return api_resp(AdminNotesResponse, resp)
@@ -28,11 +29,11 @@ class Admin:
 	async def escalate_report(self, uuid: generic.UUID):
 		return reports_return(await self.client.post(f"/admin/reports/{uuid}/escalate/"))
 
-	async def fetch_note(self, indentifier: str):
-		return notes_return(await self.client.get(f"/admin/notes/{indentifier}", params={"autoget": None}))
+	async def fetch_note(self, identifier: str):
+		return notes_return(await self.client.get(f"/admin/notes/{identifier}", params={"autoget": None}))
 
-	async def create_note(self, indentifier: str, notes: str):
-		return notes_return(await self.client.put(f"/admin/notes/{indentifier}", json={"notes": notes}))
+	async def create_note(self, identifier: str, notes: str):
+		return notes_return(await self.client.put(f"/admin/notes/{identifier}", json={"notes": notes}))
 
 	async def get_post(self, uuid: generic.UUID):
 		return post_resp(await self.client.get(f"/admin/posts/{uuid}", params={"autoget": None}))

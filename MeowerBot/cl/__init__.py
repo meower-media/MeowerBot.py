@@ -1,6 +1,7 @@
-import websockets
-import json
 import asyncio
+import json
+
+import websockets
 
 
 class Client:
@@ -49,7 +50,7 @@ class Client:
 				async for message in websocket:
 					try:
 						data = json.loads(message)
-						async with self.message_condition._lock:
+						async with self.message_condition:
 							self._packets.append(data)
 							self.message_condition.notify_all()
 							self._packets = self._packets[:50]

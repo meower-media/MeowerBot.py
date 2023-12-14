@@ -1,14 +1,13 @@
 
 from httpx import AsyncClient
-from ..data import generic
-from ..data.api.reports import PagedRequest
-from ..data.generic import Post
-
-from .shared import api_resp, post_resp
 
 from .admin import Admin
 from .chats import Chats
+from .shared import api_resp, post_resp
 from .user import User as API_USER_WRAPPER
+from ..data import generic
+from ..data.api.reports import PagedRequest
+from ..data.generic import Post
 
 
 class MeowerAPI:
@@ -66,5 +65,5 @@ class MeowerAPI:
 	async def search_users(self, query: str, page: int = 1, ):
 		return api_resp(PagedRequest[Post], await self.client.get("/search/users", params={"q": query, "p": page, "autoget": None}))
 
-	async def search_home(self, query: str, page: int = 1) -> PagedRequest[Post]:
+	async def search_home(self, query: str, page: int = 1):
 		return api_resp(PagedRequest[Post], await self.client.get("/search/home", params={"q": query, "p": page, "autoget": None}))
