@@ -315,7 +315,7 @@ class Bot(Client):
 
 	async def _process_login_response(self, packet):
 		await self.api.login(packet['val']['payload']['token'])
-		await self._run_event(cbids.login, packet['val']['payload']['token'])
+		await self._run_event(CallBackIds.login, packet['val']['payload']['token'])
 		self.user = await self.user.fetch()
 
 	def register_cog(self, cog: Cog):

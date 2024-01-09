@@ -1,9 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from .api.shared import api_resp
 from .data.api.chats import ChatGroup
 from .data.api.user import User as RawUser
+
+if TYPE_CHECKING:
+	from . import Bot
 
 
 class PartialChat:
@@ -19,12 +22,17 @@ class PartialChat:
 		return Post(self.bot, data.to_dict(), self)
 
 	async def fetch(self) -> Optional["Chat"]:
+		chat = self.bot.cache.get_chat()
+		if isinstance(chat, Chat): return chat
+
 		data, status = await self.bot.api.chats.get(self.id)
 
 		if status != 200:
 			return None
 
-		return Chat(data, self.bot)
+		chat = Chat(data, self.bot)
+		self.bot.cache.add_chat(chat)
+		return chat
 
 
 class Chat(PartialChat):
@@ -45,14 +53,20 @@ class Chat(PartialChat):
 class PartialUser:
 	def __init__(self, username: str, bot):
 		self.username: str = username
-		self.bot = bot
+		self.bot: "Bot" = bot
+		self.is_bot: bool = username in self.bot.cache.bots
 
 	async def fetch(self) -> Optional["User"]:
-		data, status = api_resp(RawUser, await self.bot.api.users._get(self.username, ""))
+		user = self.bot.cache.get_user(self.username)
+		if isinstance(user, User): return user
+
+		data, status = api_resp(RawUser, await self.bot.api.users._get(self.username, "", None))
 
 		assert type(data) is RawUser
 
-		return User(self.username, self.bot, data) if status == 200 else None
+		user = User(self.username, self.bot, data) if status == 200 else None
+		self.bot.cache.add_user(user)
+		return user
 
 
 class User(PartialUser):
@@ -100,7 +114,7 @@ class Context:
 		self.bot = bot
 
 	async def send_msg(self, msg):
-		await self.message.chat.send_msg(msg)
+		return await self.message.chat.send_msg(msg)
 
 	async def reply(self, msg):
 		await self.message.reply(msg)

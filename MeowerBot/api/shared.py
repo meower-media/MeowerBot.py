@@ -5,7 +5,7 @@ from httpx import Response
 from ..data.generic import Post
 
 
-def api_resp[T](cls: type[T], resp: Response) -> Tuple[Union[T, str], int]:
+def api_resp[T](cls: type[T], resp: Response) -> Tuple[Union[T, str], int]: # type: ignore
 	return (
 			(
 				(cls.from_json(resp.text)

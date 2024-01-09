@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Optional, Literal
 
 from httpx import AsyncClient
 
@@ -17,7 +17,7 @@ class Admin:
 	def __init__(self, client: AsyncClient):
 		self.client = client
 
-	async def get_reports(self, timeout: int = None):
+	async def get_reports(self, timeout: Optional[int] = None):
 		return api_resp(ReportRequest, await self.client.get("/admin/reports", timeout=timeout, params={"autoget": None}))
 
 	async def get_report(self, uuid: generic.UUID):

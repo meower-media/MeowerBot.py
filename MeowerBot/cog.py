@@ -2,11 +2,12 @@ import types
 from typing import Union
 
 from .command import AppCommand, CB
-
+from typing import Dict
+from types import CoroutineType
 
 class Cog:
 	commands: dict[str, AppCommand]
-	callbacks: dict[str, list[types.CoroutineType]]
+	callbacks: dict[str, CoroutineType]
 
 	__instance__: Union["Cog", None] = None
 
@@ -16,7 +17,7 @@ class Cog:
 
 		self.__class__.__instance__ = self
 		self.commands = {}
-		self.callbacks = {}
+		self.callbacks: Dict[str, CoroutineType] = {}
 		self.update_commands()
 
 	def update_commands(self):

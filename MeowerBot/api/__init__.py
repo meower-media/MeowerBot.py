@@ -29,6 +29,7 @@ class MeowerAPI:
 
 	async def login(self, token):
 		self.client.headers.update({"token": token})
+		self.headers.update({"token": token})
 
 	# basic bot functionalilty that needs to stay in MeowerAPI
 
