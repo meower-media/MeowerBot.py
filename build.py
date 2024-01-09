@@ -10,10 +10,13 @@ import tomllib
 import httpx
 
 import shutil
+
+
 def main():
 	if os.path.exists('.env'):
 		load_dotenv(override=True)
 
+	assert os.system("npx wrangler -v") == 0, "Install Wrangler! \n npm install wrangler --global"
 
 	os.system("rm -rf ./build/")
 	with open("pyproject.toml", 'rb') as f:
@@ -29,8 +32,7 @@ def main():
 		return
 
 	print("Uploading docs...")
-	# TODO: https://discord.com/channels/595317990191398933/1063191651796914276
-	#   Uploading HTML-Based Project dynamically (Docs)
+	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true")
 
 
 	print("Building MB.py...")
