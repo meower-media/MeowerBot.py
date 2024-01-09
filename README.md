@@ -1,4 +1,4 @@
-<center><img src="https://github.com/meower-community/MeowerBot.py/assets/68120127/211bcf8f-2e95-4470-9a32-814388b6e7ca"></center>
+<center><img src="https://raw.githubusercontent.com/meower-community/MeowerBot.py/master/assets/logo.svg"></center>
 
 A Python Bot library with an API like nextcord or discord.py, but instead of discord, it is made for the FOSS Social media [Meower](https://github.com/meower-media-co/)
 
