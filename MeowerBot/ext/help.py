@@ -18,13 +18,12 @@ def _get_index_or(lst, i, d):
 class Help(Cog):
 	__instance__: "Help"
 	_generated: bool = False
-	page = ""
-	pages = ["Uh oh, MB.py failed to call the login callback!"]
-
 
 	def __init__(self, bot, disable_command_newlines=False, *args, **kwargs):
 		Cog.__init__(self)
 		self.bot = bot
+		self.page = ""
+		self.pages = []
 		self.disable_command_newlines = disable_command_newlines
 
 
@@ -79,8 +78,8 @@ class Help(Cog):
 			self.page += f"<{arg[0]}: {str(_get_index_or(arg, 1, 'any'))}> "
 
 
-		for o_arg in cmd.optional_args:
-			self.page += f"[{o_arg[0]}: {str(_get_index_or(o_arg, 1, 'any'))}: optional ] "
+		for arg in cmd.optional_args:
+			self.page += f"[{arg[0]}: {str(_get_index_or(arg, 1, 'any'))}: optional ] "
 
 		if cmd.func.__doc__ is not None:
 			self.page += f"\n\t{cmd.func.__doc__}"
@@ -105,14 +104,14 @@ class Help(Cog):
 
 		await ctx.send_msg(self.pages[page])
 
-	@callback(callback_id=CallBackIds.login)
-	async def _login(self, token):
-		print("login cb")
+	@callback(CallBackIds.login)
+	@staticmethod
+	async def _login(token):
+		self = Help.__instance__
 		assert self is not None
 		if self._generated:
 			return
 
 		self._generated = True
-		self.bot.logger.info("\n\n\n\nGenerating Help\n\n\n\n")
-		self.pages = []
+		self.bot.logger.info("Generating Help")
 		self.generate_help() # generate help on login, bugfix for default prefix, and people being dumb
