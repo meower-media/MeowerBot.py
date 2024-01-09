@@ -1,6 +1,6 @@
 import inspect
 from logging import getLogger
-from typing import Any, Optional
+from typing import Any, Callable, Coroutine, Optional
 
 logger = getLogger("MeowerBot")
 
@@ -23,7 +23,7 @@ class AppCommand:
 		return obj
 
 
-	def __init__(self, func, alias: list[str] = None, name=None, args=0, is_subcommand=False): # type: ignore
+	def __init__(self, func, alias: Optional[list[str]] = None, name=None, args=0, is_subcommand=False): # type: ignore
 		if name is None:
 			name = func.__name__
 
@@ -127,8 +127,9 @@ class CB:
 		self.id = id
 
 
-def callback(callback_id: str) -> callable:
-	def inner(func: Any) -> CB:
+
+def callback(callback_id: str) -> Callable:
+	def inner(func: Callable) -> CB:
 		return CB(func, callback_id)
 	return inner
 

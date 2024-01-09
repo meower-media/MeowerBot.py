@@ -1,5 +1,5 @@
-from MeowerBot import Bot
-from MeowerBot.context import Context
+from MeowerBot import Bot, CallBackIds
+from MeowerBot.context import Context, Post
 from MeowerBot.cog import Cog
 from MeowerBot.command import command
 
@@ -12,20 +12,63 @@ load_dotenv() # type: ignore
 from os import environ as env
 from MeowerBot.ext.help import Help as HelpExt
 
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("websockets.client").setLevel(level=logging.INFO)
+logging.basicConfig(
+	level=logging.DEBUG,
+	handlers=[
+		logging.FileHandler("debug.log", encoding='utf8'),
+		logging.StreamHandler()
+	]
+)
 
+logging.getLogger("websockets.client").setLevel(logging.INFO)
 bot = Bot()
 
 
 @bot.event
-async def login(t):
+async def login(_token):
 	print("Logged in!")
 
 
 @bot.command(name="ping")
 async def ping(ctx: Context):
 	await ctx.send_msg("Pong!\n My latency is: " + str(bot.latency))
+
+
+# noinspection PyIncorrectDocstring
+@bot.command(name="logs")
+async def get_logs(ctx: Context, *args):
+	"""
+	Arguments:
+		start: Optional[int]
+		end: Optional[int]
+
+	Formated like this:
+		start=...
+
+	@prefix get_logs start=-200 end=-1
+	"""
+	# start=...
+	# end=...
+	start = -10
+	end = -1
+	arg: str
+	for arg in args:
+		if arg.startswith("start"):
+			start = int(arg.split("=")[1])
+		elif arg.startswith("end"):
+			end = int(arg.split("=")[1])
+
+	with open("debug.log") as logfile:
+		logs = logfile.readlines()
+
+	message = await ctx.send_msg("".join(logs[start: end]))
+	if not message:
+		await ctx.reply("Error: Logs to big for current env")
+
+
+@bot.command(name="bots")
+async def get_bots(ctx: Context):
+	await ctx.reply(f"\n {" ".join(list(bot.cache.bots.keys()))}")
 
 
 @ping.subcommand(name="pong")
@@ -41,7 +84,7 @@ class Ping(Cog):
 	@command()
 	async def cog_ping(self, ctx: Context):
 		await ctx.send_msg("Pong!\n My latency is: " + str(self.bot.latency))
-
+		print(bot.api.headers.get("token"))
 	@cog_ping.subcommand()
 	async def ping(self, ctx: Context):
 		await ctx.send_msg("Pong!\n My latency is: " + str(self.bot.latency))
