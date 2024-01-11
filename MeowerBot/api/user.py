@@ -16,8 +16,15 @@ class User:
 	def __init__(self, client: AsyncClient) -> None:
 		self.client = client
 
-	async def _get(self, username, url, json=None, page=1, query=None, params=None):
-		return await self.client.get(urljoin(f"/users/{username}/", url), json=json, params={"q": query, "p": page, **params})
+	async def _get(self, username, url, page=1, query=None, params=None):
+
+		if query is None:
+			query = dict()
+
+		if params is None:
+			params = dict()
+
+		return await self.client.get(urljoin(f"/users/{username}/", url), params={"q": query, "p": page, **params})
 
 	async def get_posts(self, username, query, page=1):
 		return api_resp(PagedRequest[Post], await self._get(username, "posts", query=query, page=page, params={"autoget": None}))

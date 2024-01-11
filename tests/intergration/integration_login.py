@@ -1,5 +1,5 @@
 from MeowerBot import Bot, CallBackIds
-from MeowerBot.context import Context, Post
+from MeowerBot.context import Context, PartialUser, Post, User
 from MeowerBot.cog import Cog
 from MeowerBot.command import command
 
@@ -90,8 +90,17 @@ class Ping(Cog):
 		await ctx.send_msg("Pong!\n My latency is: " + str(self.bot.latency))
 
 
+@bot.event
+async def login(token):
+	assert await bot.get_chat("9bf5bddd-cd1a-4c0d-a34c-31ae554ed4a7").fetch() is not None
+	assert await bot.get_chat("9bf5bddd").fetch() is None
+	assert await PartialUser(bot.user.username, bot).fetch() is not None
+	assert await PartialUser("A" * 21, bot).fetch() is None
 
-
+@bot.listen(CallBackIds.message)
+async def on_message(message: Post):
+	assert isinstance(message, Post)
+	assert isinstance(bot.get_context(message), Context)
 
 bot.register_cog(Ping(bot))
 bot.register_cog(HelpExt(bot, disable_command_newlines=True))

@@ -22,7 +22,7 @@ class PartialChat:
 		return Post(self.bot, data.to_dict(), self)
 
 	async def fetch(self) -> Optional["Chat"]:
-		chat = self.bot.cache.get_chat()
+		chat = self.bot.cache.get_chat(self.id)
 		if isinstance(chat, Chat): return chat
 
 		data, status = await self.bot.api.chats.get(self.id)
