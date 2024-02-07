@@ -62,8 +62,6 @@ class PartialUser:
 
 		data, status = api_resp(RawUser, await self.bot.api.users._get(self.username, "", None))
 
-		assert type(data) is RawUser
-
 		user = User(self.username, self.bot, data) if status == 200 else None
 		self.bot.cache.add_user(user)
 		return user

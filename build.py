@@ -32,7 +32,7 @@ def main():
 		return
 
 	print("Uploading docs...")
-	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true")
+	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true --branch=master")
 
 
 	print("Building MB.py...")
