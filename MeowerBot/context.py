@@ -53,17 +53,17 @@ class Chat(PartialChat):
 class PartialUser:
 	def __init__(self, username: str, bot):
 		self.username: str = username
-		self.bot: "Bot" = bot
-		self.is_bot: bool = username in self.bot.cache.bots
+		self._bot: "Bot" = bot
+		self.bot: bool = username in self._bot.cache.bots
 
 	async def fetch(self) -> Optional["User"]:
-		user = self.bot.cache.get_user(self.username)
+		user = self._bot.cache.get_user(self.username)
 		if isinstance(user, User): return user
 
-		data, status = api_resp(RawUser, await self.bot.api.users._get(self.username, "", None))
+		data, status = api_resp(RawUser, await self._bot.api.users._get(self.username, "", None))
 
-		user = User(self.username, self.bot, data) if status == 200 else None
-		self.bot.cache.add_user(user)
+		user = User(self.username, self._bot, data) if status == 200 else None
+		self._bot.cache.add_user(user)
 		return user
 
 
@@ -88,7 +88,7 @@ class User(PartialUser):
 
 class Post:
 	def __init__(self, bot, _raw: dict, chat):
-		self.bot = bot
+		self._bot = bot
 		self._raw = _raw
 		self.user: PartialUser | User = PartialUser(self._raw["u"], bot)
 
@@ -109,7 +109,7 @@ class Context:
 	def __init__(self, post: Post, bot):
 		self.message = post
 		self.user = self.message.user
-		self.bot = bot
+		self._bot = bot
 
 	async def send_msg(self, msg):
 		return await self.message.chat.send_msg(msg)

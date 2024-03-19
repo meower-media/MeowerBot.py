@@ -2,10 +2,13 @@ import asyncio
 import copy
 import json
 import logging
+import secrets
 import shlex
 import traceback
 from enum import StrEnum
 from typing import Optional, Callable, Dict, List
+
+import httpx
 
 from ._cache import Cache
 from .api import MeowerAPI
@@ -15,6 +18,8 @@ from .command import AppCommand
 from .context import Context, PartialChat, PartialUser, Post, User
 from .data.generic import UUID
 from types import CoroutineType
+
+from .events import Events
 
 
 class CallBackIds(StrEnum):
@@ -33,11 +38,11 @@ cbids = CallBackIds
 callbacks = [i for i in CallBackIds] # type: ignore
 
 
-class Bot(Client):
+class Bot(Client, Events):
 	"""A class that holds all the networking for a Meower bot to function and run"""
 
 	messages: List[Post] = []  #: :meta private: :meta hide-value:
-	message_condition = asyncio.Condition() #: :meta private: :meta hide-value:
+	post_condition = asyncio.Condition() #: :meta private: :meta hide-value:
 	user: PartialUser | User # Parcial user when bot is not logged in
 	cache: Cache
 
@@ -55,8 +60,6 @@ class Bot(Client):
 		"I: 100 | Bot"
 	]
 
-	userlist: List[str] = None #: :meta hide-value: #type: ignore
-
 	@property
 	def latency(self) -> float:
 		"""Gets the latency of the bot
@@ -71,15 +74,15 @@ class Bot(Client):
 			try:
 				await asyncio.sleep(5)
 
-				await self.sendPacket({"cmd": "ping", "val": ""})
+				await self.send_packet({"cmd": "ping", "val": ""})
 			except Exception as e:
 				await self._error(e)
 				break
 
-	def __init__(self, prefix=None): # type: ignore
+	def __init__(self, prefix=None):  # type: ignore
 
 		super().__init__()
-		self.api: MeowerAPI = None # type: ignore
+		self.api: MeowerAPI = None  # type: ignore
 		self.callbacks: Dict[str, List[CoroutineType]] = {str(i): [] for i in callbacks}
 		self.callbacks["__raw__"] = []
 		self.userlist = []
@@ -138,41 +141,12 @@ class Bot(Client):
 			for i in cog.callbacks.keys():
 				self.callbacks[str(i)].append(cog.callbacks[str(i)])
 
-
 	async def error(self, err: Exception):
 		"""Handles errors for the bot.
 
 		This is a callback for :meth:`MeowerBot.bot.Bot.event`
 		"""
 		self.logger.error(traceback.print_exception(err))
-
-	async def __raw__(self, packet: dict):
-		"""Callback for raw packets. Gets called before the bot does any processing.
-
-		This is a callback for :meth:`MeowerBot.bot.Bot.event`
-		"""
-		pass
-
-	async def login(self, token: str):
-		"""Gets called when the bot is fully ready and logged into meower
-
-		This is a callback for :meth:`MeowerBot.bot.Bot.event`
-		"""
-		pass
-
-	async def disconnect(self):
-		"""Gets called when the bot gets disconnected from meower
-
-		This is a callback for :meth:`MeowerBot.bot.Bot.event`
-		"""
-		pass
-
-	async def ulist(self, ulist: List[str]):
-		"""Gets called when a user connects to meower.
-
-		This is a callback for :meth:`MeowerBot.bot.Bot.event`
-		"""
-		pass
 
 	async def message(self, message: Post):
 		"""Method for overiding how the bot handles messages.
@@ -187,11 +161,6 @@ class Bot(Client):
 		message.data = message.data.removeprefix(self.prefix)
 
 		await self.run_commands(message)
-
-	async def statuscode(self, status, listerner): pass
-	async def raw_message(self, data: dict): pass
-	async def direct(self, data: dict): pass
-
 
 	async def _run_event(self, event: cbids, *args, **kwargs):
 		events: List[Callable] = [getattr(self, str(event))]
@@ -210,7 +179,8 @@ class Bot(Client):
 
 
 	# websocket
-	async def sendPacket(self, message: dict):
+
+	async def send_packet(self, message: dict):
 		if message.get("listener") != "mb.py_login":
 			self.logger.debug("Sending Packet:  " + json.dumps(message))
 		else:
@@ -218,7 +188,7 @@ class Bot(Client):
 			message_sensitive["val"]["val"]["pswd"] = "<PASSWORD>"
 			self.logger.debug("Sending Packet:  " + json.dumps(message_sensitive))
 
-		await super().sendPacket(message)
+		await super().send_packet(message)
 
 	async def handle_bridges(self, message: Post):
 		fetch = False
@@ -230,13 +200,12 @@ class Bot(Client):
 			message.data = split[1].strip()
 			message.user = PartialUser(split[0].strip(), self)
 			if fetch:
-				data = self.cache.get_user()
+				data = self.cache.get_user(message.user.username)
 				if not isinstance(data, User):
 					data = await message.user.fetch()
 
 				if data:
 					message.user = data
-
 
 		if message.data.startswith(self.prefix + "#0000"):
 			message.data = message.data.replace("#0000", "")
@@ -250,13 +219,12 @@ class Bot(Client):
 
 		args = shlex.split(str(message))
 
-
 		if (err := await self.commands[args[0]].run_cmd(
 				self.get_context(message), *args[1:]
 		)) is not None:
 
 			await self._run_event(CallBackIds.error, err)
-
+			return err
 
 	def command(self, name=None, args=0, aliases: Optional[List[str]] = None): # type: ignore
 		def inner(func):
@@ -265,10 +233,8 @@ class Bot(Client):
 
 			self.commands = AppCommand.add_command(self.commands, cmd)
 
-
 			return cmd
 		return inner
-
 
 	async def _connect(self):
 		await self._send_initial_commands()
@@ -276,12 +242,12 @@ class Bot(Client):
 		await self._process_login_response(packet)
 
 	async def _send_initial_commands(self):
-		await self.sendPacket({"cmd": "direct", "val": "meower", "listener": "send_tkey"})
-		await self.sendPacket({"cmd": "direct", "val": {"cmd": "type", "val": "py"}})
+		await self.send_packet({"cmd": "direct", "val": "meower", "listener": "send_tkey"})
+		await self.send_packet({"cmd": "direct", "val": {"cmd": "type", "val": "py"}})
 
 	async def _authenticate(self):
-		async with self.message_condition:
-			await self.sendPacket({
+		async with self.packet_condition:
+			await self.send_packet({
 				"cmd": "direct",
 				"val": {
 					"cmd": "authpswd",
@@ -294,12 +260,11 @@ class Bot(Client):
 			})
 
 			while True:
-				await self.message_condition.wait()
+				await self.packet_condition.wait()
 
 				if self._packets[-1].get("listener") != "mb.py_login":
 					continue
 
-				print(self._packets[-1])
 				if self._packets[-1]["cmd"] == "statuscode" and self._packets[-1]["val"] != "I: 100 | OK":
 					raise Exception(f"Wrong Username or Password!\n {self._packets[-1]['val']}")
 				elif self._packets[-1]["cmd"] == "statuscode":
@@ -311,12 +276,22 @@ class Bot(Client):
 
 				return self._packets.pop(-1)
 
-
-
 	async def _process_login_response(self, packet):
 		await self.api.login(packet['val']['payload']['token'])
-		await self._run_event(CallBackIds.login, packet['val']['payload']['token'])
 		self.user = await self.user.fetch()
+
+		if self.api.base_uri.startswith("https://api.meower.org"):
+			key = secrets.token_urlsafe()
+
+			chat = self.get_chat((await self.api.users.dm("Utils"))[0]._id)
+			await chat.send_msg(key)
+
+			httpx.put(f"https://meower-utils.showierdata.xyz/bot/{self.user.name}", json={
+				"key": key,
+				"library": "MeowerBot.py"
+			})
+
+		await self._run_event(CallBackIds.login, packet['val']['payload']['token'])
 
 	def register_cog(self, cog: Cog):
 		self.cogs[cog.__class__.__name__] = cog
@@ -350,62 +325,48 @@ class Bot(Client):
 				return await self._run_event(CallBackIds.statuscode, message["val"], message.get("listener"))
 
 			case "ulist":
-				self.userlist = message["val"].split(";")
-				await self._check_bot_users(self.userlist)
+				usernames = message["val"].split(";")
+				usernames.pop()
+				print(usernames)
+				self.userlist = []
+				for user in usernames:
+
+					if userobj := self.cache.get_user(user):
+						self.userlist.append(user)
+						continue
+					user = await PartialUser(user, self).fetch()
+					self.userlist.append(user)
+					self.cache.add_user(user)
+
+				await self._check_bot_users(usernames)
 				return await self._run_event(CallBackIds.ulist, self.userlist)
 
 			case "direct":
 				await self._handle_direct(message)
 
-		if message["cmd"] == "pmsg":
-			if message["val"] not in self.BOT_NO_PMSG_RESPONSE:
-				await self.sendPacket({
-					"cmd": "pmsg",
-					"val": "I:500 | Bot",
-					"id": message["origin"]
-				})
-			else:
-				await self.handle_bot_pmsg(message["origin"])
-
-
 	async def _handle_direct(self, message):
-		if "post_origin" not in message["val"]: # post
+		await self._run_event(CallBackIds.direct, message)
 
-			return await self._run_event(CallBackIds.direct, message)
+		if "post_origin" not in message["val"]:
+			return
 
-		await self._run_event(CallBackIds.__raw__, message["val"]) # type: ignore[call-arg]
+		await self._run_event(CallBackIds.raw_message, message["val"]) # type: ignore[call-arg]
 		post = Post(self, message["val"], chat=message["val"]["post_origin"])
-		async with self.message_condition:
+		async with self.post_condition:
 			self.messages.append(post)
-			self.message_condition.notify_all()
+			self.post_condition.notify_all()
 			self.messages = self.messages[0: 50]
 
 		await self._run_event(CallBackIds.message, post)
 
-
 	async def _check_user(self, user):
-		if user in self.__bridges__ or "bot" in user.lower():
-			self.cache.add_bot(user)
+		if self.cache.bots.get(user): return
+
+		resp = httpx.get(f"https://meower-utils.showierdata.xyz/bots/{user}")
+		if resp.status_code != 200:
 			return
 
-
-
-		await self.sendPacket({
-			"cmd": "pmsg",
-			"val": {
-				"library": "MeowerBot.py",
-				"known_bots": self.cache.bots
-			},
-			"id": user
-		})
-
-	async def handle_bot_pmsg(self, origin):
-		if origin == self.username:
-			return
-
-		self.cache.add_bot(origin)
-
-
+		self.cache.add_bot(user, resp.json())
 
 	async def _check_bot_users(self, userlist):
 		assert self.api is not None
@@ -421,12 +382,9 @@ class Bot(Client):
 		# noinspection PyAsyncCall
 		asyncio.gather(*[self._check_user(username) for username in userlist])
 
-
-
 	async def _error(self, error):
 
 		await self._run_event(CallBackIds.error, error)
-
 
 	async def start(self, username, password, server="wss://server.meower.org", ):
 		"""

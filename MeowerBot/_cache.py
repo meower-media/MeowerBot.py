@@ -1,5 +1,5 @@
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 from MeowerBot.context import Chat, PartialChat, PartialUser, User
 from MeowerBot.data.generic import UUID
@@ -11,14 +11,14 @@ CASHE_EXPIRATION = 60 * 60 * 5
 class Cache:
 	chats: Dict[UUID, Tuple[float, Chat | PartialChat]]
 	users: Dict[str, Tuple[float, User | PartialUser]]
-	bots:  Dict[str, float]
+	bots:  Dict[str, Dict[str, Any]]
 
 	def __init__(self):
 		self.bots  = {}
 		self.chats = {}
 		self.users = {}
 
-	def get_user(self, user_id: str) -> User | PartialUser | None:
+	def get_user(self, user_id: str) -> User | None | bool:
 		if user_id not in self.users:
 			return None
 
@@ -26,6 +26,10 @@ class Cache:
 		if user[0] + CASHE_EXPIRATION < time.time():
 			self.users.pop(user_id)
 			return None
+
+		if not isinstance(user[1], User):
+			self.users.pop(user_id)
+			return False
 
 		return user[1]
 
@@ -62,8 +66,8 @@ class Cache:
 	def try_clear_bots(self):
 		ret = []
 		rem = []
-		for username, timeout in self.bots.items():
-			if timeout + CASHE_EXPIRATION < time.time():
+		for username, data in self.bots.items():
+			if data["time"] + CASHE_EXPIRATION < time.time():
 				rem.append(username)
 				continue
 
@@ -74,16 +78,14 @@ class Cache:
 
 		return ret
 
-	def add_bot(self, user):
-		if user in self.bots:
-			self.bots[user] = time.time()
-			return
+	def add_bot(self, user, data: dict):
+		data["time"] = time.time()
 
-		self.bots[user] = time.time()
+		self.bots[user] = data
 		if user not in self.users:
 			return
 
-		self.users[user][1].is_bot = True
+		self.users[user][1].bot = True
 
 	def remove_bot(self, user):
 		if user not in self.bots:
@@ -93,4 +95,4 @@ class Cache:
 		if user not in self.users:
 			return
 
-		self.users[user][1].is_bot = False
+		self.users[user][1].bot = False

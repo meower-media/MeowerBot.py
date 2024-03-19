@@ -1,7 +1,10 @@
 import asyncio
 import json
+from typing import List
 
 import websockets
+
+from MeowerBot.context import User, PartialUser
 
 
 class Client:
@@ -9,13 +12,14 @@ class Client:
 	MeowerBot.py's async websocket wrapper.
 	"""
 	ws: websockets.WebSocketClientProtocol
-	message_condition: asyncio.Condition
+	packet_condition: asyncio.Condition
 	_packets: list
+	userlist: List[User | PartialUser] = None  #: :meta hide-value: #type: ignore
 
 	def __init__(self):
 		self.ws = None
 		self._packets = []
-		self.message_condition = asyncio.Condition()
+		self.packet_condition = asyncio.Condition()
 		pass
 
 	async def _connect(self):
@@ -30,7 +34,7 @@ class Client:
 	async def _error(self, error):
 		pass
 
-	async def sendPacket(self, message):
+	async def send_packet(self, message):
 		await self.ws.send(json.dumps(message))
 
 	async def close(self, reason=None):
@@ -50,14 +54,12 @@ class Client:
 				async for message in websocket:
 					try:
 						data = json.loads(message)
-						async with self.message_condition:
+						async with self.packet_condition:
 							self._packets.append(data)
-							self.message_condition.notify_all()
+							self.packet_condition.notify_all()
 							self._packets = self._packets[:50]
 
-
 						await self._message(data)
-
 
 					except websockets.ConnectionClosed:
 						await self._disconnect()
