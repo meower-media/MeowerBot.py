@@ -28,7 +28,7 @@ def main():
 		return
 
 	print("Uploading docs...")
-	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true --branch=master")
+	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true --branch=v4")
 
 	print("Building MB.py...")
 

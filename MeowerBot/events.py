@@ -37,12 +37,14 @@ class Events:
 	async def raw_message(self, data: dict): pass
 
 	async def direct(self, data: dict): pass
+
 	async def error(self, err: Exception):
 		"""Handles errors for the bot.
 
 		This is a callback for :meth:`MeowerBot.bot.Bot.event`
 		"""
 		pass
+
 	async def message(self, message: Post):
 		"""Method for overiding how the bot handles messages.
 

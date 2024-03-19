@@ -327,7 +327,6 @@ class Bot(Client, Events):
 			case "ulist":
 				usernames = message["val"].split(";")
 				usernames.pop()
-				print(usernames)
 				self.userlist = []
 				for user in usernames:
 
@@ -403,7 +402,6 @@ class Bot(Client, Events):
 
 		self.api = MeowerAPI(username=username)
 
-
 		await self.connect(server)
 
 	def run(self, username, password, server="wss://server.meower.org", ):
@@ -415,11 +413,6 @@ class Bot(Client, Events):
 		loop.run_forever()
 
 		return fut
-
-
-
-
-
 
 
 __all__ = ["Bot", "CallBackIds", 'cbids']
