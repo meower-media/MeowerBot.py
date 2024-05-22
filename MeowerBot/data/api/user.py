@@ -1,5 +1,6 @@
 
 from dataclasses import dataclass, field
+from typing_extensions import deprecated
 
 from dataclasses_json import config, dataclass_json
 
@@ -52,18 +53,21 @@ class Restrictions:
 @dataclass_json
 @dataclass
 class User:
-    name: str = field(metadata=config(field_name="_id"))
-    banned: bool
-    created: int
-    error: bool
-    flags: BitFlag
-    last_seen: int
-    lower_username: str
-    lvl: int
-    permissions: BitFlag
-    pfp_data: int
-    quote: str
-    uuid: UUID
+	name: str = field(metadata=config(field_name="_id"))
+	avatar: str
+	avatar_color: str
+	banned: bool
+	created: int
+	error: bool
+	flags: BitFlag
+	last_seen: int
+	lower_username: str
+	lvl: int
+	permissions: BitFlag
+	pfp_data: int
+	quote: str
+	uuid: UUID
+
 
 @dataclass_json
 @dataclass

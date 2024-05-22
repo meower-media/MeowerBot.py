@@ -5,7 +5,6 @@ import subprocess
 import sys
 
 
-from dotenv import load_dotenv # type: ignore
 import tomllib
 import httpx
 
@@ -13,9 +12,6 @@ import shutil
 
 
 def main():
-	if os.path.exists('.env'):
-		load_dotenv(override=True)
-
 	assert os.system("npx wrangler -v") == 0, "Install Wrangler! \n npm install wrangler --global"
 
 	os.system("rm -rf ./build/")
@@ -32,11 +28,11 @@ def main():
 		return
 
 	print("Uploading docs...")
-	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true --branch=master")
-
+	os.system("npx wrangler pages deploy ./build/html --project-name meowerbot --commit-dirty=true --branch=v4")
 
 	print("Building MB.py...")
 
 	os.system("poetry build")
+
 
 main()

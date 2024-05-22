@@ -1,3 +1,5 @@
+from typing import List
+
 from MeowerBot import Bot, CallBackIds
 from MeowerBot.context import Context, PartialUser, Post, User
 from MeowerBot.cog import Cog
@@ -5,12 +7,12 @@ from MeowerBot.command import command
 
 import logging
 
-from dotenv import load_dotenv # type: ignore
-
-load_dotenv() # type: ignore
+from dotenv import load_dotenv  # type: ignore
 
 from os import environ as env
 from MeowerBot.ext.help import Help as HelpExt
+
+load_dotenv()  # type: ignore
 
 logging.basicConfig(
 	level=logging.DEBUG,
@@ -77,17 +79,18 @@ async def pong(ctx: Context, *message: str):
 
 
 class Ping(Cog):
-	def __init__(self, bot: Bot):
+	def __init__(self, _bot: Bot):
 		super().__init__()
-		self.bot = bot
+		self._bot = _bot
 
 	@command()
 	async def cog_ping(self, ctx: Context):
-		await ctx.send_msg("Pong!\n My latency is: " + str(self.bot.latency))
+		await ctx.send_msg("Pong!\n My latency is: " + str(self._bot.latency))
 		print(bot.api.headers.get("token"))
+
 	@cog_ping.subcommand()
 	async def ping(self, ctx: Context):
-		await ctx.send_msg("Pong!\n My latency is: " + str(self.bot.latency))
+		await ctx.send_msg("Pong!\n My latency is: " + str(self._bot.latency))
 
 
 @bot.event
@@ -96,6 +99,10 @@ async def login(token):
 	assert await bot.get_chat("9bf5bddd").fetch() is None
 	assert await PartialUser(bot.user.username, bot).fetch() is not None
 	assert await PartialUser("A" * 21, bot).fetch() is None
+
+@bot.event
+async def ulist(userlist: List[User]):
+	assert type(userlist[0]) is User
 
 @bot.listen(CallBackIds.message)
 async def on_message(message: Post):

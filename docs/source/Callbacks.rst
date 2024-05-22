@@ -85,14 +85,6 @@ The error callback takes exactly one argument. It is the exception object that w
 
 .. _raw:
 
-This callback don't work as intended, and mistakingly replaces the `raw_message` callback,
-so the following docs are meant for a future reference when MeowerBot.py 4.0 is released.
-Until then, raw\_message has the correct docs.
-
-++++++++++++++
-Intendend docs
-++++++++++++++
-
 This callback is called every single time a packet is recieved by the bot, 
 and therfore it is spammed. It takes a single :py:data:`dict` as an argument. 
 More docs on what this can contain can be found on `the meower server documentation <https://docs.meower.org>`_
@@ -154,10 +146,6 @@ The only argument is a list of strings signifing the currently online users.
 ===========
 raw_message
 ===========
-
-
-This callback does the exact same thing as :ref:` raw` currently.
-
 It takes a single dictinary, 
 and the layout of this dictinary is the raw form of a post,
 which can be found in the `the meower server documentation <https://docs.meower.org>`_
