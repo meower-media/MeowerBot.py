@@ -4,7 +4,7 @@ from typing import List
 
 import websockets
 
-from MeowerBot.context import User, PartialUser
+from MeowerBot.context import User
 
 
 class Client:
@@ -14,10 +14,10 @@ class Client:
 	ws: websockets.WebSocketClientProtocol
 	packet_condition: asyncio.Condition
 	_packets: list
-	userlist: List[User | PartialUser] = None  #: :meta hide-value: #type: ignore
+	userlist: List[User] = None  #: :meta hide-value: #type: ignore
 
 	def __init__(self):
-		self.ws = None
+		self.ws = None # type: ignore
 		self._packets = []
 		self.packet_condition = asyncio.Condition()
 		pass
@@ -37,12 +37,12 @@ class Client:
 	async def send_packet(self, message):
 		await self.ws.send(json.dumps(message))
 
-	async def close(self, reason=None):
-		await self.ws.close(reason=reason)
+	async def close(self, reason: str | None =None):
+		await self.ws.close(reason=reason or "")
 
 	async def connect(self, server):
 		loop = asyncio.get_event_loop()
-		async for websocket in websockets.connect(server, ping_interval=None): # Meower uses its own implementation, crashes the connection if left on.
+		async for websocket in websockets.connect(server):
 			try:
 
 				self.ws = websocket

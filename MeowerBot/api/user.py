@@ -7,7 +7,8 @@ from .shared import api_resp
 from ..data.api.chats import ChatGroup
 from ..data.api.reports import PagedRequest
 from ..data.api.user import (
-	Relationship
+	Relationship,
+	User as RawUser
 )
 from ..data.generic import Post
 
@@ -26,6 +27,9 @@ class User:
 
 		return await self.client.get(urljoin(f"/users/{username}/", url), params={"q": query, "p": page, **params})
 
+	async def get(self, username: str):
+		return api_resp(RawUser, await self._get(username, ""))
+	
 	async def get_posts(self, username, query, page=1):
 		return api_resp(PagedRequest[Post], await self._get(username, "posts", query=query, page=page, params={"autoget": None}))
 

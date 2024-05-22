@@ -16,7 +16,7 @@ def _get_index_or(lst, i, d):
 
 
 class Help(Cog):
-	__instance__: "Help"
+	__instance__: "Help" | None # type: ignore # such a pain, its a subclass so it does not matter
 	_generated: bool = False
 
 	def __init__(self, bot, disable_command_newlines=False, *args, **kwargs):

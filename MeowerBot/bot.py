@@ -6,16 +6,18 @@ import secrets
 import shlex
 import traceback
 from enum import StrEnum
-from typing import Optional, Callable, Dict, List
+from typing import Optional, Callable, Dict, List, cast
 
 import httpx
+
+from MeowerBot.data.api.chats import ChatGroup
 
 from ._cache import Cache
 from .api import MeowerAPI
 from .cl import Client
 from .cog import Cog
 from .command import AppCommand
-from .context import Context, PartialChat, PartialUser, Post, User
+from .context import Context, Chat, Post, User, create_message, get_user
 from .data.generic import UUID
 from types import CoroutineType
 
@@ -34,17 +36,16 @@ class CallBackIds(StrEnum):
 	direct = "direct"
 	statuscode = "statuscode"
 
-cbids = CallBackIds
-callbacks = [i for i in CallBackIds] # type: ignore
-
+callbacks = [i.value for i in CallBackIds] # type: ignore
 
 class Bot(Client, Events):
 	"""A class that holds all the networking for a Meower bot to function and run"""
 
 	messages: List[Post] = []  #: :meta private: :meta hide-value:
 	post_condition = asyncio.Condition() #: :meta private: :meta hide-value:
-	user: PartialUser | User # Parcial user when bot is not logged in
+	user: User | None # Parcial user when bot is not logged in
 	cache: Cache
+	api: MeowerAPI	
 
 	__bridges__ = [  #: :meta public: :meta hide-value:
 		"Discord",
@@ -92,12 +93,13 @@ class Bot(Client, Events):
 		self.password: str  = None # type: ignore #: :meta hide-value:
 
 		self.commands = {}
-		self.prefix = prefix
+		self.prefix: str = prefix # type: ignore
 		self.logger = logging.getLogger("MeowerBot")
 		self.server: str  = None  # type: ignore
 		self.cache = Cache()
 
 		self.cogs: Dict[str, Cog] = {}
+
 	# Interface
 
 	def event(self, func: Callable):
@@ -114,7 +116,7 @@ class Bot(Client, Events):
 
 		setattr(self, func.__name__, func)
 
-	def listen(self, callback: Optional[str] = None):
+	def listen(self, callback: CallBackIds):
 		"""
 		Does the same thing as :meth MeowerBot.bot.Bot.event:but does not replace the bot's original functionality
 
@@ -123,7 +125,6 @@ class Bot(Client, Events):
 		"""
 		def inner(func):
 			nonlocal callback
-			callback = callback if callback is not None else func.__name__
 
 			if callback not in callbacks:
 				raise TypeError(f"{callback} is not a valid listener")
@@ -153,19 +154,18 @@ class Bot(Client, Events):
 
 		This is a callback for :meth:`MeowerBot.bot.Bot.event`
 		"""
-		message = await self.handle_bridges(message)
 
-		if not message.data.startswith(self.prefix):
+		if not message.content.startswith(self.prefix):
 			return
 
-		message.data = message.data.removeprefix(self.prefix)
+		message.content= message.content.removeprefix(self.prefix)
 
 		await self.run_commands(message)
 
-	async def _run_event(self, event: cbids, *args, **kwargs):
-		events: List[Callable] = [getattr(self, str(event))]
+	async def _run_event(self, event: CallBackIds, *args, **kwargs):
+		events: List[Callable] = [getattr(self, str(event.value))]
 
-		for i in self.callbacks[str(event)]:
+		for i in self.callbacks[event]:
 			if type(i) is list:
 				events.extend(i) # type: ignore
 			elif callable(i):  # Check if the element is Callable
@@ -173,9 +173,8 @@ class Bot(Client, Events):
 
 		err = await asyncio.gather(*[i(*args, **kwargs) for i in events if callable(i)], return_exceptions=True)
 		for i in err:
-			if i is not None:
-				if isinstance(i, Exception) and event != cbids.error:
-					await self._error(i)
+			if i is not None and isinstance(i, Exception) and event != CallBackIds.error:
+				await self._error(i)
 
 
 	# websocket
@@ -190,25 +189,12 @@ class Bot(Client, Events):
 
 		await super().send_packet(message)
 
-	async def handle_bridges(self, message: Post):
-		fetch = False
-		if isinstance(message.user, User):
-			fetch = True
-
-		if message.user.username in self.__bridges__ and ":" in message.data:
-			split = message.data.split(":", 1)
-			message.data = split[1].strip()
-			message.user = PartialUser(split[0].strip(), self)
-			if fetch:
-				data = self.cache.get_user(message.user.username)
-				if not isinstance(data, User):
-					data = await message.user.fetch()
-
-				if data:
-					message.user = data
-
-		if message.data.startswith(self.prefix + "#0000"):
-			message.data = message.data.replace("#0000", "")
+	async def handle_bridges(self, message: dict):
+		if message["u"] in self.__bridges__ and ":" in message["p"]:
+			_ = message["p"].split(": ")
+			message["u"] = _[0]
+			message["p"] = _[1]
+			message["p"] = message["p"].replace("#0000", "")
 
 		return message
 
@@ -278,18 +264,7 @@ class Bot(Client, Events):
 
 	async def _process_login_response(self, packet):
 		await self.api.login(packet['val']['payload']['token'])
-		self.user = await self.user.fetch()
-
-		if self.api.base_uri.startswith("https://api.meower.org"):
-			key = secrets.token_urlsafe()
-
-			chat = self.get_chat((await self.api.users.dm("Utils"))[0]._id)
-			await chat.send_msg(key)
-
-			httpx.put(f"https://meower-utils.showierdata.xyz/bot/{self.user.name}", json={
-				"key": key,
-				"library": "MeowerBot.py"
-			})
+		self.user = User(packet['val']['payload']["account"])	 
 
 		await self._run_event(CallBackIds.login, packet['val']['payload']['token'])
 
@@ -299,17 +274,27 @@ class Bot(Client, Events):
 		self.update_commands()
 
 	async def _disconnect(self):
+		# type: ignore # Chat is accessed.
 
 		await self._run_event(CallBackIds.disconnect)
 
-	def get_chat(self, chat_id: str):
-		chat = self.cache.get_chat(UUID(chat_id))
-		if chat is None:
-			return PartialChat(chat_id, self)
+	async def get_chat(self, chat_id: str):
+		
+		if (chat := self.cache.get_chat(UUID(chat_id))):
+			return chat
+		
+		resp = await self.api.chats.get(UUID(chat_id))
+		if (resp[1] != 200): 
+			return
+
+		chat = Chat(resp[0].to_dict(), self) # type: ignore
+		
+		self.cache.add_chat(chat)
+
 		return chat
+		
 
 	async def _message(self, message: dict):
-		# noinspection PyBroadException
 		try:
 			if message.get("cmd") == "direct" and message.get("listener") == 'mb.py_login':
 				message_sensitive = copy.deepcopy(message)
@@ -328,16 +313,10 @@ class Bot(Client, Events):
 				usernames = message["val"].split(";")
 				usernames.pop()
 				self.userlist = []
+				coros = []
 				for user in usernames:
-
-					if userobj := self.cache.get_user(user):
-						self.userlist.append(user)
-						continue
-					user = await PartialUser(user, self).fetch()
-					self.userlist.append(user)
-					self.cache.add_user(user)
-
-				await self._check_bot_users(usernames)
+					coros.append(get_user(self, user))
+				self.userlist = list(*(await asyncio.gather(*coros)))
 				return await self._run_event(CallBackIds.ulist, self.userlist)
 
 			case "direct":
@@ -350,7 +329,8 @@ class Bot(Client, Events):
 			return
 
 		await self._run_event(CallBackIds.raw_message, message["val"]) # type: ignore[call-arg]
-		post = Post(self, message["val"], chat=message["val"]["post_origin"])
+
+		post = await create_message(self, await self.handle_bridges(message["val"]))
 		async with self.post_condition:
 			self.messages.append(post)
 			self.post_condition.notify_all()
@@ -389,14 +369,16 @@ class Bot(Client, Events):
 		"""
 		Runs The bot (Blocking)
 		"""
-		self.username = username
+		self._username = username
 		self.password = password
-		self.user = PartialUser(self.username, self)
+		
 		self.update_commands()
-		# noinspection PyAsyncCall
+
 		asyncio.create_task(self._t_ping())
+
 		if self.prefix is None:
 			self.prefix = "@" + self.username
+
 		self.logger = logging.getLogger(f"MeowerBot {self.username}")
 		self.server = server
 
@@ -415,4 +397,4 @@ class Bot(Client, Events):
 		return fut
 
 
-__all__ = ["Bot", "CallBackIds", 'cbids']
+__all__ = ["Bot", "CallBackIds"]
